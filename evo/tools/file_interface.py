@@ -262,6 +262,49 @@ def read_bag_trajectory(bag_handle, topic):
     frame_id = first_msg.header.frame_id
     return PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})
 
+def unique(list1): 
+
+    unique_list = []
+  
+    for x in list1: 
+        if x not in unique_list: 
+            unique_list.append(x) 
+    return unique_list
+
+def read_TrackArray(bag_handle, topic):
+    """
+    :param bag_handle: opened bag handle, from rosbag.Bag(...)
+    :param topic: trajectory topic of supported message type
+    :return: List of trajectory.PoseTrajectory3D
+    """
+    get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
+
+    # Make list of unique ids and copy msgs
+    ids = []
+    msgs = []
+    for topic, msg, t in bag_handle.read_messages(topic):
+        msgs.append(msg)
+        for i in range(0,len(msg.tracks)):
+            ids.append((msg.tracks[i].id))
+
+    frame_id = msgs[1].tracks[0].pose.header.frame_id
+
+    unique_ids = unique(ids)
+    list_tracks = []
+    for j in unique_ids:
+        stamps, xyz, quat = [], [], []
+        for msg in msgs:
+            for i in range(0,len(msg.tracks)):
+                    if msg.tracks[i].id == unique_ids[j]:
+                        t = msg.tracks[i].pose.header.stamp
+                        stamps.append(t.secs + (t.nsecs * 1e-9))
+                        xyz_t, quat_t = get_xyz_quat(msg.tracks[i].pose)
+                        xyz.append(xyz_t)
+                        quat.append(quat_t)
+        if len(stamps)> 40:
+            list_tracks.append(PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})) 
+    # print(len(list_tracks))
+    return list_tracks
 
 def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
     """

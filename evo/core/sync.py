@@ -82,16 +82,14 @@ def associate_trajectories(traj_1, traj_2, max_diff=0.01, offset_2=0.0,
         traj_short.timestamps, traj_long.timestamps, max_diff,
         offset_2 if snd_longer else -offset_2)
     traj_long.reduce_to_ids(matching_indices)
-
     # Next, reversely match the reduced long trajectory to the shorter one.
     matching_indices = matching_time_indices(
         traj_long.timestamps, traj_short.timestamps, max_diff,
         -offset_2 if snd_longer else offset_2)
-    traj_short.reduce_to_ids(matching_indices)
-
+    if len(traj_short.timestamps) > len(matching_indices):
+        traj_short.reduce_to_ids(matching_indices) 
     traj_1 = traj_short if snd_longer else traj_long
     traj_2 = traj_long if snd_longer else traj_short
-
     if len(matching_indices) == 0:
         raise SyncException(
             "found no matching timestamps between {} and {} with max. time "
