@@ -5,6 +5,7 @@ from evo.core  import trajectory, sync, metrics
 from evo.tools import file_interface
 from datmo.msg import Track, TrackArray
 import rosbag
+from pylatex import Tabular 
 
 bag = rosbag.Bag('tracks_PoseStamped.bag')
 tracks = {}
@@ -26,6 +27,14 @@ loc_est, loc_rot, loc_tr, s = trajectory.align_trajectory(loc_est,
 print("registering and aligning trajectories")
 pairs = []
 combinations = []
+table = Tabular('l c c c c c c c')
+table.add_hline()
+table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
+# table.add_row((1, 2, 2, 8))
+# table.add_hline(1, 2)
+table.add_empty_row()
+# table.add_row((4, 5, 3 ,8))
+
 for tr in tracks:
     info = tr.get_infos# I should find how to use it
 
@@ -74,14 +83,22 @@ for tr in tracks:
         ax = plot.prepare_axis(fig_2, plot_mode)
         plot.traj(ax, plot_mode, traj_ref_bot1, '--', 'gray', 'reference')
         plot.traj(ax, plot_mode, traj_est_bot1, '-', 'red', 'estimation')
-        plt.savefig("plot.png", bbox_inches='tight')
+        plt.savefig("/home/kostas/report/figures/eval/eval.png",format='png', bbox_inches='tight')
         # plt.show()
+        table.add_row((1, round(ape_statistics_bot1["rmse"],3),
+            round(ape_statistics_bot1["mean"],3),
+            round(ape_statistics_bot1["median"],3),
+            round(ape_statistics_bot1["std"],3),
+            round(ape_statistics_bot1["min"],3),
+            round(ape_statistics_bot1["max"],3),
+            round(ape_statistics_bot1["sse"],3),))
 
 for c in combinations:
     for p in pairs:
         print(p,)
 print(len(combinations))
 
+table.generate_tex('/home/kostas/report/figures/tables/eval_table')
 # plot_collection = plot.PlotCollection("Localization")
 # # # metric values
 # fig_1 = plt.figure(figsize=(8, 8))
