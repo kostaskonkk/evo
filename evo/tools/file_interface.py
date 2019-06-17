@@ -283,11 +283,12 @@ def unique(list1):
             unique_list.append(x) 
     return unique_list
 
-def read_TrackArray(bag_handle, topic):
+def read_TrackArray(bag_handle, topic, min_length):
     """
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
     :param topic: trajectory topic of supported message type
-    :return: List of trajectory.PoseTrajectory3D
+    :param min_length: minimum length of msgs that appended to the list
+     :return: List of trajectory.PoseTrajectory3D
     """
     get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
 
@@ -313,8 +314,9 @@ def read_TrackArray(bag_handle, topic):
                         xyz_t, quat_t = get_xyz_quat(msg.tracks[i].pose)
                         xyz.append(xyz_t)
                         quat.append(quat_t)
-        if len(stamps)> 40:
-            list_tracks.append(PoseTrajectory3D(xyz, quat, stamps, meta={"frame_id": frame_id})) 
+        if len(stamps)>min_length:
+            list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
+                meta={"frame_id": frame_id})) 
     # print(len(list_tracks))
     return list_tracks
 
