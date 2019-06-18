@@ -465,6 +465,57 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if label:
         axarr[0].legend(frameon=True)
 
+def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plots the estimation and reference yaw angles
+    :param ax: an axis to draw one
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+
+    """
+    # if len(ax) != 1:
+        # raise PlotException("expected an axis array with 1 subplots - got " +
+                            # str(len(ax)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "$t$ (s)"
+    else:
+        x = range(0, len(traj.orientations_euler))
+        xlabel = "index"
+    ylabels = ["$yaw$ (deg)"]
+
+    wrapped = np.rad2deg(traj.orientations_euler[:,2])
+    unwrapped = np.unwrap(wrapped)
+    ax.plot(x, unwrapped, style,
+                  color=color, label=label, alpha=alpha)
+    ax.set_ylabel(ylabels[0])
+    ax.set_xlabel(xlabel)
+    ax.set_title('Yaw angles of the estimation against the reference')
+    if label:
+        ax.legend(frameon=True)
+            
+def xy(ax, traj, style='-', color='black', label="", alpha=1.0):
+    """
+    plot a path/trajectory based on xyz coordinates into an axis
+    :param ax: the matplotlib axis
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    """
+    x = traj.positions_xyz[:, 0]
+    y = traj.positions_xyz[:, 1]
+    ax.plot(x, y, style, color=color, label=label, alpha=alpha)
+    ax.set_title('Estimation and reference trajectory')
+    if label:
+        ax.legend(frameon=True)
 
 def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
                  subplot_arg="111"):
