@@ -397,7 +397,77 @@ def traj_colormap(ax, traj, array, plot_mode, min_map, max_map, title=""):
         ax.legend(frameon=True)
         plt.title(title)
 
+def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plot a path/trajectory based on xy coordinates into an axis
+    :param axarr: an axis array (for x, y)
+                  e.g. from 'fig, axarr = plt.subplots(2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    """
+    # x = traj.positions_xyz[:, 0]
+    # y = traj.positions_xyz[:, 1]
+    # ax.plot(x, y, style, color=color, label=label, alpha=alpha)
+    # ax.set_title('Estimation and reference trajectory')
 
+    if len(axarr) != 2:
+        raise PlotException("expected an axis array with 2 subplots - got " +
+                            str(len(axarr)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "$t$ (s)"
+    else:
+        x = range(0, len(traj.positions_xyz))
+        xlabel = "index"
+    ylabels = ["$x$ (m)", "$y$ (m)"]
+    for i in range(0, 2):
+        axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
+                      label=label, alpha=alpha)
+        axarr[i].set_ylabel(ylabels[i])
+    axarr[1].set_xlabel(xlabel)
+    if label:
+        axarr[0].legend(frameon=True)
+
+def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plot a path/trajectory  xy coordinates and yaw to an axis
+    :param axarr: an axis array (for x, y, yaw)
+                  e.g. from 'fig, axarr = plt.subplots(3)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    """
+
+    if len(axarr) != 3:
+        raise PlotException("expected an axis array with 3 subplots - got " +
+                            str(len(axarr)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "$t$ (s)"
+    else:
+        x = range(0, len(traj.positions_xyz))
+        xlabel = "index"
+    ylabels = ["$x$ (m)", "$y$ (m)"]
+    for i in range(2):
+        axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
+                      label=label, alpha=alpha)
+        axarr[i].set_ylabel(ylabels[i])
+    traj_yaw(axarr[2],traj, style, color,
+            alpha=alpha, start_timestamp=start_timestamp)
+    # axarr[2].plot(x, traj.orientations_euler[:, 2], style, color=color,
+                  # label=label, alpha=alpha)
+    axarr[2].set_xlabel(xlabel)
+    if label:
+        axarr[0].legend(frameon=True)
 def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
              start_timestamp=None):
     """
@@ -478,9 +548,6 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     :param start_timestamp: optional start time of the reference
 
     """
-    # if len(ax) != 1:
-        # raise PlotException("expected an axis array with 1 subplots - got " +
-                            # str(len(ax)))
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
@@ -492,30 +559,13 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
 
     wrapped = np.rad2deg(traj.orientations_euler[:,2])
     unwrapped = np.unwrap(wrapped)
-    ax.plot(x, unwrapped, style,
+    ax.plot(x, wrapped, style,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabels[0])
     ax.set_xlabel(xlabel)
-    ax.set_title('Yaw angles of the estimation against the reference')
     if label:
         ax.legend(frameon=True)
             
-def xy(ax, traj, style='-', color='black', label="", alpha=1.0):
-    """
-    plot a path/trajectory based on xyz coordinates into an axis
-    :param ax: the matplotlib axis
-    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
-    :param style: matplotlib line style
-    :param color: matplotlib color
-    :param label: label (for legend)
-    :param alpha: alpha value for transparency
-    """
-    x = traj.positions_xyz[:, 0]
-    y = traj.positions_xyz[:, 1]
-    ax.plot(x, y, style, color=color, label=label, alpha=alpha)
-    ax.set_title('Estimation and reference trajectory')
-    if label:
-        ax.legend(frameon=True)
 
 def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
                  subplot_arg="111"):

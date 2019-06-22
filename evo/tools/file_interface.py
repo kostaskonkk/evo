@@ -308,7 +308,7 @@ def read_TrackArray(bag_handle, topic, min_length):
         stamps, xyz, quat = [], [], []
         for msg in msgs:
             for i in range(0,len(msg.tracks)):
-                    if msg.tracks[i].id == unique_ids[j]:
+                    if msg.tracks[i].id == j:
                         t = msg.tracks[i].pose.header.stamp
                         stamps.append(t.secs + (t.nsecs * 1e-9))
                         xyz_t, quat_t = get_xyz_quat(msg.tracks[i].pose)
