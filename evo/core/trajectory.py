@@ -239,9 +239,10 @@ class PoseTrajectory3D(PosePath3D, object):
     """
 
     def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
-                 timestamps=None, poses_se3=None, meta=None):
+                 timestamps=None, poses_se3=None, meta=None, linear_vel=None):
         """
         :param timestamps: optional nx1 list of timestamps
+        :param linear_vel: optional nx3 list of x,y,z velocities
         """
         super(PoseTrajectory3D, self).__init__(
             positions_xyz, orientations_quat_wxyz, poses_se3, meta)
@@ -338,6 +339,38 @@ def calc_speed(xyz_1, xyz_2, t_1, t_2):
                                   str(t_2))
     return np.linalg.norm(xyz_2 - xyz_1) / (t_2 - t_1)
 
+def calc_velocity(pos_1, pos_2, t_1, t_2):
+    """
+    :param pos_1: position at timestamp 1
+    :param pos_2: position at timestamp 2
+    :param t_1: timestamp 1
+    :param t_2: timestamp 2
+    :return: velocity in m/s
+    """
+    if (t_2 - t_1) <= 0:
+        raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
+                                  str(t_2))
+    return (pos_2 - pos_1) / (t_2 - t_1)
+
+def calc_angular_velocity(p_1, p_2, t_1, t_2, degrees=False):
+    """
+    :param p_1: pose at timestamp 1
+    :param p_2: pose at timestamp 2
+    :param t_1: timestamp 1
+    :param t_2: timestamp 2
+    :param degrees: set to True to return deg/s
+    :return: speed in rad/s
+    """
+    if (t_2 - t_1) <= 0:
+        raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
+                                  str(t_2))
+    if degrees:
+        angle_1 = lie.so3_log(p_1[:3, :3]) * 180 / np.pi
+        angle_2 = lie.so3_log(p_2[:3, :3]) * 180 / np.pi
+    else:
+        angle_1 = lie.so3_log(p_1[:3, :3])
+        angle_2 = lie.so3_log(p_2[:3, :3])
+    return (angle_2 - angle_1) / (t_2 - t_1)
 
 def calc_angular_speed(p_1, p_2, t_1, t_2, degrees=False):
     """

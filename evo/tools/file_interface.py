@@ -226,6 +226,12 @@ def _get_xyz_quat_from_pose_or_odometry_msg(msg):
     ]
     return xyz, quat
 
+def _get_twist_from_odometry_msg(msg):
+    linear = [msg.twist.twist.linear.x,
+            msg.twist.twist.linear.y, msg.twist.twist.linear.z]
+    angular= [msg.twist.twist.angular.x,
+            msg.twist.twist.angular.y, msg.twist.twist.angular.z]
+    return linear, angular
 
 def get_supported_topics(bag_handle):
     """
@@ -288,9 +294,10 @@ def read_TrackArray(bag_handle, topic, min_length):
     :param bag_handle: opened bag handle, from rosbag.Bag(...)
     :param topic: trajectory topic of supported message type
     :param min_length: minimum length of msgs that appended to the list
-     :return: List of trajectory.PoseTrajectory3D
+    :return: List of trajectory.PoseTrajectory3D
     """
     get_xyz_quat = _get_xyz_quat_from_pose_or_odometry_msg
+    get_twist = _get_twist_from_odometry_msg
 
     # Make list of unique ids and copy msgs
     ids = []
@@ -300,25 +307,30 @@ def read_TrackArray(bag_handle, topic, min_length):
         for i in range(0,len(msg.tracks)):
             ids.append((msg.tracks[i].id))
 
-    frame_id = msgs[1].tracks[0].pose.header.frame_id
+    frame_id = msgs[1].tracks[0].odom.header.frame_id
 
     unique_ids = unique(ids)
     list_tracks = []
     for j in unique_ids:
         stamps, xyz, quat = [], [], []
+        linear, angular = [], []
         for msg in msgs:
             for i in range(0,len(msg.tracks)):
                     if msg.tracks[i].id == j:
-                        t = msg.tracks[i].pose.header.stamp
+                        t = msg.tracks[i].odom.header.stamp
                         stamps.append(t.secs + (t.nsecs * 1e-9))
-                        xyz_t, quat_t = get_xyz_quat(msg.tracks[i].pose)
+                        xyz_t, quat_t = get_xyz_quat(msg.tracks[i].odom.pose)
                         xyz.append(xyz_t)
                         quat.append(quat_t)
+                        linear_t, angular_t = get_twist(msg.tracks[i].odom)
+                        linear.append(linear_t)
+                        # angular.append(angular_t)
         if len(stamps)>min_length:
+            # list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
+                # meta={"frame_id": frame_id})) 
             list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
-                meta={"frame_id": frame_id})) 
-    # print(len(list_tracks))
-    return list_tracks
+                meta={"frame_id": frame_id},linear_vel=linear)) 
+    return list_tracks 
 
 def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
     """

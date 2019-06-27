@@ -1,6 +1,7 @@
 # Additions by Kostas
 *.bag
 tags
+.plots.vim
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

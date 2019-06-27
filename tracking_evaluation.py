@@ -15,7 +15,7 @@ from cycler import cycler
 import sys # cli arguments in sys.argv
 
 def localization(ref, est, table, name):
-    """Generates plots and statistics table input into Report
+    """Generates plots and statistics table into Report
 
     :ref: PoseTrajectory3D object that is used as reference
     :est: PoseTrajectory3D object that is plotted against reference
@@ -34,26 +34,18 @@ def localization(ref, est, table, name):
     ape_statistics = ape_metric.get_all_statistics()
 
     # # Set up formatting for the movie files
-    # Writer = animation.writers['ffmpeg']
-    # writer = Writer(fps=15, metadata=dict(artist='Me'), bitrate=1800)
 
-    # # [ Localization ]
+    # [ Localization ]
     fig, axarr = plt.subplots(3) #sharex=True)
-    # w,h = plt.figaspect(3.)
-    # fig = plt.Figure(figsize=(w,h))
     fig.suptitle('Localization', fontsize=30)
     fig.tight_layout()
-    # fig.figaspect(0.8)
     plot.traj_xyyaw(axarr, est,       '-', 'red',
             'estimation',1,ref.timestamps[0])
     plot.traj_xyyaw(axarr, ref,       '-', 'gray', 'original')
-    # plt.grid(True)
     fig.subplots_adjust(hspace = 0.2)
     plt.waitforbuttonpress(0)
-    plt.savefig("/home/kostas/results/latest/"+name+".png",format='png', bbox_inches='tight')
+    plt.savefig("/home/kostas/results/latest/"+name+".png", format='png', bbox_inches='tight')
     plt.close(fig)
-    # anim = animation.FuncAnimation(fig)
-    # anim.save("/home/kostas/results/latest/"+name+".mpa", writer = writer)
 
     table.add_row((name,
         round(ape_statistics["rmse"],3),
@@ -69,23 +61,23 @@ SMALL_SIZE = 12
 MEDIUM_SIZE = 14
 BIGGER_SIZE = 25
 plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=BIGGER_SIZE)     # fontsize of the axes title
+plt.rc('axes', titlesize=BIGGER_SIZE)    # fontsize of the axes title
 plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
-plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('xtick', labelsize=MEDIUM_SIZE)   # fontsize of the tick labels
+plt.rc('ytick', labelsize=MEDIUM_SIZE)   # fontsize of the tick labels
 plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
 plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-
 
 bag = rosbag.Bag(sys.argv[1])
 
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
-bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
-tracks = file_interface.read_TrackArray(bag, '/tracks', 5)
-mocap = file_interface.read_bag_trajectory(bag, '/mocap_pose')
-odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
-slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
+# bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
+tracks = file_interface.read_TrackArray(bag, '/tracks', 3)
+filtered_tracks = file_interface.read_TrackArray(bag, '/filtered_tracks', 3)
+mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
+# odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
+# slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
 fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
 bag.close()
 
@@ -94,11 +86,10 @@ loc_table.add_hline()
 loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 loc_table.add_empty_row()
 
-localization(mocap ,odom, loc_table, 'odometry')
-localization(mocap ,slam, loc_table, 'slam')
-localization(mocap ,fuse, loc_table, 'fusion')
-
-loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
+# localization(mocap ,odom, loc_table, 'odometry')
+# localization(mocap ,slam, loc_table, 'slam')
+# localization(mocap ,fuse, loc_table, 'fusion')
+# loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
 
 loc_ref, loc_est = sync.associate_trajectories(mocap, fuse)
 loc_est, loc_rot, loc_tra, _ = trajectory.align_trajectory(loc_est, 
@@ -108,18 +99,17 @@ table = Tabular('l c c c c c c c')
 table.add_hline() 
 table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 table.add_empty_row()
-
-
-loc_table = Tabular('c c c c c c c')
-loc_table.add_hline()
-loc_table.add_row(('rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
-loc_table.add_empty_row()
+print(len(filtered_tracks),len(tracks))
+for tr in filtered_tracks:
+    print(tr.timestamps)
+# for tr in tracks:
+    # print(tr.timestamps)
 
 # plot_collection = plot.PlotCollection("System Evaluation")
 for idx,b in enumerate(bot):
     print("Calculations for track model", idx +1)
     matches = []
-    for tr in tracks: # Find the best matching tracks to the bot trajectory
+    for tr in filtered_tracks: # Find the best matching tracks to the bot trajectory
 
         traj_ref, traj_est = sync.associate_trajectories(b, tr, max_diff=0.01)
         traj_est, rot, tra, _ = trajectory.align_trajectory(
@@ -136,8 +126,7 @@ for idx,b in enumerate(bot):
         abs_tra_dif = abs((tra - loc_tra)[0]) + abs((tra - loc_tra)[1])
         rot_dif = (rot - loc_rot)
         abs_rot_dif = 0
-        for i in range(0,len(rot_dif)):
-            abs_rot_dif += abs(rot_dif[i][0])+ abs(rot_dif[i][1]) +\
+        for i in range(0,len(rot_dif)): abs_rot_dif += abs(rot_dif[i][0])+ abs(rot_dif[i][1]) +\
                 abs(rot_dif[i][2])
         mismatch = abs_tra_dif + abs_rot_dif
         tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)']]
@@ -163,31 +152,48 @@ for idx,b in enumerate(bot):
             traj_est, traj_ref, correct_scale=False, return_parameters=True)
     # print(traj_est.get_infos())
 
-    # # [ Plot ] xy data
+    # # [ Plot ] xyyaw data
+    # fig, axarr = plt.subplots(3)
+    # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
+    # fig.tight_layout()
+    # print(len(b.timestamps),len(traj_ref.timestamps))
+    # plot.traj_xyyaw(axarr, b,       '--', 'gray', 'original')
+    # plot.traj_xyyaw(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
+           # cycler('lw', [1, 2, 3, 4]))
+    # color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
+    # for i, segment in enumerate(segments):
+        # c=next(color)
+        # label = "segment" + str(idx + 1)
+        # plot.traj_xy(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
+    # plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png" , bbox_inches='tight')
+    # plt.waitforbuttonpress(0)
+    # plt.close(fig)
+    # table.add_row((idx+1, round(ape_statistics["rmse"],3),
+        # round(ape_statistics["mean"],3),
+        # round(ape_statistics["median"],3),
+        # round(ape_statistics["std"],3),
+        # round(ape_statistics["min"],3),
+        # round(ape_statistics["max"],3),
+        # round(ape_statistics["sse"],3),))
+    # table.add_hline
+
+    # plot velocities
+    name = 'bot1'
     fig, axarr = plt.subplots(3)
-    fig.suptitle('Tracking - Vehicle '+str(idx+1), fontsize=30)
     fig.tight_layout()
-    print(len(b.timestamps),len(traj_ref.timestamps))
-    plot.traj_xyyaw(axarr, b,       '--', 'gray', 'original')
-    plot.traj_xyyaw(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    fig.suptitle('Speed Estimation ' + name, fontsize=30)
+    plot.traj_vel(axarr, b, '-', 'red', 'estimation')
     axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
            cycler('lw', [1, 2, 3, 4]))
     color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
     for i, segment in enumerate(segments):
         c=next(color)
         label = "segment" + str(idx + 1)
-        plot.traj_xy(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
-    plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png" , bbox_inches='tight')
+        plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
+    fig.subplots_adjust(hspace = 0.2)
     plt.waitforbuttonpress(0)
-    plt.close(fig)
-    table.add_row((idx+1, round(ape_statistics["rmse"],3),
-        round(ape_statistics["mean"],3),
-        round(ape_statistics["median"],3),
-        round(ape_statistics["std"],3),
-        round(ape_statistics["min"],3),
-        round(ape_statistics["max"],3),
-        round(ape_statistics["sse"],3),))
-    table.add_hline
+    plt.savefig("/home/kostas/results/latest/velocity"+name+".png",  format='png', bbox_inches='tight')
 
     # fig_xy, ax_xy = plt.subplots(1)
     # plot.xy(ax_xy, b,       '--', 'gray', 'original')
@@ -227,7 +233,7 @@ for idx,b in enumerate(bot):
     # table.add_hline
 
 # plot_collection.show()
-table.generate_tex('/home/kostas/report/figures/tables/eval_table')
+# table.generate_tex('/home/kostas/report/figures/tables/eval_table')
 # plot_collection = plot.PlotCollection("Localization")
 # # # metric values
 # fig_1 = plt.figure(figsize=(8, 8))
