@@ -14,6 +14,59 @@ import numpy as np
 from cycler import cycler
 import sys # cli arguments in sys.argv
 
+# Copied from main_ape.py
+def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
+        align_origin=False, ref_name="reference", est_name="estimate"):
+
+    traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
+    # Align the trajectories.
+    only_scale = correct_scale and not align
+    if align or correct_scale:
+        # logger.debug(SEP)
+        traj_est = trajectory.align_trajectory(traj_est, traj_ref,
+                                               correct_scale, only_scale)
+    elif align_origin:
+        # logger.debug(SEP)
+        traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
+
+    # Calculate APE.
+    # logger.debug(SEP)
+    data = (traj_ref, traj_est)
+    ape_metric = metrics.APE(pose_relation)
+    ape_metric.process_data(data)
+
+    title = str(ape_metric)
+    if align and not correct_scale:
+        title += "\n(with SE(3) Umeyama alignment)"
+    elif align and correct_scale:
+        title += "\n(with Sim(3) Umeyama alignment)"
+    elif only_scale:
+        title += "\n(scale corrected)"
+    elif align_origin:
+        title += "\n(with origin alignment)"
+    else:
+        title += "\n(not aligned)"
+
+    ape_result = ape_metric.get_result(ref_name, est_name)
+    ape_result.info["title"] = title
+
+    # logger.debug(SEP)
+    # logger.info(ape_result.pretty_str())
+
+    ape_result.add_trajectory(ref_name, traj_ref)
+    ape_result.add_trajectory(est_name, traj_est)
+    if isinstance(traj_est, trajectory.PoseTrajectory3D):
+        seconds_from_start = [
+            t - traj_est.timestamps[0] for t in traj_est.timestamps
+        ]
+        ape_result.add_np_array("seconds_from_start", seconds_from_start)
+        ape_result.add_np_array("timestamps", traj_est.timestamps)
+
+    return ape_result
+
+
+
+
 def localization(ref, est, table, name):
     """Generates plots and statistics table into Report
 
@@ -72,12 +125,12 @@ bag = rosbag.Bag(sys.argv[1])
 
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
-# bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
+bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
 tracks = file_interface.read_TrackArray(bag, '/tracks', 3)
 filtered_tracks = file_interface.read_TrackArray(bag, '/filtered_tracks', 3)
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
-# odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
-# slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
+odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
+slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
 fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
 bag.close()
 
@@ -86,10 +139,32 @@ loc_table.add_hline()
 loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 loc_table.add_empty_row()
 
-# localization(mocap ,odom, loc_table, 'odometry')
-# localization(mocap ,slam, loc_table, 'slam')
-# localization(mocap ,fuse, loc_table, 'fusion')
-# loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
+fuse_result = ape(
+    traj_ref=mocap,
+    traj_est=fuse,
+    pose_relation=metrics.PoseRelation.translation_part,
+    align=False,
+    correct_scale=False,
+    align_origin=True,
+    ref_name="mocap",
+    est_name="fuse",
+)
+file_interface.save_res_file("/home/kostas/results/fuse", fuse_result, True)
+slam_result = ape(
+    traj_ref=mocap,
+    traj_est=slam,
+    pose_relation=metrics.PoseRelation.translation_part,
+    align=False,
+    correct_scale=False,
+    align_origin=True,
+    ref_name="mocap",
+    est_name="slam",
+)
+file_interface.save_res_file("/home/kostas/results/slam", slam_result, True)
+localization(mocap ,odom, loc_table, 'odometry')
+localization(mocap ,slam, loc_table, 'slam')
+localization(mocap ,fuse, loc_table, 'fusion')
+loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
 
 loc_ref, loc_est = sync.associate_trajectories(mocap, fuse)
 loc_est, loc_rot, loc_tra, _ = trajectory.align_trajectory(loc_est, 
@@ -99,11 +174,9 @@ table = Tabular('l c c c c c c c')
 table.add_hline() 
 table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 table.add_empty_row()
-print(len(filtered_tracks),len(tracks))
-for tr in filtered_tracks:
-    print(tr.timestamps)
-# for tr in tracks:
-    # print(tr.timestamps)
+# print(len(filtered_tracks),len(tracks))
+# for tr in filtered_tracks:
+    # print(tr.linear_vel)
 
 # plot_collection = plot.PlotCollection("System Evaluation")
 for idx,b in enumerate(bot):
@@ -183,7 +256,8 @@ for idx,b in enumerate(bot):
     fig, axarr = plt.subplots(3)
     fig.tight_layout()
     fig.suptitle('Speed Estimation ' + name, fontsize=30)
-    plot.traj_vel(axarr, b, '-', 'red', 'estimation')
+    plot.traj_vel(axarr, b, '--', 'gray', 'original')
+    plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
            cycler('lw', [1, 2, 3, 4]))
     color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))

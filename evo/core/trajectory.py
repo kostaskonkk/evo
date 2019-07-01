@@ -250,6 +250,7 @@ class PoseTrajectory3D(PosePath3D, object):
         if timestamps is None:
             raise TrajectoryException("no timestamps provided")
         self.timestamps = np.array(timestamps)
+        self.linear_vel = np.array(linear_vel)
 
     def __str__(self):
         s = super(PoseTrajectory3D, self).__str__()

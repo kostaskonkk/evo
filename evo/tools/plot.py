@@ -568,6 +568,8 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     :param color: matplotlib color
     :param label: label (for legend)
     :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
     """
     if len(axarr) != 2:
         raise PlotException("expected an axis array with 2 subplots - got " +
@@ -581,11 +583,8 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         xlabel = "index"
     ylabels = ["$\dot x$ (m/s)", "$\dot y$ (m/s)"]
     for i in range(0, 2):
-        axarr[i].plot(x, traj.linear_vel[i], style, color=color, label=label, alpha=alpha)
+        axarr[i].plot(x, traj.linear_vel[:,i], style,color=color,label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
-
-    axarr[2].plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
-    axarr[2].set_xlabel(xlabel)
     if label:
         axarr[0].legend(frameon=True)
 

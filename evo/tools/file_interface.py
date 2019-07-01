@@ -326,8 +326,6 @@ def read_TrackArray(bag_handle, topic, min_length):
                         linear.append(linear_t)
                         # angular.append(angular_t)
         if len(stamps)>min_length:
-            # list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
-                # meta={"frame_id": frame_id})) 
             list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
                 meta={"frame_id": frame_id},linear_vel=linear)) 
     return list_tracks 
