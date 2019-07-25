@@ -468,6 +468,41 @@ def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
     axarr[2].set_xlabel(xlabel)
     if label:
         axarr[0].legend(frameon=True)
+def traj_fourplots(axarr, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plot a path/trajectory  x,y coordinates, xy and yaw to an axis
+    :param axarr: an axis array (for x, y, xy, yaw)
+                  e.g. from 'fig, axarr = plt.subplots(2,2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    """
+
+    if len(axarr) != 2:
+        raise PlotException("expected an axis array with 3 subplots - got " +
+                            str(len(axarr)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "$t$ (s)"
+    else:
+        x = range(0, len(traj.positions_xyz))
+        xlabel = "index"
+    ylabels = ["$x$ (m)", "$y$ (m)"]
+    for i in range(2):
+        axarr[0,i].plot(x, traj.positions_xyz[:, i], style, color=color,
+                      label=label, alpha=alpha)
+        axarr[i,0].set_ylabel(ylabels[i])
+    axarr[1,0].plot(traj.positions_xyz[:, 0], traj.positions_xyz[:, 1], style,
+            color=color, alpha=alpha)
+    traj_yaw(axarr[1,1],traj, style, color,
+            alpha=alpha, start_timestamp=start_timestamp)
+    axarr[1,1].set_xlabel(xlabel)
+    if label:
+        axarr[0,1].legend(frameon=True)
 def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
              start_timestamp=None):
     """
