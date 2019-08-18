@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from __future__ import print_function
 from evo.core  import trajectory, sync, metrics
@@ -8,7 +8,6 @@ import local
 import rosbag
 from pylatex import Tabular 
 
-
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.figure as fg
@@ -16,6 +15,7 @@ import matplotlib.figure as fg
 import numpy as np
 from cycler import cycler
 import sys # cli arguments in sys.argv
+import tikzplotlib
 
 # Copied from main_ape.py
 def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
@@ -67,12 +67,22 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 
     return ape_result
 
-def associate_segments(b, tracks):
+def associate_segments(traj, tracks):
+    """Associate segments of an object trajectory as given by a DATMO system
+    with the object´s reference trajectory
 
+    :traj: Reference trajectory
+    :tracks: All the tracks that got produced by the DATMO system
+    :localization: The trajectory of the self-localization
+    :returns: segments: The tracks that match to the reference trajectory
+    :returns: traj_ref: The part of the reference trajectory that matches with
+    tracks
+
+    """
     matches = []
-    for tr in tracks: # Find the best matching tracks to the bot trajectory
+    for tr in tracks: # Find the best matching tracks to the object trajectory
 
-        traj_ref, traj_est = sync.associate_trajectories(b, tr, max_diff=0.01)
+        traj_ref, traj_est = sync.associate_trajectories(traj, tr, max_diff=0.01)
         traj_est, rot, tra, _ = trajectory.align_trajectory(
                 traj_est, traj_ref, correct_scale=False, return_parameters=True)
         
@@ -104,10 +114,10 @@ def associate_segments(b, tracks):
            # print(m[0].get_statistics()['v_avg (m/s)'])
     if len(segments)==0:
         print("No matching segments")
-        # continue
+
     whole =trajectory.merge(segments)
 
-    traj_ref, traj_est = sync.associate_trajectories(b, whole, max_diff=0.01)
+    traj_ref, traj_est = sync.associate_trajectories(traj, whole, max_diff=0.01)
     traj_est, rot, tra, _ = trajectory.align_trajectory(
             traj_est, traj_ref, correct_scale=False, return_parameters=True)
     print(traj_est.get_infos())
@@ -158,6 +168,30 @@ loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'
 loc_table.add_hline() 
 loc_table.add_empty_row()
 
+# odom_result = ape(
+    # traj_ref=mocap,
+    # traj_est=odom,
+    # pose_relation=metrics.PoseRelation.translation_part,
+    # align=False,
+    # correct_scale=False,
+    # align_origin=True,
+    # ref_name="mocap",
+    # est_name="odom",
+# )
+# file_interface.save_res_file("/home/kostas/results/res_files/odom", odom_result, True)
+
+# slam_result = ape(
+    # traj_ref=mocap,
+    # traj_est=slam,
+    # pose_relation=metrics.PoseRelation.translation_part,
+    # align=False,
+    # correct_scale=False,
+    # align_origin=True,
+    # ref_name="mocap",
+    # est_name="slam",
+# )
+# file_interface.save_res_file("/home/kostas/results/res_files/slam", slam_result, True)
+
 fuse_result = ape(
     traj_ref=mocap,
     traj_est=fuse,
@@ -168,18 +202,7 @@ fuse_result = ape(
     ref_name="mocap",
     est_name="fuse",
 )
-# file_interface.save_res_file("/home/kostas/results/fuse", fuse_result, True)
-slam_result = ape(
-    traj_ref=mocap,
-    traj_est=slam,
-    pose_relation=metrics.PoseRelation.translation_part,
-    align=False,
-    correct_scale=False,
-    align_origin=True,
-    ref_name="mocap",
-    est_name="slam",
-)
-# file_interface.save_res_file("/home/kostas/results/slam", slam_result, True)
+file_interface.save_res_file("/home/kostas/results/res_files/fuse", fuse_result, True)
 
 local.four_plots(mocap ,odom, loc_table, 'odometry')
 # local.four_plots(mocap ,slam, loc_table, 'slam')
@@ -222,23 +245,42 @@ def four_plots(idx, b, traj_ref, segments):
     style='-'
     for i, segment in enumerate(segments):
         c=next(color)
-        label = "segment" + str(idx + 1)
+        label = "segment" + str(i+ 1)
         plot.traj_xy(axarr[0,0:2], segment, '-', c, label,1 ,b.timestamps[0])
         # print("seg0: ",len(segment.positions_xyz[:,0]),"seg1:"
                 # ,len(segment.positions_xyz[:,1]))
         axarr[1,0].plot(segment.positions_xyz[:, 0],
                 segment.positions_xyz[:,1])
         # axarr[1,0].plot(segment.positions_xyz[:, 0], segment.positions_xyz[:, 1], '-', c, 1)
+    handles, labels = axarr[0,0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center',ncol =
+            len(segments) + 2)
+    tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/tracking" + str(idx+1) +".tex")
     plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png" , bbox_inches='tight')
     plt.waitforbuttonpress(0)
     plt.close(fig)
-exit()
+
 for idx,b in enumerate(bot):
     print("Calculations for track model", idx +1)
     # segments, traj_ref = associate_segments(b,filtered_tracks)
     # four_plots(idx, b, traj_ref, segments) 
     segments, traj_ref = associate_segments(b,box_tracks)
+
     four_plots(idx, b, traj_ref, segments) 
+
+    whole =trajectory.merge(segments)
+    datmo_result = ape(
+        traj_ref=traj_ref,
+        traj_est=whole,
+        pose_relation=metrics.PoseRelation.translation_part,
+        align=True,
+        correct_scale=False,
+        align_origin=True,
+        ref_name="mocap",
+        est_name="track" + str(idx+1),
+    )
+    file_interface.save_res_file("/home/kostas/results/res_files/track" +
+            str(idx+1), datmo_result, True)
     # [ Plot ] xyyaw data
     # fig, axarr = plt.subplots(3)
     # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)

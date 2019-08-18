@@ -2,6 +2,7 @@
 from evo.core  import trajectory, sync, metrics
 from evo.tools import plot 
 import matplotlib.pyplot as plt
+import tikzplotlib
 
 def three_plots(ref, est, table, name):
     """Generates plots and statistics table into Report
@@ -73,10 +74,17 @@ def four_plots(ref, est, table, name):
     plot.traj_fourplots(axarr, ref,       '-', 'gray', 'original')
     handles, labels = axarr[0,0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', ncol = 2)
-    fig.subplots_adjust(wspace = 0.3)
+    # axarr[0,0].legend(handles, labels, loc='lower center')
+    # fig.legend(handles, labels, loc='lower center')
+    fig.subplots_adjust(wspace = 0.5)
     fig.subplots_adjust(hspace = 0.3)
-    plt.waitforbuttonpress(0)
+    # matplotlib2tikz.save("/home/kostas/results/latest/test.tex")
+    # tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/"+name+".tex")
+    # plt.savefig("/home/kostas/results/latest/better.pgf", format ='pgf')
+    print(name)
+        
     plt.savefig("/home/kostas/results/latest/"+name+".png", format='png', bbox_inches='tight')
+    plt.waitforbuttonpress(0)
     plt.close(fig)
 
     table.add_row((name,
