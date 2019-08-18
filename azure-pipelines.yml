@@ -11,6 +11,15 @@ pr:
     include:
     - master
 
+schedules:
+- cron: "0 0 * * *"
+  displayName: 'daily build'
+  branches:
+    include:
+      - master
+  always: true
+
+
 jobs:
 
 - job: 'Docker'
