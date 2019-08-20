@@ -95,6 +95,7 @@ def associate_segments(traj, tracks):
         tra_dif = (tra - loc_tra)
         # print(tra_dif)
         abs_tra_dif = abs((tra - loc_tra)[0]) + abs((tra - loc_tra)[1])
+        translation = abs(tra[0]) + abs(tra[1])
         rot_dif = (rot - loc_rot)
         abs_rot_dif = 0
         for i in range(0,len(rot_dif)): abs_rot_dif += abs(rot_dif[i][0])+ abs(rot_dif[i][1]) +\
@@ -120,9 +121,9 @@ def associate_segments(traj, tracks):
     traj_ref, traj_est = sync.associate_trajectories(traj, whole, max_diff=0.01)
     traj_est, rot, tra, _ = trajectory.align_trajectory(
             traj_est, traj_ref, correct_scale=False, return_parameters=True)
-    print(traj_est.get_infos())
+    # print(traj_est.get_infos())
 
-    return segments, traj_ref
+    return segments, traj_ref, translation
 
 
 
@@ -153,7 +154,7 @@ bag = rosbag.Bag(sys.argv[1])
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
-# tracks = file_interface.read_TrackArray(bag, '/tracks', 3)
+mean = file_interface.read_TrackArray(bag, '/tracks', 3)
 filtered_tracks = file_interface.read_TrackArray(bag, '/filtered_tracks', 3)
 box_tracks = file_interface.read_TrackArray(bag, '/box_tracks', 3)
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
@@ -192,19 +193,19 @@ loc_table.add_empty_row()
 # )
 # file_interface.save_res_file("/home/kostas/results/res_files/slam", slam_result, True)
 
-fuse_result = ape(
-    traj_ref=mocap,
-    traj_est=fuse,
-    pose_relation=metrics.PoseRelation.translation_part,
-    align=False,
-    correct_scale=False,
-    align_origin=True,
-    ref_name="mocap",
-    est_name="fuse",
-)
-file_interface.save_res_file("/home/kostas/results/res_files/fuse", fuse_result, True)
+# fuse_result = ape(
+    # traj_ref=mocap,
+    # traj_est=fuse,
+    # pose_relation=metrics.PoseRelation.translation_part,
+    # align=False,
+    # correct_scale=False,
+    # align_origin=True,
+    # ref_name="mocap",
+    # est_name="fuse",
+# )
+# file_interface.save_res_file("/home/kostas/results/res_files/fuse", fuse_result, True)
 
-local.four_plots(mocap ,odom, loc_table, 'odometry')
+# local.four_plots(mocap ,odom, loc_table, 'odometry')
 # local.four_plots(mocap ,slam, loc_table, 'slam')
 # local.four_plots(mocap ,fuse, loc_table, 'fusion')
 loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
@@ -236,7 +237,7 @@ def four_plots(idx, b, traj_ref, segments):
     fig, axarr = plt.subplots(2,2)
     fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
     fig.tight_layout()
-    print(len(b.timestamps),len(traj_ref.timestamps))
+    # print(len(b.timestamps),len(traj_ref.timestamps))
     plot.traj_fourplots(axarr, b,       '--', 'gray', 'original')
     plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     axarr[0,1].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
@@ -255,32 +256,69 @@ def four_plots(idx, b, traj_ref, segments):
     handles, labels = axarr[0,0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center',ncol =
             len(segments) + 2)
-    tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/tracking" + str(idx+1) +".tex")
+    # tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/tracking" + str(idx+1) +".tex")
     plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png" , bbox_inches='tight')
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
 for idx,b in enumerate(bot):
-    print("Calculations for track model", idx +1)
-    # segments, traj_ref = associate_segments(b,filtered_tracks)
-    # four_plots(idx, b, traj_ref, segments) 
-    segments, traj_ref = associate_segments(b,box_tracks)
 
-    four_plots(idx, b, traj_ref, segments) 
+    print("Calculations for track model", idx +1,"based on the mean of the cluster")
+    segments, traj_ref, mean_translation = associate_segments(b,mean)
+    # four_plots(idx, b, traj_ref, segments) 
 
     whole =trajectory.merge(segments)
-    datmo_result = ape(
+    mean_result = ape(
         traj_ref=traj_ref,
         traj_est=whole,
         pose_relation=metrics.PoseRelation.translation_part,
-        align=True,
+        align=False,
         correct_scale=False,
-        align_origin=True,
+        align_origin=False,
         ref_name="mocap",
-        est_name="track" + str(idx+1),
+        est_name="mean_track" + str(idx+1),
     )
-    file_interface.save_res_file("/home/kostas/results/res_files/track" +
-            str(idx+1), datmo_result, True)
+    file_interface.save_res_file("/home/kostas/results/res_files/mean_track" +
+            str(idx+1), mean_result, False)
+
+    print("Calculations for track model", idx +1,"based on the l_shape")
+    segments, traj_ref, lshape_translation = associate_segments(b,filtered_tracks)
+    # four_plots(idx, b, traj_ref, segments) 
+
+    whole =trajectory.merge(segments)
+    mean_result = ape(
+        traj_ref=traj_ref,
+        traj_est=whole,
+        pose_relation=metrics.PoseRelation.translation_part,
+        align=False,
+        correct_scale=False,
+        align_origin=False,
+        ref_name="mocap",
+        est_name="l_shape" + str(idx+1),
+    )
+    file_interface.save_res_file("/home/kostas/results/res_files/l-shape_track" +
+            str(idx+1), mean_result, False)
+
+    print("Calculations for track model", idx +1,"based on the center of the bounding box")
+    segments, traj_ref, center_translation = associate_segments(b,box_tracks)
+    # four_plots(idx, b, traj_ref, segments) 
+
+    whole =trajectory.merge(segments)
+    center_result = ape(
+        traj_ref=traj_ref,
+        traj_est=whole,
+        pose_relation=metrics.PoseRelation.translation_part,
+        align=False,
+        correct_scale=False,
+        align_origin=False,
+        ref_name="mocap",
+        est_name="center_track" + str(idx+1),
+    )
+    file_interface.save_res_file("/home/kostas/results/res_files/center_track" +
+            str(idx+1), center_result, False)
+
+    print("mean_translation: ", mean_translation,"l-shape_translation:\
+            ",lshape_translation,"center_translation: ",center_translation)
     # [ Plot ] xyyaw data
     # fig, axarr = plt.subplots(3)
     # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
