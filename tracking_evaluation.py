@@ -156,7 +156,7 @@ bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
 mean = file_interface.read_TrackArray(bag, '/tracks', 3)
 filtered_tracks = file_interface.read_TrackArray(bag, '/filtered_tracks', 3)
-box_tracks = file_interface.read_TrackArray(bag, '/box_tracks', 3)
+# box_tracks = file_interface.read_TrackArray(bag, '/box_tracks', 3)
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
 odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
 slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
@@ -169,41 +169,46 @@ loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'
 loc_table.add_hline() 
 loc_table.add_empty_row()
 
-# odom_result = ape(
-    # traj_ref=mocap,
-    # traj_est=odom,
-    # pose_relation=metrics.PoseRelation.translation_part,
-    # align=False,
-    # correct_scale=False,
-    # align_origin=True,
-    # ref_name="mocap",
-    # est_name="odom",
-# )
+results = []
+odom_result = ape(
+    traj_ref=mocap,
+    traj_est=odom,
+    pose_relation=metrics.PoseRelation.translation_part,
+    align=False,
+    correct_scale=False,
+    align_origin=True,
+    ref_name="mocap",
+    est_name="odom",
+)
+results.append(odom_result)
 # file_interface.save_res_file("/home/kostas/results/res_files/odom", odom_result, True)
 
-# slam_result = ape(
-    # traj_ref=mocap,
-    # traj_est=slam,
-    # pose_relation=metrics.PoseRelation.translation_part,
-    # align=False,
-    # correct_scale=False,
-    # align_origin=True,
-    # ref_name="mocap",
-    # est_name="slam",
-# )
+slam_result = ape(
+    traj_ref=mocap,
+    traj_est=slam,
+    pose_relation=metrics.PoseRelation.translation_part,
+    align=False,
+    correct_scale=False,
+    align_origin=True,
+    ref_name="mocap",
+    est_name="slam",
+)
+results.append(slam_result)
 # file_interface.save_res_file("/home/kostas/results/res_files/slam", slam_result, True)
 
-# fuse_result = ape(
-    # traj_ref=mocap,
-    # traj_est=fuse,
-    # pose_relation=metrics.PoseRelation.translation_part,
-    # align=False,
-    # correct_scale=False,
-    # align_origin=True,
-    # ref_name="mocap",
-    # est_name="fuse",
-# )
+fuse_result = ape(
+    traj_ref=mocap,
+    traj_est=fuse,
+    pose_relation=metrics.PoseRelation.translation_part,
+    align=False,
+    correct_scale=False,
+    align_origin=True,
+    ref_name="mocap",
+    est_name="fuse",
+)
+results.append(fuse_result)
 # file_interface.save_res_file("/home/kostas/results/res_files/fuse", fuse_result, True)
+convert_results_to_dataframe(results)
 
 # local.four_plots(mocap ,odom, loc_table, 'odometry')
 # local.four_plots(mocap ,slam, loc_table, 'slam')
@@ -261,64 +266,65 @@ def four_plots(idx, b, traj_ref, segments):
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
-for idx,b in enumerate(bot):
+# for idx,b in enumerate(bot):
 
-    print("Calculations for track model", idx +1,"based on the mean of the cluster")
-    segments, traj_ref, mean_translation = associate_segments(b,mean)
-    # four_plots(idx, b, traj_ref, segments) 
+    # print("Calculations for track model", idx +1,"based on the mean of the cluster")
+    # segments, traj_ref, mean_translation = associate_segments(b,mean)
+    # # four_plots(idx, b, traj_ref, segments) 
 
-    whole =trajectory.merge(segments)
-    mean_result = ape(
-        traj_ref=traj_ref,
-        traj_est=whole,
-        pose_relation=metrics.PoseRelation.translation_part,
-        align=False,
-        correct_scale=False,
-        align_origin=False,
-        ref_name="mocap",
-        est_name="mean_track" + str(idx+1),
-    )
-    file_interface.save_res_file("/home/kostas/results/res_files/mean_track" +
-            str(idx+1), mean_result, False)
+    # whole =trajectory.merge(segments)
+    # mean_result = ape(
+        # traj_ref=traj_ref,
+        # traj_est=whole,
+        # pose_relation=metrics.PoseRelation.translation_part,
+        # align=False,
+        # correct_scale=False,
+        # align_origin=False,
+        # ref_name="mocap",
+        # est_name="mean_track" + str(idx+1),
+    # )
+    # file_interface.save_res_file("/home/kostas/results/res_files/mean_track" +
+            # str(idx+1), mean_result, False)
 
-    print("Calculations for track model", idx +1,"based on the l_shape")
-    segments, traj_ref, lshape_translation = associate_segments(b,filtered_tracks)
-    # four_plots(idx, b, traj_ref, segments) 
+    # print("Calculations for track model", idx +1,"based on the l_shape")
+    # segments, traj_ref, lshape_translation = associate_segments(b,filtered_tracks)
+    # # four_plots(idx, b, traj_ref, segments) 
 
-    whole =trajectory.merge(segments)
-    mean_result = ape(
-        traj_ref=traj_ref,
-        traj_est=whole,
-        pose_relation=metrics.PoseRelation.translation_part,
-        align=False,
-        correct_scale=False,
-        align_origin=False,
-        ref_name="mocap",
-        est_name="l_shape" + str(idx+1),
-    )
-    file_interface.save_res_file("/home/kostas/results/res_files/l-shape_track" +
-            str(idx+1), mean_result, False)
+    # whole =trajectory.merge(segments)
+    # mean_result = ape(
+        # traj_ref=traj_ref,
+        # traj_est=whole,
+        # pose_relation=metrics.PoseRelation.translation_part,
+        # align=False,
+        # correct_scale=False,
+        # align_origin=False,
+        # ref_name="mocap",
+        # est_name="l_shape" + str(idx+1),
+    # )
+    # file_interface.save_res_file("/home/kostas/results/res_files/l-shape_track" +
+            # str(idx+1), mean_result, False)
 
-    print("Calculations for track model", idx +1,"based on the center of the bounding box")
-    segments, traj_ref, center_translation = associate_segments(b,box_tracks)
-    # four_plots(idx, b, traj_ref, segments) 
+    # print("Calculations for track model", idx +1,"based on the center of the bounding box")
+    # segments, traj_ref, center_translation = associate_segments(b,box_tracks)
+    # # four_plots(idx, b, traj_ref, segments) 
 
-    whole =trajectory.merge(segments)
-    center_result = ape(
-        traj_ref=traj_ref,
-        traj_est=whole,
-        pose_relation=metrics.PoseRelation.translation_part,
-        align=False,
-        correct_scale=False,
-        align_origin=False,
-        ref_name="mocap",
-        est_name="center_track" + str(idx+1),
-    )
-    file_interface.save_res_file("/home/kostas/results/res_files/center_track" +
-            str(idx+1), center_result, False)
+    # whole =trajectory.merge(segments)
+    # center_result = ape(
+        # traj_ref=traj_ref,
+        # traj_est=whole,
+        # pose_relation=metrics.PoseRelation.translation_part,
+        # align=False,
+        # correct_scale=False,
+        # align_origin=False,
+        # ref_name="mocap",
+        # est_name="center_track" + str(idx+1),
+    # )
+    # file_interface.save_res_file("/home/kostas/results/res_files/center_track" +
+            # str(idx+1), center_result, False)
 
-    print("mean_translation: ", mean_translation,"l-shape_translation:\
-            ",lshape_translation,"center_translation: ",center_translation)
+    # print("mean_translation: ", mean_translation,"l-shape_translation:\
+            # ",lshape_translation,"center_translation: ",center_translation)
+
     # [ Plot ] xyyaw data
     # fig, axarr = plt.subplots(3)
     # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)

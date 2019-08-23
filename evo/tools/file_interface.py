@@ -307,7 +307,7 @@ def read_TrackArray(bag_handle, topic, min_length):
         for i in range(0,len(msg.tracks)):
             ids.append((msg.tracks[i].id))
 
-    frame_id = msgs[1].tracks[0].odom.header.frame_id
+    frame_id = msgs[0].tracks[0].odom.header.frame_id
 
     unique_ids = unique(ids)
     list_tracks = []
