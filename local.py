@@ -1,8 +1,11 @@
 # -*- coding: UTF8 -*-
 from evo.core  import trajectory, sync, metrics
-from evo.tools import plot 
+from evo.tools import plot, file_interface
 import matplotlib.pyplot as plt
-import tikzplotlib
+# import tikzplotlib
+import rosbag
+from pylatex import Tabular 
+import sys # cli arguments in sys.argv
 
 def three_plots(ref, est, table, name):
     """Generates plots and statistics table into Report
@@ -57,8 +60,10 @@ def four_plots(ref, est, table, name):
 
     """
     ref, est = sync.associate_trajectories(ref, est)
-    est, rot, tra, s = trajectory.align_trajectory(est, 
-            ref, correct_scale=False, return_parameters=True)
+    # est, rot, tra, s = trajectory.align_trajectory(est, 
+            # ref, correct_scale=False, return_parameters=True)
+
+    est = trajectory.align_trajectory_origin(est, ref)
 
     data = (ref, est)
     ape_metric = metrics.APE(metrics.PoseRelation.translation_part)
@@ -76,16 +81,21 @@ def four_plots(ref, est, table, name):
     fig.legend(handles, labels, loc='lower center', ncol = 2)
     # axarr[0,0].legend(handles, labels, loc='lower center')
     # fig.legend(handles, labels, loc='lower center')
-    fig.subplots_adjust(wspace = 0.5)
-    fig.subplots_adjust(hspace = 0.3)
+    # fig.subplots_adjust(wspace = 0.5)
+    # fig.subplots_adjust(hspace = 0.3)
     # matplotlib2tikz.save("/home/kostas/results/latest/test.tex")
     # tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/"+name+".tex")
     # plt.savefig("/home/kostas/results/latest/better.pgf", format ='pgf')
     print(name)
         
-    plt.savefig("/home/kostas/results/latest/"+name+".png", format='png', bbox_inches='tight')
+    # plt.savefig("/home/kostas/results/latest/"+name+".png", dpi=600, format='png', bbox_inches='tight')
     plt.waitforbuttonpress(0)
     plt.close(fig)
+
+    if name=='slam':
+        name = name.upper()
+    else:
+        name = name.capitalize()
 
     table.add_row((name,
         round(ape_statistics["rmse"],3),
@@ -96,3 +106,26 @@ def four_plots(ref, est, table, name):
         round(ape_statistics["max"],3),
         round(ape_statistics["sse"],3),))
     table.add_hline
+
+bag = rosbag.Bag(sys.argv[1])
+mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
+odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
+slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
+fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
+loc_table = Tabular('l c c c c c c c')
+loc_table.add_hline()
+loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
+loc_table.add_hline() 
+loc_table.add_empty_row()
+
+loc_table = Tabular('l c c c c c c c')
+loc_table.add_hline()
+loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
+loc_table.add_hline() 
+loc_table.add_empty_row()
+
+four_plots(mocap ,odom, loc_table, 'odometry')
+four_plots(mocap ,slam, loc_table, 'slam')
+four_plots(mocap ,fuse, loc_table, 'fusion')
+loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
+

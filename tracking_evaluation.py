@@ -208,11 +208,11 @@ fuse_result = ape(
 )
 results.append(fuse_result)
 # file_interface.save_res_file("/home/kostas/results/res_files/fuse", fuse_result, True)
-convert_results_to_dataframe(results)
+# convert_results_to_dataframe(results)
 
-# local.four_plots(mocap ,odom, loc_table, 'odometry')
-# local.four_plots(mocap ,slam, loc_table, 'slam')
-# local.four_plots(mocap ,fuse, loc_table, 'fusion')
+local.four_plots(mocap ,odom, loc_table, 'odometry')
+local.four_plots(mocap ,slam, loc_table, 'slam')
+local.four_plots(mocap ,fuse, loc_table, 'fusion')
 loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
 
 loc_ref, loc_est = sync.associate_trajectories(mocap, fuse)
