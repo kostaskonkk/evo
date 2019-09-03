@@ -4,7 +4,7 @@ from __future__ import print_function
 from evo.core  import trajectory, sync, metrics
 from evo.tools import file_interface, plot
 from datmo.msg import Track, TrackArray
-import local
+# import local
 import rosbag
 from pylatex import Tabular 
 
@@ -67,6 +67,55 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 
     return ape_result
 
+    plot_collection.add_figure("raw", fig_raw)
+
+    # statistics plot
+    fig_stats = plt.figure(figsize=figsize)
+    include = df.loc["stats"].index.isin(SETTINGS.plot_statistics)
+    if any(include):
+        df.loc["stats"][include].plot(kind="barh", ax=fig_stats.gca(),
+                                      colormap=colormap, stacked=False)
+        plt.xlabel(metric_label)
+        plt.legend(frameon=True)
+        plot_collection.add_figure("stats", fig_stats)
+
+    # grid of distribution plots
+    raw_tidy = pd.melt(error_df, value_vars=list(error_df.columns.values),
+                       var_name="estimate", value_name=metric_label)
+    col_wrap = 2 if len(args.result_files) <= 2 else math.ceil(
+        len(args.result_files) / 2.0)
+    dist_grid = sns.FacetGrid(raw_tidy, col="estimate", col_wrap=col_wrap)
+    # TODO: see issue #98
+    import warnings
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        dist_grid.map(sns.distplot, metric_label)  # fits=stats.gamma
+    plot_collection.add_figure("histogram", dist_grid.fig)
+
+    # box plot
+    fig_box = plt.figure(figsize=figsize)
+    ax = sns.boxplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
+                     ax=fig_box.gca())
+    # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
+    plot_collection.add_figure("box_plot", fig_box)
+
+    # violin plot
+    fig_violin = plt.figure(figsize=figsize)
+    ax = sns.violinplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
+                        ax=fig_violin.gca())
+    # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
+    plot_collection.add_figure("violin_histogram", fig_violin)
+
+    # if args.plot:
+    plot_collection.show()
+    # if args.save_plot:
+        # logger.debug(SEP)
+        # plot_collection.export(args.save_plot,
+                               # confirm_overwrite=not args.no_warnings)
+    # if args.serialize_plot:
+        # logger.debug(SEP)
+        # plot_collection.serialize(args.serialize_plot,
+                                  # confirm_overwrite=not args.no_warnings)
 def associate_segments(traj, tracks):
     """Associate segments of an object trajectory as given by a DATMO system
     with the object´s reference trajectory
@@ -125,8 +174,6 @@ def associate_segments(traj, tracks):
 
     return segments, traj_ref, translation
 
-
-
 SMALL_SIZE = 12
 MEDIUM_SIZE = 14
 BIGGER_SIZE = 25
@@ -149,7 +196,8 @@ plt.rcParams['legend.facecolor'] = 'w'
 # print(plt.style.available)
 # print (mpl.rcParams['axes.edgecolor'])
 
-bag = rosbag.Bag(sys.argv[1])
+# bag = rosbag.Bag(sys.argv[1])
+bag = rosbag.Bag("/home/kostas/results/box_tracks.bag")
 
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
@@ -162,58 +210,6 @@ odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
 slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
 fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
 bag.close()
-
-loc_table = Tabular('l c c c c c c c')
-loc_table.add_hline()
-loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
-loc_table.add_hline() 
-loc_table.add_empty_row()
-
-results = []
-odom_result = ape(
-    traj_ref=mocap,
-    traj_est=odom,
-    pose_relation=metrics.PoseRelation.translation_part,
-    align=False,
-    correct_scale=False,
-    align_origin=True,
-    ref_name="mocap",
-    est_name="odom",
-)
-results.append(odom_result)
-# file_interface.save_res_file("/home/kostas/results/res_files/odom", odom_result, True)
-
-slam_result = ape(
-    traj_ref=mocap,
-    traj_est=slam,
-    pose_relation=metrics.PoseRelation.translation_part,
-    align=False,
-    correct_scale=False,
-    align_origin=True,
-    ref_name="mocap",
-    est_name="slam",
-)
-results.append(slam_result)
-# file_interface.save_res_file("/home/kostas/results/res_files/slam", slam_result, True)
-
-fuse_result = ape(
-    traj_ref=mocap,
-    traj_est=fuse,
-    pose_relation=metrics.PoseRelation.translation_part,
-    align=False,
-    correct_scale=False,
-    align_origin=True,
-    ref_name="mocap",
-    est_name="fuse",
-)
-results.append(fuse_result)
-# file_interface.save_res_file("/home/kostas/results/res_files/fuse", fuse_result, True)
-# convert_results_to_dataframe(results)
-
-local.four_plots(mocap ,odom, loc_table, 'odometry')
-local.four_plots(mocap ,slam, loc_table, 'slam')
-local.four_plots(mocap ,fuse, loc_table, 'fusion')
-loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
 
 loc_ref, loc_est = sync.associate_trajectories(mocap, fuse)
 loc_est, loc_rot, loc_tra, _ = trajectory.align_trajectory(loc_est, 
@@ -239,9 +235,9 @@ def four_plots(idx, b, traj_ref, segments):
 
     """
     # [ Plot ] x,y,xy,yaw 
-    fig, axarr = plt.subplots(2,2)
-    fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
-    fig.tight_layout()
+    fig, axarr = plt.subplots(2,2,figsize=(12,8))
+    # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
+    # fig.tight_layout()
     # print(len(b.timestamps),len(traj_ref.timestamps))
     plot.traj_fourplots(axarr, b,       '--', 'gray', 'original')
     plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
@@ -262,15 +258,16 @@ def four_plots(idx, b, traj_ref, segments):
     fig.legend(handles, labels, loc='lower center',ncol =
             len(segments) + 2)
     # tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/tracking" + str(idx+1) +".tex")
-    plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png" , bbox_inches='tight')
-    plt.waitforbuttonpress(0)
-    plt.close(fig)
+    plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png",
+            dpi = 100, bbox_inches='tight')
+    # plt.waitforbuttonpress(0)
+    # plt.close(fig)
 
-# for idx,b in enumerate(bot):
+for idx,b in enumerate(bot):
 
-    # print("Calculations for track model", idx +1,"based on the mean of the cluster")
-    # segments, traj_ref, mean_translation = associate_segments(b,mean)
-    # # four_plots(idx, b, traj_ref, segments) 
+    print("Calculations for track model", idx +1,"based on the mean of the cluster")
+    segments, traj_ref, mean_translation = associate_segments(b,mean)
+    four_plots(idx, b, traj_ref, segments) 
 
     # whole =trajectory.merge(segments)
     # mean_result = ape(

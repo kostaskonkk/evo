@@ -12,7 +12,6 @@ use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
 colormap = SETTINGS.plot_multi_cmap if use_cmap else None
 # linestyles = ["-o" for x in args.result_files
               # ] if args.plot_markers else None
-
 df_rect = pd.read_csv("/home/kostas/results/exec_time/rect_fitting.csv")
 df_whole =pd.read_csv("/home/kostas/results/exec_time/whole.csv")
 df_clust =pd.read_csv("/home/kostas/results/exec_time/clustering.csv")
@@ -63,7 +62,6 @@ fig_stats = plt.figure()
           # colormap=colormap, stacked=False)
 # df_rect.plot.scatter(x='num_points',
                 # y='dur_nano',s = 2)
-                
 # plt.savefig("/home/kostas/report/figures/time_statistics.png", dpi = 300, format='png', bbox_inches='tight')
 # plt.waitforbuttonpress(0)
 

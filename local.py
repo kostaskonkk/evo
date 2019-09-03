@@ -6,6 +6,61 @@ import matplotlib.pyplot as plt
 import rosbag
 from pylatex import Tabular 
 import sys # cli arguments in sys.argv
+print(plt.style.available)
+plt.style.use('seaborn-whitegrid')
+# plt.style.use('seaborn-paper')
+# plt.rcParams['grid.color'] = 'gray'
+plt.rcParams['grid.alpha'] = '0.5'
+plt.rcParams['axes.edgecolor'] = 'k'
+# plt.rcParams['axes.facecolor'] = 'w'
+plt.rcParams['legend.edgecolor'] = 'k'
+plt.rcParams['legend.facecolor'] = 'w'
+
+bag = rosbag.Bag(sys.argv[1])
+
+bot= []
+mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
+odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
+slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
+fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
+bag.close()
+
+loc_table = Tabular('l c c c c c c c')
+loc_table.add_hline()
+plt.rcParams['xtick.direction'] = 'in'
+plt.rcParams['ytick.direction'] = 'in'
+# plt.rcParams['grid.color'] = 'gray'
+# plt.rcParams['grid.alpha'] = '0.5'
+plt.rcParams['axes.edgecolor'] = 'k'
+# plt.rcParams['axes.facecolor'] = 'w'
+plt.rcParams['legend.edgecolor'] = 'k'
+plt.rcParams['legend.facecolor'] = 'w'
+
+# bag = rosbag.Bag(sys.argv[1])
+bag = rosbag.Bag("/home/kostas/results/box_tracks.bag")
+
+bot= []
+mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
+odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
+slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
+fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
+bag.close()
+
+loc_table = Tabular('l c c c c c c c')
+loc_table.add_hline()
+loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
+
+bag = rosbag.Bag(sys.argv[1])
+mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
+odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
+slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
+fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
+
+loc_table = Tabular('l c c c c c c c')
+loc_table.add_hline()
+loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
+loc_table.add_hline() 
+loc_table.add_empty_row()
 
 def three_plots(ref, est, table, name):
     """Generates plots and statistics table into Report
@@ -72,25 +127,23 @@ def four_plots(ref, est, table, name):
 
 
     # Plot x, y, xy,yaw 
-    fig, axarr = plt.subplots(2,2)
-    # fig.suptitle(name, fontsize=30)
-    plot.traj_fourplots(axarr, est,       '-', 'red',
+    style ='-'
+    if name=='slam':
+        style = 'o'
+
+    fig, axarr = plt.subplots(2,2,figsize=(12,8))
+    plot.traj_fourplots(axarr, est, style, 'red',
             'estimation',1,ref.timestamps[0])
-    plot.traj_fourplots(axarr, ref,       '-', 'gray', 'original')
+    plot.traj_fourplots(axarr, ref, '-', 'gray', 'original')
     handles, labels = axarr[0,0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center', ncol = 2)
-    # axarr[0,0].legend(handles, labels, loc='lower center')
-    # fig.legend(handles, labels, loc='lower center')
-    # fig.subplots_adjust(wspace = 0.5)
-    # fig.subplots_adjust(hspace = 0.3)
-    # matplotlib2tikz.save("/home/kostas/results/latest/test.tex")
-    # tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/"+name+".tex")
-    # plt.savefig("/home/kostas/results/latest/better.pgf", format ='pgf')
-    print(name)
-        
-    # plt.savefig("/home/kostas/results/latest/"+name+".png", dpi=600, format='png', bbox_inches='tight')
-    plt.waitforbuttonpress(0)
-    plt.close(fig)
+    fig.legend(handles, labels, loc='lower center', ncol = 2,
+            bbox_to_anchor=(0.5, 0))
+    plt.tight_layout()
+     
+    plt.savefig("/home/kostas/results/test.png", dpi=100, format='png' )
+    # plt.savefig("/home/kostas/results/latest/"+name+".png", dpi=600, format='png',  bbox_inches='tight' )
+    # plt.waitforbuttonpress(0)
+    # plt.close(fig)
 
     if name=='slam':
         name = name.upper()
@@ -107,25 +160,48 @@ def four_plots(ref, est, table, name):
         round(ape_statistics["sse"],3),))
     table.add_hline
 
-bag = rosbag.Bag(sys.argv[1])
-mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
-odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
-slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
-fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
-loc_table = Tabular('l c c c c c c c')
-loc_table.add_hline()
-loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
-loc_table.add_hline() 
-loc_table.add_empty_row()
-
-loc_table = Tabular('l c c c c c c c')
-loc_table.add_hline()
-loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
-loc_table.add_hline() 
-loc_table.add_empty_row()
-
-four_plots(mocap ,odom, loc_table, 'odometry')
+# four_plots(mocap ,odom, loc_table, 'odometry')
 four_plots(mocap ,slam, loc_table, 'slam')
-four_plots(mocap ,fuse, loc_table, 'fusion')
+# four_plots(mocap ,fuse, loc_table, 'fusion')
 loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
 
+# results = []
+# odom_result = ape(
+    # traj_ref=mocap,
+    # traj_est=odom,
+    # pose_relation=metrics.PoseRelation.translation_part,
+    # align=False,
+    # correct_scale=False,
+    # align_origin=True,
+    # ref_name="mocap",
+    # est_name="odom",
+# )
+# results.append(odom_result)
+# file_interface.save_res_file("/home/kostas/results/res_files/odom", odom_result, True)
+
+# slam_result = ape(
+    # traj_ref=mocap,
+    # traj_est=slam,
+    # pose_relation=metrics.PoseRelation.translation_part,
+    # align=False,
+    # correct_scale=False,
+    # align_origin=True,
+    # ref_name="mocap",
+    # est_name="slam",
+# )
+# results.append(slam_result)
+# file_interface.save_res_file("/home/kostas/results/res_files/slam", slam_result, True)
+
+# fuse_result = ape(
+    # traj_ref=mocap,
+    # traj_est=fuse,
+    # pose_relation=metrics.PoseRelation.translation_part,
+    # align=False,
+    # correct_scale=False,
+    # align_origin=True,
+    # ref_name="mocap",
+    # est_name="fuse",
+# )
+# results.append(fuse_result)
+# file_interface.save_res_file("/home/kostas/results/res_files/fuse", fuse_result, True)
+# convert_results_to_dataframe(results)

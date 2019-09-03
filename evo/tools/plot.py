@@ -420,18 +420,18 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$t$ (s)"
+        xlabel = "$Time$ [s]"
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
-    ylabels = ["$x$ (m)", "$y$ (m)"]
+    ylabels = ["$x$ [m]", "$y$ [m]"]
     for i in range(0, 2):
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     axarr[1].set_xlabel(xlabel)
-    if label:
-        axarr[0].legend(frameon=True)
+    # if label:
+        # axarr[0].legend(frameon=True)
 
 def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -493,12 +493,12 @@ def traj_fourplots(axarr, traj, style='-', color='black', label="", alpha=1.0,
         xlabel = "index"
     ylabels = ["x [m]", "y [m]"]
     for i in range(2):
-        axarr[0,i].plot(x, traj.positions_xyz[:, i], style, color=color,
+        axarr[0,i].plot(x, traj.positions_xyz[:, i], style,markersize = 1, color=color,
                       label=label, alpha=alpha)
         axarr[0,i].set_ylabel(ylabels[i])
         axarr[0,i].set_xlabel(xlabel)
-    axarr[1,0].plot(traj.positions_xyz[:, 0], traj.positions_xyz[:, 1], style,
-            color=color, alpha=alpha)
+    axarr[1,0].plot(traj.positions_xyz[:, 0], traj.positions_xyz[:, 1],
+            style,markersize = 1, color=color, alpha=alpha)
     axarr[1,0].set(xlabel=ylabels[0], ylabel=ylabels[1])
     traj_yaw(axarr[1,1],traj, style, color,
             alpha=alpha, start_timestamp=start_timestamp)
@@ -684,7 +684,7 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     # wrapped = np.rad2deg(traj.orientations_euler[:,2])
     # unwrapped = np.unwrap(wrapped)
     unwrapped = np.unwrap(traj.get_orientations_euler()[:,2])
-    ax.plot(x, unwrapped, style,
+    ax.plot(x, unwrapped, style, markersize =1,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabels[0])
     ax.set_xlabel(xlabel)
