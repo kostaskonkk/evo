@@ -56,12 +56,15 @@ def parser():
     main_parser.add_argument("--use_rel_time",
                              help="use relative timestamps if available",
                              action="store_true")
+
     main_parser.add_argument("--use_filenames",
                              help="use the filenames to label the data",
                              action="store_true")
     main_parser.add_argument("--ignore_title",
                              help="don't try to find a common metric title",
                              action="store_true")
+    output_opts.add_argument("-l", "--latex_plot", help="save plots for latex"
+            , action="store_true")
     output_opts.add_argument("-p", "--plot", help="show plot window",
                              action="store_true")
     output_opts.add_argument("--plot_markers", help="plot with circle markers",
@@ -335,6 +338,118 @@ def run(args):
             plot_collection.serialize(args.serialize_plot,
                                       confirm_overwrite=not args.no_warnings)
 
+    if args.latex_plot:
+        # check if data has NaN "holes" due to different indices
+        inconsistent = error_df.isnull().values.any()
+        # if inconsistent and common_index != "timestamps" and not args.no_warnings:
+            # logger.debug(SEP)
+            # logger.warning("Data lengths/indices are not consistent, "
+                           # "raw value plot might not be correctly aligned")
+
+        from evo.tools import plot
+        import matplotlib.pyplot as plt
+        import seaborn as sns
+        import math
+
+        # use default plot settings
+        # figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
+        use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
+        colormap = SETTINGS.plot_multi_cmap if use_cmap else None
+        linestyles = ["-o" for x in args.result_files
+                      ] if args.plot_markers else None
+
+        # labels according to first dataset
+        if "xlabel" in df.loc["info"].index and not df.loc[
+                "info", "xlabel"].isnull().values.any():
+            index_label = df.loc["info", "xlabel"][0]
+        else:
+            index_label = "$t$ (s)" if common_index else "index"
+        metric_label = df.loc["info", "label"][0]
+
+        plt.style.use('seaborn-whitegrid')
+        lfig, axes = plt.subplots(2, 2, figsize=(6.125,4))
+
+        # plot_collection = plot.PlotCollection(first_title)
+        # raw value plot
+        # fig_raw = plt.figure(figsize=figsize)
+        # handle NaNs from concat() above
+        # error_df.interpolate(method="index").plot(
+            # ax=fig_raw.gca(), colormap=colormap, style=linestyles,
+            # title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
+        error_df.interpolate(method="index").plot(
+            ax=axes[0,0], colormap=colormap, style=linestyles,
+            title="Absolute Position Error",
+            alpha=SETTINGS.plot_trajectory_alpha, legend = False)
+        plt.xlabel(index_label)
+        plt.ylabel(metric_label)
+        # plt.legend(frameon=True)
+        # plot_collection.add_figure("raw", fig_raw)
+        name = "test"
+        # plt.savefig("/home/kostas/report/figures/appendix_stats/"+name+"_raw.png",
+                # dpi = 300, format='png', bbox_inches='tight')
+
+        # statistics plot
+        if SETTINGS.plot_statistics:
+            # fig_stats = plt.figure(figsize=figsize)
+            include = df.loc["stats"].index.isin(SETTINGS.plot_statistics)
+            if any(include):
+                df.loc["stats"][include].plot(kind="barh", ax=axes[0,1],
+                                              colormap=colormap, stacked=False,
+                                              legend = False)
+                plt.xlabel(metric_label)
+                # plt.legend(frameon=True)
+                # df.loc["stats"][include].plot(kind="barh", ax=axarr[0,1],
+                                              # colormap=colormap, stacked=False)
+                # plot_collection.add_figure("stats", fig_stats)
+
+        # grid of distribution plots
+        raw_tidy = pd.melt(error_df, value_vars=list(error_df.columns.values),
+                           var_name="estimate", value_name=metric_label)
+        col_wrap = 2 if len(args.result_files) <= 2 else math.ceil(
+            len(args.result_files) / 2.0)
+        # axes[1,0] = sns.FacetGrid(raw_tidy, col="estimate", col_wrap=col_wrap)
+        # # TODO: see issue #98
+        # import warnings
+        # with warnings.catch_warnings():
+            # warnings.simplefilter("ignore")
+            # dist_grid.map(sns.distplot, metric_label)  # fits=stats.gamma
+
+        # plot_collection.add_figure("histogram", dist_grid.fig)
+
+        # box plot
+        # fig_box = plt.figure(figsize=figsize)
+        # ax = sns.boxplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
+                         # ax=fig_box.gca())
+        axes[1,1] = sns.boxplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label])
+
+        # plt.waitforbuttonpress()
+
+        plt.savefig("/home/kostas/results/test.png",
+                dpi = 300, format='png', bbox_inches='tight')
+        # plt.savefig("/home/kostas/report/figures/appendix_stats/test.png",
+                # dpi = 300, format='png', bbox_inches='tight')
+        # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
+        # plt.savefig("/home/kostas/report/figures/appendix_stats/"+name+"_boxes.png",
+                # dpi = 300, format='png', bbox_inches='tight')
+        # plot_collection.add_figure("box_plot", fig_box)
+
+        # violin plot
+        # fig_violin = plt.figure(figsize=figsize)
+        # ax = sns.violinplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
+                            # ax=fig_violin.gca())
+        # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
+        # plot_collection.add_figure("violin_histogram", fig_violin)
+
+        if args.plot:
+            plot_collection.show()
+        if args.save_plot:
+            # logger.debug(SEP)
+            plot_collection.export(args.save_plot,
+                                   confirm_overwrite=not args.no_warnings)
+        if args.serialize_plot:
+            # logger.debug(SEP)
+            plot_collection.serialize(args.serialize_plot,
+                                      confirm_overwrite=not args.no_warnings)
 
 if __name__ == '__main__':
 
