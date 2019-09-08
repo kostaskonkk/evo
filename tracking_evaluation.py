@@ -197,14 +197,15 @@ plt.rcParams['legend.facecolor'] = 'w'
 # print (mpl.rcParams['axes.edgecolor'])
 
 # bag = rosbag.Bag(sys.argv[1])
-bag = rosbag.Bag("/home/kostas/results/box_tracks.bag")
+# bag = rosbag.Bag("/home/kostas/results/box_tracks.bag")
+bag = rosbag.Bag("/home/kostas/results/box_tracks_test.bag")
 
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
 mean = file_interface.read_TrackArray(bag, '/tracks', 3)
 filtered_tracks = file_interface.read_TrackArray(bag, '/filtered_tracks', 3)
-# box_tracks = file_interface.read_TrackArray(bag, '/box_tracks', 3)
+box_tracks = file_interface.read_TrackArray(bag, '/box_tracks', 3)
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
 odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
 slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
@@ -260,14 +261,58 @@ def four_plots(idx, b, traj_ref, segments):
     # tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/tracking" + str(idx+1) +".tex")
     plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png",
             dpi = 100, bbox_inches='tight')
-    # plt.waitforbuttonpress(0)
-    # plt.close(fig)
+    plt.waitforbuttonpress(0)
+    plt.close(fig)
+
+def plot_dimensions(segments, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plot a path/trajectory based on xy coordinates into an axis
+    :param axarr: an axis array (for Length, Width)
+                  e.g. from 'fig, axarr = plt.subplots(2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    """
+    # [ Plot ] x,y,xy,yaw 
+    fig, axarr = plt.subplots(2)
+
+    if len(axarr) != 2:
+        raise PlotException("expected an axis array with 2 subplots - got " +
+                            str(len(axarr)))
+    ylabels = ["$Lenth$ [m]", "$Width$ [m]"]
+
+    for i, segment in enumerate(segments):
+
+        if isinstance(segment, trajectory.PoseTrajectory3D):
+            print("it came here")
+            x = segment.timestamps - (segment.timestamps[0]
+                                   if start_timestamp is None else start_timestamp)
+            xlabel = "$Time$ [s]"
+        else:
+            x = range(0, len(segments.positions_xyz))
+            xlabel = "index"
+
+        axarr[0].plot(x, segment.length, style, color=color,
+                      label=label, alpha=alpha)
+        axarr[1].plot(x, segment.width, style, color=color,
+                      label=label, alpha=alpha)
+    # axarr[i].set_ylabel(ylabels[i])
+    # axarr[1].set_xlabel(xlabel)
+
+    plt.waitforbuttonpress(0)
+    plt.close(fig)
+
+    # if label:
+        # axarr[0].legend(frameon=True)
 
 for idx,b in enumerate(bot):
 
-    print("Calculations for track model", idx +1,"based on the mean of the cluster")
-    segments, traj_ref, mean_translation = associate_segments(b,mean)
-    four_plots(idx, b, traj_ref, segments) 
+    # print("Calculations for track model", idx +1,"based on the mean of the cluster")
+    # segments, traj_ref, mean_translation = associate_segments(b,mean)
+    # four_plots(idx, b, traj_ref, segments) 
 
     # whole =trajectory.merge(segments)
     # mean_result = ape(
@@ -285,7 +330,7 @@ for idx,b in enumerate(bot):
 
     # print("Calculations for track model", idx +1,"based on the l_shape")
     # segments, traj_ref, lshape_translation = associate_segments(b,filtered_tracks)
-    # # four_plots(idx, b, traj_ref, segments) 
+    # four_plots(idx, b, traj_ref, segments) 
 
     # whole =trajectory.merge(segments)
     # mean_result = ape(
@@ -301,9 +346,10 @@ for idx,b in enumerate(bot):
     # file_interface.save_res_file("/home/kostas/results/res_files/l-shape_track" +
             # str(idx+1), mean_result, False)
 
-    # print("Calculations for track model", idx +1,"based on the center of the bounding box")
-    # segments, traj_ref, center_translation = associate_segments(b,box_tracks)
-    # # four_plots(idx, b, traj_ref, segments) 
+    print("Calculations for track model", idx +1,"based on the center of the bounding box")
+    segments, traj_ref, center_translation = associate_segments(b,box_tracks)
+    four_plots(idx, b, traj_ref, segments) 
+    # plot_dimensions(segments)
 
     # whole =trajectory.merge(segments)
     # center_result = ape(

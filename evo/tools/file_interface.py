@@ -314,6 +314,7 @@ def read_TrackArray(bag_handle, topic, min_length):
     for j in unique_ids:
         stamps, xyz, quat = [], [], []
         linear, angular = [], []
+        length, width = [], []
         for msg in msgs:
             for i in range(0,len(msg.tracks)):
                     if msg.tracks[i].id == j:
@@ -324,10 +325,13 @@ def read_TrackArray(bag_handle, topic, min_length):
                         quat.append(quat_t)
                         linear_t, angular_t = get_twist(msg.tracks[i].odom)
                         linear.append(linear_t)
+                        # length.append(msg.tracks[i].length)
+                        # width.append(msg.tracks[i].width)
                         # angular.append(angular_t)
         if len(stamps)>min_length:
             list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
-                meta={"frame_id": frame_id},linear_vel=linear)) 
+                meta={"frame_id": frame_id},linear_vel=linear,length =
+                length,width = width)) 
     return list_tracks 
 
 def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):

@@ -235,7 +235,8 @@ class PoseTrajectory3D(PosePath3D, object):
     """
 
     def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
-                 timestamps=None, poses_se3=None, meta=None, linear_vel=None):
+                 timestamps=None, poses_se3=None, meta=None, linear_vel=None,
+                 length=None, width=None):
         """
         :param timestamps: optional nx1 list of timestamps
         :param linear_vel: optional nx3 list of x,y,z velocities
@@ -247,6 +248,9 @@ class PoseTrajectory3D(PosePath3D, object):
             raise TrajectoryException("no timestamps provided")
         self.timestamps = np.array(timestamps)
         self.linear_vel = np.array(linear_vel)
+        # self.length = length
+        # self.length = np.array(length)
+        # self.width = width
 
     def __str__(self):
         s = super(PoseTrajectory3D, self).__str__()
