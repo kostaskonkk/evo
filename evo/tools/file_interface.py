@@ -285,7 +285,7 @@ def unique(list1):
     unique_list = []
   
     for x in list1: 
-        if x not in unique_list: 
+        if x not in unique_list and not x ==0: 
             unique_list.append(x) 
     return unique_list
 
@@ -307,9 +307,10 @@ def read_TrackArray(bag_handle, topic, min_length):
         for i in range(0,len(msg.tracks)):
             ids.append((msg.tracks[i].id))
 
-    frame_id = msgs[0].tracks[0].odom.header.frame_id
-
+    # frame_id = msgs[0].tracks[0].odom.header.frame_id
+    frame_id = "map"
     unique_ids = unique(ids)
+    print(unique_ids)
     list_tracks = []
     for j in unique_ids:
         stamps, xyz, quat = [], [], []
@@ -325,8 +326,9 @@ def read_TrackArray(bag_handle, topic, min_length):
                         quat.append(quat_t)
                         linear_t, angular_t = get_twist(msg.tracks[i].odom)
                         linear.append(linear_t)
-                        # length.append(msg.tracks[i].length)
-                        # width.append(msg.tracks[i].width)
+                        print(msg.tracks[i].length)
+                        length.append(msg.tracks[i].length)
+                        width.append(msg.tracks[i].width)
                         # angular.append(angular_t)
         if len(stamps)>min_length:
             list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\

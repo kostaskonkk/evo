@@ -15,7 +15,30 @@ import matplotlib.figure as fg
 import numpy as np
 from cycler import cycler
 import sys # cli arguments in sys.argv
-import tikzplotlib
+# import tikzplotlib
+import tracking
+
+SMALL_SIZE  = 12
+MEDIUM_SIZE = 14
+BIGGER_SIZE = 25
+plt.rc('font',  size=SMALL_SIZE)          # controls default text sizes
+plt.rc('axes',  titlesize=BIGGER_SIZE)    # fontsize of the axes title
+plt.rc('axes',  labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
+plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
+plt.rc('legend',fontsize=SMALL_SIZE)      # legend fontsize
+plt.rc('figure',titlesize=BIGGER_SIZE)    # fontsize of the figure title
+# print(plt.rcParams.keys())
+plt.rcParams['xtick.direction'] = 'in'
+plt.rcParams['ytick.direction'] = 'in'
+plt.rcParams['grid.color'] = 'gray'
+plt.rcParams['grid.alpha'] = '0.5'
+plt.rcParams['axes.edgecolor'] = 'k'
+plt.rcParams['axes.facecolor'] = 'w'
+plt.rcParams['legend.edgecolor'] = 'k'
+plt.rcParams['legend.facecolor'] = 'w'
+# print(plt.style.available)
+# print (mpl.rcParams['axes.edgecolor'])
 
 # Copied from main_ape.py
 def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
@@ -116,105 +139,29 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         # logger.debug(SEP)
         # plot_collection.serialize(args.serialize_plot,
                                   # confirm_overwrite=not args.no_warnings)
-def associate_segments(traj, tracks):
-    """Associate segments of an object trajectory as given by a DATMO system
-    with the object´s reference trajectory
-
-    :traj: Reference trajectory
-    :tracks: All the tracks that got produced by the DATMO system
-    :localization: The trajectory of the self-localization
-    :returns: segments: The tracks that match to the reference trajectory
-    :returns: traj_ref: The part of the reference trajectory that matches with
-    tracks
-
-    """
-    matches = []
-    for tr in tracks: # Find the best matching tracks to the object trajectory
-
-        traj_ref, traj_est = sync.associate_trajectories(traj, tr, max_diff=0.01)
-        traj_est, rot, tra, _ = trajectory.align_trajectory(
-                traj_est, traj_ref, correct_scale=False, return_parameters=True)
-        
-        # print("calculating APE for track of length", len(tr.timestamps))
-        data = (traj_ref, traj_est)
-        ape_metric = metrics.APE(metrics.PoseRelation.translation_part)
-        ape_metric.process_data(data)
-        ape_statistics = ape_metric.get_all_statistics()
-        
-        tra_dif = (tra - loc_tra)
-        # print(tra_dif)
-        abs_tra_dif = abs((tra - loc_tra)[0]) + abs((tra - loc_tra)[1])
-        translation = abs(tra[0]) + abs(tra[1])
-        rot_dif = (rot - loc_rot)
-        abs_rot_dif = 0
-        for i in range(0,len(rot_dif)): abs_rot_dif += abs(rot_dif[i][0])+ abs(rot_dif[i][1]) +\
-                abs(rot_dif[i][2])
-        mismatch = abs_tra_dif + abs_rot_dif
-        tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)']]
-        matches.append(tuple)
-
-    matches.sort(key = lambda x: x[2])
-    
-    segments = [] #The parts of the trajectory are added to this list
-    for m in matches:
-        if m[1]<0.8: # if the mismatch is smaller than 1
-           # print(m[0].get_statistics()['v_avg (m/s)'])
-           segments.append(m[0]) 
-           # print(m[0].get_infos()['t_start (s)'],m[0].get_infos()["path length (m)"])
-           # print(m[0].get_statistics()['v_avg (m/s)'])
-    if len(segments)==0:
-        print("No matching segments")
-
-    whole =trajectory.merge(segments)
-
-    traj_ref, traj_est = sync.associate_trajectories(traj, whole, max_diff=0.01)
-    traj_est, rot, tra, _ = trajectory.align_trajectory(
-            traj_est, traj_ref, correct_scale=False, return_parameters=True)
-    # print(traj_est.get_infos())
-
-    return segments, traj_ref, translation
-
-SMALL_SIZE = 12
-MEDIUM_SIZE = 14
-BIGGER_SIZE = 25
-plt.rc('font', size=SMALL_SIZE)          # controls default text sizes
-plt.rc('axes', titlesize=BIGGER_SIZE)    # fontsize of the axes title
-plt.rc('axes', labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-plt.rc('xtick', labelsize=MEDIUM_SIZE)   # fontsize of the tick labels
-plt.rc('ytick', labelsize=MEDIUM_SIZE)   # fontsize of the tick labels
-plt.rc('legend', fontsize=SMALL_SIZE)    # legend fontsize
-plt.rc('figure', titlesize=BIGGER_SIZE)  # fontsize of the figure title
-# print(plt.rcParams.keys())
-plt.rcParams['xtick.direction'] = 'in'
-plt.rcParams['ytick.direction'] = 'in'
-plt.rcParams['grid.color'] = 'gray'
-plt.rcParams['grid.alpha'] = '0.5'
-plt.rcParams['axes.edgecolor'] = 'k'
-plt.rcParams['axes.facecolor'] = 'w'
-plt.rcParams['legend.edgecolor'] = 'k'
-plt.rcParams['legend.facecolor'] = 'w'
-# print(plt.style.available)
-# print (mpl.rcParams['axes.edgecolor'])
+                                                                                                                                
 
 # bag = rosbag.Bag(sys.argv[1])
-# bag = rosbag.Bag("/home/kostas/results/box_tracks.bag")
-bag = rosbag.Bag("/home/kostas/results/box_tracks_test.bag")
+bag = rosbag.Bag("/home/kostas/results/box_tracks.bag")
+# bag = rosbag.Bag("/home/kostas/results/sim.bag")
+# bag = rosbag.Bag("/home/kostas/results/box_tracks_test.bag")
 
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
-bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
+# bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
 mean = file_interface.read_TrackArray(bag, '/tracks', 3)
 filtered_tracks = file_interface.read_TrackArray(bag, '/filtered_tracks', 3)
 box_tracks = file_interface.read_TrackArray(bag, '/box_tracks', 3)
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
-odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
-slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
-fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
+# odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
+# slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
+# fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
 bag.close()
 
-loc_ref, loc_est = sync.associate_trajectories(mocap, fuse)
-loc_est, loc_rot, loc_tra, _ = trajectory.align_trajectory(loc_est, 
-        loc_ref, correct_scale=False, return_parameters=True)
+# loc_ref, loc_est = sync.associate_trajectories(mocap, fuse)
+# loc_est, loc_rot, loc_tra, _ = trajectory.align_trajectory(loc_est, 
+        # loc_ref, correct_scale=False, return_parameters=True)
+# print(loc_tra)
 
 table = Tabular('l c c c c c c c')
 table.add_hline() 
@@ -224,95 +171,12 @@ table.add_empty_row()
 # for tr in filtered_tracks:
     # print(tr.linear_vel)
 
-# plot_collection = plot.PlotCollection("System Evaluation")
-def four_plots(idx, b, traj_ref, segments):
-    """Generates four plots into Report
-
-    :ref: PoseTrajectory3D object that is used as reference
-    :est: PoseTrajectory3D object that is plotted against reference
-    :table: Tabular object that is generated by Tabular('c c')
-    :name: String that is used as name for file and table entry
-    :returns: translation of reference against estimation
-
-    """
-    # [ Plot ] x,y,xy,yaw 
-    fig, axarr = plt.subplots(2,2,figsize=(12,8))
-    # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
-    # fig.tight_layout()
-    # print(len(b.timestamps),len(traj_ref.timestamps))
-    plot.traj_fourplots(axarr, b,       '--', 'gray', 'original')
-    plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
-    axarr[0,1].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-           cycler('lw', [1, 2, 3, 4]))
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
-    style='-'
-    for i, segment in enumerate(segments):
-        c=next(color)
-        label = "segment" + str(i+ 1)
-        plot.traj_xy(axarr[0,0:2], segment, '-', c, label,1 ,b.timestamps[0])
-        # print("seg0: ",len(segment.positions_xyz[:,0]),"seg1:"
-                # ,len(segment.positions_xyz[:,1]))
-        axarr[1,0].plot(segment.positions_xyz[:, 0],
-                segment.positions_xyz[:,1])
-        # axarr[1,0].plot(segment.positions_xyz[:, 0], segment.positions_xyz[:, 1], '-', c, 1)
-    handles, labels = axarr[0,0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center',ncol =
-            len(segments) + 2)
-    # tikzplotlib.save(show_info = True, figure = fig,filepath = "/home/kostas/results/latest/tracking" + str(idx+1) +".tex")
-    plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png",
-            dpi = 100, bbox_inches='tight')
-    plt.waitforbuttonpress(0)
-    plt.close(fig)
-
-def plot_dimensions(segments, style='-', color='black', label="", alpha=1.0,
-        start_timestamp=None):
-    """
-    plot a path/trajectory based on xy coordinates into an axis
-    :param axarr: an axis array (for Length, Width)
-                  e.g. from 'fig, axarr = plt.subplots(2)'
-    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
-    :param style: matplotlib line style
-    :param color: matplotlib color
-    :param label: label (for legend)
-    :param alpha: alpha value for transparency
-    """
-    # [ Plot ] x,y,xy,yaw 
-    fig, axarr = plt.subplots(2)
-
-    if len(axarr) != 2:
-        raise PlotException("expected an axis array with 2 subplots - got " +
-                            str(len(axarr)))
-    ylabels = ["$Lenth$ [m]", "$Width$ [m]"]
-
-    for i, segment in enumerate(segments):
-
-        if isinstance(segment, trajectory.PoseTrajectory3D):
-            print("it came here")
-            x = segment.timestamps - (segment.timestamps[0]
-                                   if start_timestamp is None else start_timestamp)
-            xlabel = "$Time$ [s]"
-        else:
-            x = range(0, len(segments.positions_xyz))
-            xlabel = "index"
-
-        axarr[0].plot(x, segment.length, style, color=color,
-                      label=label, alpha=alpha)
-        axarr[1].plot(x, segment.width, style, color=color,
-                      label=label, alpha=alpha)
-    # axarr[i].set_ylabel(ylabels[i])
-    # axarr[1].set_xlabel(xlabel)
-
-    plt.waitforbuttonpress(0)
-    plt.close(fig)
-
-    # if label:
-        # axarr[0].legend(frameon=True)
-
 for idx,b in enumerate(bot):
 
     # print("Calculations for track model", idx +1,"based on the mean of the cluster")
-    # segments, traj_ref, mean_translation = associate_segments(b,mean)
+    # segments, traj_ref = tracking.associate_segments_common_frame(b,mean)
     # four_plots(idx, b, traj_ref, segments) 
+    # stats_to_latex_table(traj_ref, segments, table)
 
     # whole =trajectory.merge(segments)
     # mean_result = ape(
@@ -329,8 +193,9 @@ for idx,b in enumerate(bot):
             # str(idx+1), mean_result, False)
 
     # print("Calculations for track model", idx +1,"based on the l_shape")
-    # segments, traj_ref, lshape_translation = associate_segments(b,filtered_tracks)
+    # segments, traj_ref = tracking.associate_segments_common_frame(b,filtered_tracks)
     # four_plots(idx, b, traj_ref, segments) 
+    # stats_to_latex_table(traj_ref, segments, table)
 
     # whole =trajectory.merge(segments)
     # mean_result = ape(
@@ -347,9 +212,10 @@ for idx,b in enumerate(bot):
             # str(idx+1), mean_result, False)
 
     print("Calculations for track model", idx +1,"based on the center of the bounding box")
-    segments, traj_ref, center_translation = associate_segments(b,box_tracks)
-    four_plots(idx, b, traj_ref, segments) 
-    # plot_dimensions(segments)
+    segments, traj_ref = tracking.associate_segments_common_frame(b,box_tracks)
+    tracking.four_plots(idx, b, traj_ref, segments) 
+    tracking.stats_to_latex_table(traj_ref, segments,idx, table)
+    tracking.plot_dimensions(segments, b, start_timestamp = b.timestamps[0])
 
     # whole =trajectory.merge(segments)
     # center_result = ape(

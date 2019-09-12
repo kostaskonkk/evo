@@ -249,8 +249,8 @@ class PoseTrajectory3D(PosePath3D, object):
         self.timestamps = np.array(timestamps)
         self.linear_vel = np.array(linear_vel)
         # self.length = length
-        # self.length = np.array(length)
-        # self.width = width
+        self.width = width
+        self.length = length
 
     def __str__(self):
         s = super(PoseTrajectory3D, self).__str__()
