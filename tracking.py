@@ -41,14 +41,14 @@ def associate_segments(traj, tracks):
         ape_statistics = ape_metric.get_all_statistics()
         
         tra_dif = (tra - loc_tra)
-        print(tra)
+        # print(tra)
         abs_tra_dif = abs((tra - loc_tra)[0]) + abs((tra - loc_tra)[1])
         translation = abs(tra[0]) + abs(tra[1])
         rot_dif = (rot - loc_rot)
         abs_rot_dif = 0
         for i in range(0,len(rot_dif)): abs_rot_dif += abs(rot_dif[i][0])+ abs(rot_dif[i][1]) +\
                 abs(rot_dif[i][2])
-        print(abs_tra_dif,abs_rot_dif)
+        # print(abs_tra_dif,abs_rot_dif)
         mismatch = abs_tra_dif + abs_rot_dif
         tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)']]
         matches.append(tuple)
@@ -57,7 +57,7 @@ def associate_segments(traj, tracks):
     
     segments = [] #The parts of the trajectory are added to this list
     for m in matches:
-        print(m[1])
+        # print(m[1])
         if m[1]<0.1: # if the mismatch is smaller than 1
            # print(m[0].get_statistics()['v_avg (m/s)'])
            segments.append(m[0]) 
@@ -71,7 +71,7 @@ def associate_segments(traj, tracks):
     traj_ref, traj_est = sync.associate_trajectories(traj, whole, max_diff=0.01)
     traj_est, rot, tra, _ = trajectory.align_trajectory(
             traj_est, traj_ref, correct_scale=False, return_parameters=True)
-    print(traj_est.get_infos())
+    # print(traj_est.get_infos())
 
     return segments, traj_ref, translation
 
@@ -101,7 +101,7 @@ def associate_segments_common_frame(traj, tracks):
         # print(ape_statistics)
         
         mismatch = ape_statistics['mean']
-        # print(mismatch)
+        print(mismatch)
         tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)']]
         matches.append(tuple)
 
@@ -109,7 +109,8 @@ def associate_segments_common_frame(traj, tracks):
     
     segments = [] #The parts of the trajectory are added to this list
     for m in matches:
-        if m[1]<5: # if the mismatch is smaller than 1
+        if m[1]<0.8: # if the mismatch is smaller than 1
+            # print(m[1])
            # print(m[0].get_statistics()['v_avg (m/s)'])
            segments.append(m[0]) 
            # print(m[0].get_infos()['t_start (s)'],m[0].get_infos()["path length (m)"])
@@ -162,8 +163,9 @@ def four_plots(idx, b, traj_ref, segments):
     # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
     # fig.tight_layout()
     # print(len(b.timestamps),len(traj_ref.timestamps))
-    plot.traj_fourplots(axarr, b,       '--', 'gray', 'original')
+    plot.traj_fourplots(axarr, b,       '*', 'gray', 'original')
     plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference')
     axarr[0,1].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
            cycler('lw', [1, 2, 3, 4]))
     color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))

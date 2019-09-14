@@ -310,7 +310,7 @@ def read_TrackArray(bag_handle, topic, min_length):
     # frame_id = msgs[0].tracks[0].odom.header.frame_id
     frame_id = "map"
     unique_ids = unique(ids)
-    print(unique_ids)
+    # print(unique_ids)
     list_tracks = []
     for j in unique_ids:
         stamps, xyz, quat = [], [], []
@@ -326,7 +326,7 @@ def read_TrackArray(bag_handle, topic, min_length):
                         quat.append(quat_t)
                         linear_t, angular_t = get_twist(msg.tracks[i].odom)
                         linear.append(linear_t)
-                        print(msg.tracks[i].length)
+                        # print(msg.tracks[i].length)
                         length.append(msg.tracks[i].length)
                         width.append(msg.tracks[i].width)
                         # angular.append(angular_t)
