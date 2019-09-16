@@ -75,7 +75,7 @@ def associate_segments(traj, tracks):
 
     return segments, traj_ref, translation
 
-def associate_segments_common_frame(traj, tracks):
+def associate_segments_common_frame(traj, tracks, distance):
     """Associate segments of an object trajectory as given by a DATMO system
     with the object´s reference trajectory
 
@@ -109,7 +109,7 @@ def associate_segments_common_frame(traj, tracks):
     
     segments = [] #The parts of the trajectory are added to this list
     for m in matches:
-        if m[1]<0.8: # if the mismatch is smaller than 1
+        if m[1]<distance: # if the mismatch is smaller than 1
             # print(m[1])
            # print(m[0].get_statistics()['v_avg (m/s)'])
            segments.append(m[0]) 
@@ -148,7 +148,7 @@ def stats_to_latex_table(traj_ref, segments, idx, table):
         round(ape_statistics["sse"],3),))
     table.add_hline
 
-def four_plots(idx, b, traj_ref, segments):
+def four_plots(idx, b, traj_ref, segments, type_of_exp):
     """Generates four plots into Report
 
     :ref: PoseTrajectory3D object that is used as reference
@@ -182,7 +182,7 @@ def four_plots(idx, b, traj_ref, segments):
     handles, labels = axarr[0,0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center',ncol =
             len(segments) + 2)
-    plt.savefig("/home/kostas/results/latest/tracking" + str(idx+1) +".png",
+    plt.savefig("/home/kostas/results/"+type_of_exp+"/tracking" + str(idx+1) +".png",
             dpi = 100, bbox_inches='tight')
     plt.waitforbuttonpress(0)
     plt.close(fig)
@@ -237,3 +237,35 @@ def plot_dimensions(segments, reference, style='-', color='black', label="", alp
 
     plt.waitforbuttonpress(0)
     plt.close(fig)
+
+def plot_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plots the velocities of a trajectory object 
+    :param axarr: an axis array (for x, y)
+                  e.g. from 'fig, axarr = plt.subplots(2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
+    """
+    if len(axarr) != 2:
+        raise PlotException("expected an axis array with 2 subplots - got " +
+                            str(len(axarr)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "$t$ (s)"
+    else:
+        x = range(0, len(traj.positions_xyz - 1))
+        xlabel = "index"
+    ylabels = ["$\dot x$ (m/s)", "$\dot y$ (m/s)"]
+    for i in range(0, 2):
+        print(len(traj.linear_vel[:,i]),len(x))
+        axarr[i].plot(x, traj.linear_vel[:,i], style,color=color,label=label, alpha=alpha)
+        axarr[i].set_ylabel(ylabels[i])
+    if label:
+        axarr[0].legend(frameon=True)

@@ -620,6 +620,7 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         xlabel = "index"
     ylabels = ["$\dot x$ (m/s)", "$\dot y$ (m/s)"]
     for i in range(0, 2):
+        print(len(traj.linear_vel[:,i]),len(x))
         axarr[i].plot(x, traj.linear_vel[:,i], style,color=color,label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
     if label:

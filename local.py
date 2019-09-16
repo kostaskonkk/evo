@@ -81,7 +81,7 @@ nice_fonts = {
 mpl.rcParams.update(nice_fonts)
 
 # bag = rosbag.Bag(sys.argv[1])
-bag = rosbag.Bag('/home/kostas/results/box_tracks.bag')
+bag = rosbag.Bag('/home/kostas/results/local.bag')
 
 bot= []
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
@@ -100,17 +100,6 @@ plt.rcParams['axes.edgecolor'] = 'k'
 # plt.rcParams['axes.facecolor'] = 'w'
 plt.rcParams['legend.edgecolor'] = 'k'
 plt.rcParams['legend.facecolor'] = 'w'
-
-# bag = rosbag.Bag(sys.argv[1])
-bag = rosbag.Bag("/home/kostas/results/box_tracks.bag")
-
-bot= []
-mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
-odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
-slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
-fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
-bag.close()
-
 
 loc_table = Tabular('l c c c c c c c')
 loc_table.add_hline()
@@ -219,10 +208,10 @@ def four_plots(ref, est, table, name):
         round(ape_statistics["sse"],3),))
     table.add_hline
 
-# four_plots(mocap ,odom, loc_table, 'odometry')
-# four_plots(mocap ,slam, loc_table, 'slam')
-# four_plots(mocap ,fuse, loc_table, 'fusion')
-# loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
+four_plots(mocap ,odom, loc_table, 'odometry')
+four_plots(mocap ,slam, loc_table, 'slam')
+four_plots(mocap ,fuse, loc_table, 'fusion')
+loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
 
 results = []
 odom_result = ape(
