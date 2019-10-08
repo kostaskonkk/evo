@@ -88,7 +88,7 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         ape_result.add_np_array("seconds_from_start", seconds_from_start)
         ape_result.add_np_array("timestamps", traj_est.timestamps)
 
-    return ape_result
+    # return ape_result
 
     plot_collection.add_figure("raw", fig_raw)
 
@@ -153,12 +153,13 @@ distance = 0.9
 
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
-bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
+# bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
 mean = file_interface.read_TrackArray(bag, '/mean_tracks', 3)
 filtered_tracks = file_interface.read_TrackArray(bag, '/filtered_tracks', 3)
 box_tracks = file_interface.read_TrackArray(bag, '/box_tracks', 3)
 obs_tracks = file_interface.read_TrackArray(bag, '/obs_tracks', 3)
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
+
 # odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
 # slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
 # fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
@@ -177,12 +178,10 @@ table.add_empty_row()
 
 for idx,b in enumerate(bot):
 
-    # print("Calculations for track model", idx +1,"based on the mean of the cluster")
-    # segments, traj_ref = tracking.associate_segments_common_frame(b,mean)
-    # distance)
-    # tracking.associate_segments_common_frame(b,mean,distance)
-    # tracking.four_plots(idx, b, traj_ref, segments, type_of_exp) 
-    # tracking.stats_to_latex_table(traj_ref, segments, idx, table)
+    print("Calculations for track model", idx +1,"based on the mean of the cluster")
+    segments, traj_reference = tracking.associate_segments_common_frame(b,mean,distance)
+    tracking.four_plots(idx, b, traj_reference, segments, type_of_exp) 
+    tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
     # whole =trajectory.merge(segments)
     # mean_result = ape(
@@ -217,11 +216,11 @@ for idx,b in enumerate(bot):
     # file_interface.save_res_file("/home/kostas/results/res_files/l-shape_track" +
             # str(idx+1), mean_result, False)
 
-    print("Calculations for track model", idx +1,"based on the center of the bounding box")
-    segments, traj_ref = tracking.associate_segments_common_frame(b,box_tracks, distance)
-    tracking.four_plots(idx, b, traj_ref, segments, type_of_exp) 
-    tracking.stats_to_latex_table(traj_ref, segments,idx, table)
-    tracking.plot_dimensions(segments, b, start_timestamp = b.timestamps[0])
+    # print("Calculations for track model", idx +1,"based on the center of the bounding box")
+    # segments, traj_ref = tracking.associate_segments_common_frame(b,box_tracks, distance)
+    # tracking.four_plots(idx, b, traj_ref, segments, type_of_exp) 
+    # tracking.stats_to_latex_table(traj_ref, segments,idx, table)
+    # tracking.plot_dimensions(segments, b, start_timestamp = b.timestamps[0])
 
     # print("Calculations for track model", idx +1,"based on the nonlinear observer")
     # segments, traj_ref = tracking.associate_segments_common_frame(b,obs_tracks)
@@ -243,26 +242,26 @@ for idx,b in enumerate(bot):
             # str(idx+1), center_result, False)
 
     # plot velocities
-    print("Visualizing the velocities", idx +1,"nonlinear observer")
-    name = 'bot1'
-    fig, axarr = plt.subplots(3)
-    fig.tight_layout()
-    fig.suptitle('Speed Estimation ' + name, fontsize=30)
-    plot.traj_vel(axarr, b, '--', 'gray', 'original')
+    # print("Visualizing the velocities", idx +1,"nonlinear observer")
+    # name = 'bot1'
+    # fig, axarr = plt.subplots(3)
+    # fig.tight_layout()
+    # fig.suptitle('Speed Estimation ' + name, fontsize=30)
+    # plot.traj_vel(axarr, b, '--', 'gray', 'original')
     # whole =trajectory.merge(segments)
-    plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
-    axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-           cycler('lw', [1, 2, 3, 4]))
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
-    for i, segment in enumerate(segments):
-        c=next(color)
-        label = "segment" + str(idx + 1)
-        plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
+    # plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
+           # cycler('lw', [1, 2, 3, 4]))
+    # color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
+    # for i, segment in enumerate(segments):
+        # c=next(color)
+        # label = "segment" + str(idx + 1)
+        # plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
         # axarr[0].plot(segment.linear_vel[0,:])
         # print(segment.linear_vel[:,1])
         # plot.linear_vel(axarr[0:2], segment, '-', c, label,1 )
     # fig.subplots_adjust(hspace = 0.2)
-    plt.waitforbuttonpress(0)
+    # plt.waitforbuttonpress(0)
     # plt.savefig("/home/kostas/results/latest/velocity"+name+".png",  format='png', bbox_inches='tight')
 
-table.generate_tex('/home/kostas/report/figures/tables/eval_table')
+# table.generate_tex('/home/kostas/report/figures/tables/eval_table')

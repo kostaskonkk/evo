@@ -15,6 +15,7 @@ colormap = SETTINGS.plot_multi_cmap if use_cmap else None
 df_rect = pd.read_csv("/home/kostas/results/exec_time/rect_fitting.csv")
 df_whole =pd.read_csv("/home/kostas/results/exec_time/whole.csv")
 df_clust =pd.read_csv("/home/kostas/results/exec_time/clustering.csv")
+df_test =pd.read_csv("/home/kostas/results/exec_time/testing.csv")
 print(df_whole.head())
 
 clust_table = Tabular('l c c c c c c')
@@ -56,8 +57,15 @@ median_c= df_clust.median()
 std_c= df_clust.std() 
 var_c= df_clust.var() 
 
-fig_stats = plt.figure()
 
+print('mean ',df_test['clusters'].mean(),'std',df_test['clusters'].std(),'min ',df_test['clusters'].min(),'max',df_test['clusters'].max())
+
+print('mean',df_whole['milli'].mean(),'std',df_whole['milli'].std(),'min',df_whole['milli'].min(),'max',df_whole['milli'].max())
+
+
+
+
+# fig_stats = plt.figure()
 # df.plot(kind="barh", ax=fig_stats.gca(),
           # colormap=colormap, stacked=False)
 # df_rect.plot.scatter(x='num_points',
@@ -92,7 +100,7 @@ whole_table.add_row(('Whole',
     round(var_w),))
 whole_table.add_hline
 
-print(df_rect.head())
+# print(df_rect.head())
 whole_table.generate_tex('/home/kostas/report/figures/tables/exec_whole_table')
 clust_table.generate_tex('/home/kostas/report/figures/tables/exec_clust_table')
 rect_table.generate_tex('/home/kostas/report/figures/tables/exec_rect_table')

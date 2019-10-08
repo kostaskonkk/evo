@@ -88,10 +88,14 @@ def associate_segments_common_frame(traj, tracks, distance):
 
     """
     matches = []
+
     for tr in tracks: # Find the best matching tracks to the object trajectory
 
-        traj_ref, traj_est = sync.associate_trajectories(traj, tr,
-                max_diff=0.01)
+        # try:
+        traj_ref, traj_est = sync.associate_trajectories(traj, tr, max_diff=0.01)
+        # except Exception:
+            # print('itcamehere')
+            # pass
         
         # print("calculating APE for track of length", len(tr.timestamps))
         data = (traj_ref, traj_est)
@@ -102,23 +106,28 @@ def associate_segments_common_frame(traj, tracks, distance):
         
         mismatch = ape_statistics['mean']
         print(mismatch)
-        tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)']]
+        tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)'],
+                traj_ref]
         matches.append(tuple)
 
     matches.sort(key = lambda x: x[2])
     
-    segments = [] #The parts of the trajectory are added to this list
+    segments_track = [] #The parts of the trajectory are added to this list
+    segments_refer = [] #The parts of the reference trajectory are added to this list
+
     for m in matches:
         if m[1]<distance: # if the mismatch is smaller than 1
             # print(m[1])
            # print(m[0].get_statistics()['v_avg (m/s)'])
-           segments.append(m[0]) 
+           segments_track.append(m[0]) 
+           segments_refer.append(m[3]) 
            # print(m[0].get_infos()['t_start (s)'],m[0].get_infos()["path length (m)"])
            # print(m[0].get_statistics()['v_avg (m/s)'])
-    if len(segments)==0:
+    traj_ref = trajectory.merge(segments_refer)
+    if len(segments_track)==0:
         print("No matching segments")
 
-    return segments, traj_ref
+    return segments_track, traj_ref
 
 def stats_to_latex_table(traj_ref, segments, idx, table):
     """Associate segments of an object trajectory as given by a DATMO system
@@ -179,6 +188,7 @@ def four_plots(idx, b, traj_ref, segments, type_of_exp):
         axarr[1,0].plot(segment.positions_xyz[:, 0],
                 segment.positions_xyz[:,1])
         # axarr[1,0].plot(segment.positions_xyz[:, 0], segment.positions_xyz[:, 1], '-', c, 1)
+        plot.traj_yaw(axarr[1,1],segment, style, c, None,1 ,b.timestamps[0])
     handles, labels = axarr[0,0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center',ncol =
             len(segments) + 2)

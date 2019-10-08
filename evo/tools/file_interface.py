@@ -316,6 +316,7 @@ def read_TrackArray(bag_handle, topic, min_length):
         stamps, xyz, quat = [], [], []
         linear, angular = [], []
         length, width = [], []
+        pose_covariance, twist_covariance = [], []
         for msg in msgs:
             for i in range(0,len(msg.tracks)):
                     if msg.tracks[i].id == j:
@@ -330,10 +331,12 @@ def read_TrackArray(bag_handle, topic, min_length):
                         length.append(msg.tracks[i].length)
                         width.append(msg.tracks[i].width)
                         # angular.append(angular_t)
+                        pose_covariance.append(msg.tracks[i].odom.pose.covariance)
+                        twist_covariance.append(msg.tracks[i].odom.twist.covariance)
         if len(stamps)>min_length:
             list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
                 meta={"frame_id": frame_id},linear_vel=linear,length =
-                length,width = width)) 
+                length,width = width,twist_covariance = twist_covariance)) 
     return list_tracks 
 
 def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):
