@@ -123,10 +123,10 @@ def associate_segments_common_frame(traj, tracks, distance):
            segments_refer.append(m[3]) 
            # print(m[0].get_infos()['t_start (s)'],m[0].get_infos()["path length (m)"])
            # print(m[0].get_statistics()['v_avg (m/s)'])
-    traj_ref = trajectory.merge(segments_refer)
     if len(segments_track)==0:
         print("No matching segments")
 
+    traj_ref = trajectory.merge(segments_refer)
     return segments_track, traj_ref
 
 def stats_to_latex_table(traj_ref, segments, idx, table):
@@ -248,34 +248,26 @@ def plot_dimensions(segments, reference, style='-', color='black', label="", alp
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
-def plot_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
-        start_timestamp=None):
-    """
-    plots the velocities of a trajectory object 
-    :param axarr: an axis array (for x, y)
-                  e.g. from 'fig, axarr = plt.subplots(2)'
-    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
-    :param style: matplotlib line style
-    :param color: matplotlib color
-    :param label: label (for legend)
-    :param alpha: alpha value for transparency
-    :param start_timestamp: optional start time of the reference
-                            (for x-axis alignment)
-    """
-    if len(axarr) != 2:
-        raise PlotException("expected an axis array with 2 subplots - got " +
-                            str(len(axarr)))
-    if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps - (traj.timestamps[0]
-                               if start_timestamp is None else start_timestamp)
-        xlabel = "$t$ (s)"
-    else:
-        x = range(0, len(traj.positions_xyz - 1))
-        xlabel = "index"
-    ylabels = ["$\dot x$ (m/s)", "$\dot y$ (m/s)"]
-    for i in range(0, 2):
-        print(len(traj.linear_vel[:,i]),len(x))
-        axarr[i].plot(x, traj.linear_vel[:,i], style,color=color,label=label, alpha=alpha)
-        axarr[i].set_ylabel(ylabels[i])
-    if label:
-        axarr[0].legend(frameon=True)
+def velocities(idx, b, traj_ref, segments, type_of_exp):
+    # plot velocities
+    print("Visualizing the velocities", idx +1,"nonlinear observer")
+    name = 'bot1'
+    fig, axarr = plt.subplots(3)
+    fig.tight_layout()
+    fig.suptitle('Speed Estimation ' + name, fontsize=30)
+    plot.traj_vel(axarr, b, '--', 'gray', 'original')
+    whole =trajectory.merge(segments)
+    # plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
+           cycler('lw', [1, 2, 3, 4]))
+    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
+    for i, segment in enumerate(segments):
+        c=next(color)
+        label = "segment" + str(idx + 1)
+        plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
+        axarr[0].plot(segment.linear_vel[0,:])
+        # print(segment.linear_vel[:,1])
+        plot.linear_vel(axarr[0:2], segment, '-', c, label,1 )
+    # fig.subplots_adjust(hspace = 0.2)
+    plt.waitforbuttonpress(0)
+    # plt.savefig("/home/kostas/results/latest/velocity"+name+".png",  format='png', bbox_inches='tight')
