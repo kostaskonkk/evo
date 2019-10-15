@@ -40,107 +40,6 @@ plt.rcParams['legend.facecolor'] = 'w'
 # print(plt.style.available)
 # print (mpl.rcParams['axes.edgecolor'])
 
-# Copied from main_ape.py
-def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
-        align_origin=False, ref_name="reference", est_name="estimate"):
-    
-    traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
-    # Align the trajectories.
-    only_scale = correct_scale and not align
-    if align or correct_scale:
-        # logger.debug(SEP)
-        traj_est = trajectory.align_trajectory(traj_est, traj_ref,
-                                               correct_scale, only_scale)
-    elif align_origin:
-        # logger.debug(SEP)
-        traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
-
-    # Calculate APE.
-    # logger.debug(SEP)
-    data = (traj_ref, traj_est)
-    ape_metric = metrics.APE(pose_relation)
-    ape_metric.process_data(data)
-
-    title = str(ape_metric)
-    if align and not correct_scale:
-        title += "\n(with SE(3) Umeyama alignment)"
-    elif align and correct_scale:
-        title += "\n(with Sim(3) Umeyama alignment)"
-    elif only_scale:
-        title += "\n(scale corrected)"
-    elif align_origin:
-        title += "\n(with origin alignment)"
-    else:
-        title += "\n(not aligned)"
-
-    ape_result = ape_metric.get_result(ref_name, est_name)
-    ape_result.info["title"] = title
-
-    # logger.debug(SEP)
-    # logger.info(ape_result.pretty_str())
-
-    ape_result.add_trajectory(ref_name, traj_ref)
-    ape_result.add_trajectory(est_name, traj_est)
-    if isinstance(traj_est, trajectory.PoseTrajectory3D):
-        seconds_from_start = [
-            t - traj_est.timestamps[0] for t in traj_est.timestamps
-        ]
-        ape_result.add_np_array("seconds_from_start", seconds_from_start)
-        ape_result.add_np_array("timestamps", traj_est.timestamps)
-
-    # return ape_result
-
-    plot_collection.add_figure("raw", fig_raw)
-
-    # statistics plot
-    fig_stats = plt.figure(figsize=figsize)
-    include = df.loc["stats"].index.isin(SETTINGS.plot_statistics)
-    if any(include):
-        df.loc["stats"][include].plot(kind="barh", ax=fig_stats.gca(),
-                                      colormap=colormap, stacked=False)
-        plt.xlabel(metric_label)
-        plt.legend(frameon=True)
-        plot_collection.add_figure("stats", fig_stats)
-
-    # grid of distribution plots
-    raw_tidy = pd.melt(error_df, value_vars=list(error_df.columns.values),
-                       var_name="estimate", value_name=metric_label)
-    col_wrap = 2 if len(args.result_files) <= 2 else math.ceil(
-        len(args.result_files) / 2.0)
-    dist_grid = sns.FacetGrid(raw_tidy, col="estimate", col_wrap=col_wrap)
-    # TODO: see issue #98
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        dist_grid.map(sns.distplot, metric_label)  # fits=stats.gamma
-    plot_collection.add_figure("histogram", dist_grid.fig)
-
-    # box plot
-    fig_box = plt.figure(figsize=figsize)
-    ax = sns.boxplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
-                     ax=fig_box.gca())
-    # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
-    plot_collection.add_figure("box_plot", fig_box)
-
-    # violin plot
-    fig_violin = plt.figure(figsize=figsize)
-    ax = sns.violinplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
-                        ax=fig_violin.gca())
-    # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
-    plot_collection.add_figure("violin_histogram", fig_violin)
-
-    # if args.plot:
-    plot_collection.show()
-    # if args.save_plot:
-        # logger.debug(SEP)
-        # plot_collection.export(args.save_plot,
-                               # confirm_overwrite=not args.no_warnings)
-    # if args.serialize_plot:
-        # logger.debug(SEP)
-        # plot_collection.serialize(args.serialize_plot,
-                                  # confirm_overwrite=not args.no_warnings)
-                                                                                                                                
-
 # bag = rosbag.Bag(sys.argv[1])
 bag = rosbag.Bag("/home/kostas/results/exp.bag")
 type_of_exp = 'experiment'
@@ -178,14 +77,16 @@ table.add_empty_row()
 for idx,b in enumerate(bot):
 
     print("Calculations for track model", idx +1,"based on the mean of the cluster")
-    # segments, traj_reference = tracking.associate_segments_common_frame(b,mean,distance)
+    segments, traj_reference = tracking.associate_segments_common_frame(b,mean,distance)
     # tracking.four_plots(idx, b, traj_reference, segments, type_of_exp) 
     # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
     segments, traj_reference = tracking.associate_segments_common_frame(b,filtered_tracks,distance)
-    tracking.velocities(idx, b, traj_reference, segments, type_of_exp) 
+    # tracking.velocities(idx, b, traj_reference, segments, type_of_exp) 
     # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
+    # for segment in segments:
+        # print(segment.linear_vel)
     # whole =trajectory.merge(segments)
     # mean_result = ape(
         # traj_ref=traj_ref,

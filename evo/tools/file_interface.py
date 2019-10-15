@@ -326,6 +326,8 @@ def read_TrackArray(bag_handle, topic, min_length):
                         xyz.append(xyz_t)
                         quat.append(quat_t)
                         linear_t, angular_t = get_twist(msg.tracks[i].odom)
+                        if linear_t[0] >0.1:
+                            print(linear_t)
                         linear.append(linear_t)
                         # print(msg.tracks[i].length)
                         length.append(msg.tracks[i].length)

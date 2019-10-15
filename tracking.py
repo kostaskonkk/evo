@@ -14,6 +14,49 @@ import numpy as np
 from cycler import cycler
 
                                                                                                                                 
+def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
+        align_origin=False, ref_name="reference", est_name="estimate"):
+    # Copied from main_ape.py
+    traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
+    # Align the trajectories.
+    only_scale = correct_scale and not align
+    if align or correct_scale:
+        traj_est = trajectory.align_trajectory(traj_est, traj_ref,
+                                               correct_scale, only_scale)
+    elif align_origin:
+        traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
+
+    # Calculate APE.
+    data = (traj_ref, traj_est)
+    ape_metric = metrics.APE(pose_relation)
+    ape_metric.process_data(data)
+
+    title = str(ape_metric)
+    if align and not correct_scale:
+        title += "\n(with SE(3) Umeyama alignment)"
+    elif align and correct_scale:
+        title += "\n(with Sim(3) Umeyama alignment)"
+    elif only_scale:
+        title += "\n(scale corrected)"
+    elif align_origin:
+        title += "\n(with origin alignment)"
+    else:
+        title += "\n(not aligned)"
+
+    ape_result = ape_metric.get_result(ref_name, est_name)
+    ape_result.info["title"] = title
+
+    ape_result.add_trajectory(ref_name, traj_ref)
+    ape_result.add_trajectory(est_name, traj_est)
+    if isinstance(traj_est, trajectory.PoseTrajectory3D):
+        seconds_from_start = [
+            t - traj_est.timestamps[0] for t in traj_est.timestamps
+        ]
+        ape_result.add_np_array("seconds_from_start", seconds_from_start)
+        ape_result.add_np_array("timestamps", traj_est.timestamps)
+
+    return ape_result
+
 def associate_segments(traj, tracks):
     """Associate segments of an object trajectory as given by a DATMO system
     with the object´s reference trajectory
@@ -105,7 +148,7 @@ def associate_segments_common_frame(traj, tracks, distance):
         # print(ape_statistics)
         
         mismatch = ape_statistics['mean']
-        print(mismatch)
+        # print(mismatch)
         tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)'],
                 traj_ref]
         matches.append(tuple)
