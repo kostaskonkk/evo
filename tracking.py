@@ -59,7 +59,7 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 
 def associate_segments(traj, tracks):
     """Associate segments of an object trajectory as given by a DATMO system
-    with the object´s reference trajectory
+    with the object's reference trajectory
 
     :traj: Reference trajectory
     :tracks: All the tracks that got produced by the DATMO system
@@ -120,7 +120,7 @@ def associate_segments(traj, tracks):
 
 def associate_segments_common_frame(traj, tracks, distance):
     """Associate segments of an object trajectory as given by a DATMO system
-    with the object´s reference trajectory
+    with the object's reference trajectory
 
     :traj: Reference trajectory
     :tracks: All the tracks that got produced by the DATMO system
@@ -134,11 +134,7 @@ def associate_segments_common_frame(traj, tracks, distance):
 
     for tr in tracks: # Find the best matching tracks to the object trajectory
 
-        # try:
         traj_ref, traj_est = sync.associate_trajectories(traj, tr, max_diff=0.01)
-        # except Exception:
-            # print('itcamehere')
-            # pass
         
         # print("calculating APE for track of length", len(tr.timestamps))
         data = (traj_ref, traj_est)
@@ -160,7 +156,6 @@ def associate_segments_common_frame(traj, tracks, distance):
 
     for m in matches:
         if m[1]<distance: # if the mismatch is smaller than 1
-            # print(m[1])
            # print(m[0].get_statistics()['v_avg (m/s)'])
            segments_track.append(m[0]) 
            segments_refer.append(m[3]) 
@@ -171,6 +166,7 @@ def associate_segments_common_frame(traj, tracks, distance):
 
     traj_ref = trajectory.merge(segments_refer)
     return segments_track, traj_ref
+
 
 def stats_to_latex_table(traj_ref, segments, idx, table):
     """Associate segments of an object trajectory as given by a DATMO system
@@ -293,12 +289,11 @@ def plot_dimensions(segments, reference, style='-', color='black', label="", alp
 
 def velocities(idx, b, traj_ref, segments, type_of_exp):
     # plot velocities
-    print("Visualizing the velocities", idx +1,"nonlinear observer")
     name = 'bot1'
     fig, axarr = plt.subplots(3)
-    fig.tight_layout()
+    # fig.tight_layout()
     fig.suptitle('Speed Estimation ' + name, fontsize=30)
-    plot.traj_vel(axarr, b, '--', 'gray', 'original')
+    plot.traj_vel(axarr, b, '-', 'gray', 'original')
     whole =trajectory.merge(segments)
     # plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
@@ -308,9 +303,10 @@ def velocities(idx, b, traj_ref, segments, type_of_exp):
         c=next(color)
         label = "segment" + str(idx + 1)
         plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
-        axarr[0].plot(segment.linear_vel[0,:])
-        # print(segment.linear_vel[:,1])
-        plot.linear_vel(axarr[0:2], segment, '-', c, label,1 )
     # fig.subplots_adjust(hspace = 0.2)
-    plt.waitforbuttonpress(0)
+    handles, labels = axarr[0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center',ncol =
+            len(segments) + 2)
+    plt.show()
+    # plt.waitforbuttonpress(0)
     # plt.savefig("/home/kostas/results/latest/velocity"+name+".png",  format='png', bbox_inches='tight')

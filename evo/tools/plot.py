@@ -591,8 +591,8 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
 
     axarr[2].plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
     axarr[2].set_xlabel(xlabel)
-    if label:
-        axarr[0].legend(frameon=True)
+    # if label:
+        # axarr[0].legend(frameon=True)
 
 def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -620,11 +620,10 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         xlabel = "index"
     ylabels = ["$\dot x$ (m/s)", "$\dot y$ (m/s)"]
     for i in range(0, 2):
-        print(len(traj.linear_vel[:,i]),len(x))
         axarr[i].plot(x, traj.linear_vel[:,i], style,color=color,label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
-    if label:
-        axarr[0].legend(frameon=True)
+    # if label:
+        # axarr[0].legend(frameon=True)
 
 def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
              start_timestamp=None):
