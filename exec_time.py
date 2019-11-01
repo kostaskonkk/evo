@@ -62,14 +62,19 @@ print('mean ',df_test['clusters'].mean(),'std',df_test['clusters'].std(),'min ',
 
 print('mean',df_whole['milli'].mean(),'std',df_whole['milli'].std(),'min',df_whole['milli'].min(),'max',df_whole['milli'].max())
 
+fig_stats = plt.figure("Execution Time")
+# df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
+ax = df_whole['milli'].plot(marker = '.', ax=fig_stats.gca(), colormap=colormap, stacked=False)
+ax.set_title('Execution time of DATMO program')
+ax.set_ylabel('Time $[ms]$')
+plt.show()
 
-
-
-# fig_stats = plt.figure()
-# df.plot(kind="barh", ax=fig_stats.gca(),
-          # colormap=colormap, stacked=False)
-# df_rect.plot.scatter(x='num_points',
-                # y='dur_nano',s = 2)
+# plt.xlabel
+# plt.ylabel = 'Time [ms]'
+# plt.show()
+# plt.waitforbuttonpress
+# df_rect.plot.scatter(x='num_points', y='dur_nano',s = 2)
+# plt.show()
 # plt.savefig("/home/kostas/report/figures/time_statistics.png", dpi = 300, format='png', bbox_inches='tight')
 # plt.waitforbuttonpress(0)
 
@@ -101,6 +106,6 @@ whole_table.add_row(('Whole',
 whole_table.add_hline
 
 # print(df_rect.head())
-whole_table.generate_tex('/home/kostas/report/figures/tables/exec_whole_table')
-clust_table.generate_tex('/home/kostas/report/figures/tables/exec_clust_table')
-rect_table.generate_tex('/home/kostas/report/figures/tables/exec_rect_table')
+# whole_table.generate_tex('/home/kostas/report/figures/tables/exec_whole_table')
+# clust_table.generate_tex('/home/kostas/report/figures/tables/exec_clust_table')
+# rect_table.generate_tex('/home/kostas/report/figures/tables/exec_rect_table')

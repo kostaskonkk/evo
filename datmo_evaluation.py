@@ -53,10 +53,24 @@ distance = 0.9
 bot= []
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_1'))
 bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
-mean = file_interface.read_TrackArray(bag, '/tracks/mean', 3)
-mean_kf = file_interface.read_TrackArray(bag, '/tracks/mean_kf', 3)
-box = file_interface.read_TrackArray(bag, '/tracks/box', 3)
-mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
+
+tracks = []
+tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
+tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
+tracks.append(('box'    , file_interface.read_TrackArray(bag,'/tracks/box',3)))
+tracks.append(('box_ukf', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+
+# tracks = {
+    # 'mean'     : file_interface.read_TrackArray(bag, '/tracks/mean', 3),
+    # 'mean_kf'  : file_interface.read_TrackArray(bag, '/tracks/mean_kf', 3),
+    # 'box'      : file_interface.read_TrackArray(bag, '/tracks/box', 3),
+    # 'box_ukf'  : file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)
+# }
+# mean = file_interface.read_TrackArray(bag, '/tracks/mean', 3)
+# mean_kf = file_interface.read_TrackArray(bag, '/tracks/mean_kf', 3)
+# box = file_interface.read_TrackArray(bag, '/tracks/box', 3)
+# box_ukf = file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)
+# mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
 
 # odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
 # slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
@@ -73,12 +87,23 @@ table.add_hline()
 table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 table.add_empty_row()
 
-for idx,b in enumerate(bot):
+for reference in bot:
 
-    print("Calculations for track model", idx +1,"based on the mean of the cluster")
-    segments, traj_reference = tracking.associate_segments_common_frame(b,mean,distance)
-    tracking.four_plots(idx, b, traj_reference, segments, type_of_exp) 
-    tracking.stats_to_latex_table(traj_reference, segments, idx, table)
+    # print("here")
+    for track in tracks:
+        print(track[0])
+        # print(track(0))
+        segments, traj_reference = \
+            tracking.associate_segments_common_frame(reference,track[1],distance)
+        tracking.four_plots(1, reference, traj_reference, segments, type_of_exp) 
+        # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
+
+# for idx,b in enumerate(bot):
+
+    # print("Calculations for track model", idx +1,"based on the mean of the cluster")
+    # segments, traj_reference = tracking.associate_segments_common_frame(b,mean,distance)
+    # tracking.four_plots(idx, b, traj_reference, segments, type_of_exp) 
+    # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
     # segments, traj_reference = tracking.associate_segments_common_frame(b,
             # mean_kf,distance)
