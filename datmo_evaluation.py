@@ -4,42 +4,19 @@ from __future__ import print_function
 from evo.core  import trajectory, sync, metrics
 from evo.tools import file_interface, plot
 from datmo.msg import Track, TrackArray
-# import local
 import rosbag
 from pylatex import Tabular 
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.figure as fg
-# import matplotlib.animation as animation
 import numpy as np
 from cycler import cycler
 import sys # cli arguments in sys.argv
-# import tikzplotlib
 import tracking
 
-# SMALL_SIZE  = 12
-# MEDIUM_SIZE = 14
-# BIGGER_SIZE = 25
-# plt.rc('font',  size=SMALL_SIZE)          # controls default text sizes
-# plt.rc('axes',  titlesize=BIGGER_SIZE)    # fontsize of the axes title
-# plt.rc('axes',  labelsize=MEDIUM_SIZE)    # fontsize of the x and y labels
-# plt.rc('xtick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
-# plt.rc('ytick', labelsize=MEDIUM_SIZE)    # fontsize of the tick labels
-# plt.rc('legend',fontsize=SMALL_SIZE)      # legend fontsize
-# plt.rc('figure',titlesize=BIGGER_SIZE)    # fontsize of the figure title
-# plt.rcParams['xtick.direction'] = 'in'
-# plt.rcParams['ytick.direction'] = 'in'
-# plt.rcParams['grid.color'] = 'gray'
-# plt.rcParams['grid.alpha'] = '0.5'
-# plt.rcParams['axes.edgecolor'] = 'k'
-# plt.rcParams['axes.facecolor'] = 'w'
-# plt.rcParams['legend.edgecolor'] = 'k'
-# plt.rcParams['legend.facecolor'] = 'w'
 
- # print(plt.rcParams.keys())
-# print(plt.style.available)
-# print (mpl.rcParams['axes.edgecolor'])
+plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
 # bag = rosbag.Bag(sys.argv[1])
 bag = rosbag.Bag("/home/kostas/results/exp.bag")
@@ -56,9 +33,9 @@ bot.append(file_interface.read_bag_trajectory(bag, '/robot_2'))
 
 tracks = []
 tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
-tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
-tracks.append(('box'    , file_interface.read_TrackArray(bag,'/tracks/box',3)))
-tracks.append(('box_ukf', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+# tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
+# tracks.append(('box'    , file_interface.read_TrackArray(bag,'/tracks/box',3)))
+# tracks.append(('box_ukf', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 # tracks = {
     # 'mean'     : file_interface.read_TrackArray(bag, '/tracks/mean', 3),

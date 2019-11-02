@@ -3,15 +3,22 @@ from pylatex import Tabular
 import matplotlib
 # matplotlib.use('agg')
 import matplotlib.pyplot as plt
-import seaborn as sns
-import tkinter
+# import seaborn as sns
+# import tkinter
+# print(plt.style.available)
+# plt.style.use(['seaborn-whitegrid', 'matplotlibrc'])
 
-from evo.tools.settings import SETTINGS
-figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
-use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
-colormap = SETTINGS.plot_multi_cmap if use_cmap else None
+plt.style.use(['seaborn-whitegrid', 'stylerc'])
+
+# from evo.tools.settings import SETTINGS
+# figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
+# use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
+# colormap = SETTINGS.plot_multi_cmap if use_cmap else None
 # linestyles = ["-o" for x in args.result_files
               # ] if args.plot_markers else None
+# sns.set_style(style="whitegrid")
+# sns.set_context("talk")
+
 df_rect = pd.read_csv("/home/kostas/results/exec_time/rect_fitting.csv")
 df_whole =pd.read_csv("/home/kostas/results/exec_time/whole.csv")
 df_clust =pd.read_csv("/home/kostas/results/exec_time/clustering.csv")
@@ -64,9 +71,12 @@ print('mean',df_whole['milli'].mean(),'std',df_whole['milli'].std(),'min',df_who
 
 fig_stats = plt.figure("Execution Time")
 # df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
-ax = df_whole['milli'].plot(marker = '.', ax=fig_stats.gca(), colormap=colormap, stacked=False)
+# ax = df_whole['milli'].plot(marker = '.',c='k',ms =8, ax=fig_stats.gca(), colormap=colormap, stacked=False)
+ax = df_whole['milli'].plot(marker = '.',c='k',ms =8, ax=fig_stats.gca(), stacked=False)
+ax = df_whole['milli'].plot(lw=0.5)
 ax.set_title('Execution time of DATMO program')
 ax.set_ylabel('Time $[ms]$')
+plt.savefig("/home/kostas/report/figures/time_statistics.png", dpi = 300, format='png', bbox_inches='tight')
 plt.show()
 
 # plt.xlabel

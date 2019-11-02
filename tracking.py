@@ -167,7 +167,6 @@ def associate_segments_common_frame(traj, tracks, distance):
     traj_ref = trajectory.merge(segments_refer)
     return segments_track, traj_ref
 
-
 def stats_to_latex_table(traj_ref, segments, idx, table):
     """Associate segments of an object trajectory as given by a DATMO system
     with the object´s reference trajectory
@@ -207,7 +206,8 @@ def four_plots(idx, b, traj_ref, segments, type_of_exp):
 
     """
     # [ Plot ] x,y,xy,yaw 
-    fig, axarr = plt.subplots(2,2,figsize=(12,8))
+    # fig, axarr = plt.subplots(2,2,figsize=(12,8))
+    fig, axarr = plt.subplots(2,2)
     # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
     # fig.tight_layout()
     # print(len(b.timestamps),len(traj_ref.timestamps))
@@ -228,9 +228,9 @@ def four_plots(idx, b, traj_ref, segments, type_of_exp):
                 segment.positions_xyz[:,1])
         # axarr[1,0].plot(segment.positions_xyz[:, 0], segment.positions_xyz[:, 1], '-', c, 1)
         plot.traj_yaw(axarr[1,1],segment, style, c, None,1 ,b.timestamps[0])
-    handles, labels = axarr[0,0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center',ncol =
-            len(segments) + 2)
+    # handles, labels = axarr[0,0].get_legend_handles_labels()
+    # fig.legend(handles, labels, loc='lower center',ncol =
+            # len(segments) + 2)
     plt.savefig("/home/kostas/results/"+type_of_exp+"/tracking" + str(idx+1) +".png",
             dpi = 100, bbox_inches='tight')
     plt.waitforbuttonpress(0)
