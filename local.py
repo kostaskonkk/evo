@@ -213,6 +213,11 @@ four_plots(mocap ,slam, loc_table, 'slam')
 four_plots(mocap ,fuse, loc_table, 'fusion')
 loc_table.generate_tex('/home/kostas/report/figures/tables/loc_table')
 
+# loc_ref, loc_est = sync.associate_trajectories(mocap, fuse)
+# loc_est, loc_rot, loc_tra, _ = trajectory.align_trajectory(loc_est, 
+        # loc_ref, correct_scale=False, return_parameters=True)
+# print(loc_tra)
+
 results = []
 odom_result = ape(
     traj_ref=mocap,

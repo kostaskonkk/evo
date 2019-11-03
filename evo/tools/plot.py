@@ -594,6 +594,48 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     # if label:
         # axarr[0].legend(frameon=True)
 
+def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    calculates the velocities of a trajectory object and plots them on an axis
+    :param axarr: an axis array (for x, y)
+                  e.g. from 'fig, axarr = plt.subplots(2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    """
+    dot_x = [
+        trajectory.calc_velocity(traj.positions_xyz[i,0],
+                              traj.positions_xyz[i + 1,0],
+                              traj.timestamps[i], traj.timestamps[i + 1])
+        for i in range(len(traj.positions_xyz) - 1)]
+    dot_x.append(0)
+    dot_y = [
+        trajectory.calc_velocity(traj.positions_xyz[i,1],
+                              traj.positions_xyz[i + 1,1],
+                              traj.timestamps[i], traj.timestamps[i + 1])
+        for i in range(len(traj.positions_xyz) - 1)]
+    dot_y.append(0)
+    vels = [dot_x, dot_y]
+    if len(axarr) != 2:
+        raise PlotException("expected an axis array with 2 subplots - got " +
+                            str(len(axarr)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "$t$ (s)"
+    else:
+        x = range(0, len(traj.positions_xyz - 1))
+        xlabel = "index"
+    ylabels = ["$v_x$ (m/s)", "$v_y$ (m/s)"]
+    for i in range(0, 2):
+        axarr[i].plot(x, vels[i], style, color=color, label=label, alpha=alpha)
+        axarr[i].set_ylabel(ylabels[i])
+    # if label:
+        # axarr[0].legend(frameon=True)
+
 def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
     """
@@ -618,7 +660,7 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabels = ["$\dot x$ (m/s)", "$\dot y$ (m/s)"]
+    ylabels = ["$v_x$ [m/s]", "$v_y$ [m/s]"]
     for i in range(0, 2):
         axarr[i].plot(x, traj.linear_vel[:,i], style,color=color,label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
