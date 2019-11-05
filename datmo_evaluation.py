@@ -57,25 +57,24 @@ for reference in bot:
         elif track[0]=='mean_kf' or track[0]=='box_ukf':
             segments, traj_reference = \
                 tracking.associate_segments_common_frame(reference, track[1],distance)
-            tracking.pose_vel(1, reference, traj_reference, segments, type_of_exp) 
+            # tracking.pose_vel(1, reference, traj_reference, segments, type_of_exp) 
             # tracking.velocities(1, reference, traj_reference, segments, type_of_exp) 
             # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
         # for segment in segments:
             # print(segment.linear_vel)
-        # whole =trajectory.merge(segments)
-        # mean_result = ape(
-            # traj_ref=traj_ref,
-            # traj_est=whole,
-            # pose_relation=metrics.PoseRelation.translation_part,
-            # align=False,
-            # correct_scale=False,
-            # align_origin=False,
-            # ref_name="mocap",
-            # est_name="mean_track" + str(idx+1),
-        # )
-        # file_interface.save_res_file("/home/kostas/results/res_files/mean_track" +
-                # str(idx+1), mean_result, False)
+        whole =trajectory.merge(segments)
+        mean_result = tracking.ape(
+            traj_ref=traj_reference,
+            traj_est=whole,
+            pose_relation=metrics.PoseRelation.translation_part,
+            align=False,
+            correct_scale=False,
+            align_origin=False,
+            ref_name="mocap",
+            est_name="mean_track"
+        )
+        file_interface.save_res_file("/home/kostas/results/res_files/mean_track", mean_result, False)
 
 
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')
