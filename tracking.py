@@ -3,9 +3,6 @@
 from __future__ import print_function
 from evo.core  import trajectory, sync, metrics
 from evo.tools import file_interface, plot
-from datmo.msg import Track, TrackArray
-import rosbag
-from pylatex import Tabular 
 
 import matplotlib as mpl
 import matplotlib.pyplot as plt
@@ -56,7 +53,7 @@ def original_ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=F
         ape_result.add_np_array("timestamps", traj_est.timestamps)
 
     return ape_result
-                                                                                                                                
+
 def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         align_origin=False, ref_name="reference", est_name="estimate"):
     ''' Copied from main_ape.py
@@ -166,14 +163,12 @@ def associate_segments_common_frame(traj, tracks, distance):
     for tr in tracks: # Find the best matching tracks to the object trajectory
 
         traj_ref, traj_est = sync.associate_trajectories(traj, tr, max_diff=0.01)
-        
         # print("calculating APE for track of length", len(tr.timestamps))
         data = (traj_ref, traj_est)
         ape_metric = metrics.APE(metrics.PoseRelation.translation_part)
         ape_metric.process_data(data)
         ape_statistics = ape_metric.get_all_statistics()
         # print(ape_statistics)
-        
         mismatch = ape_statistics['mean']
         # print(mismatch)
         tuple = [traj_est, mismatch, traj_est.get_infos()['t_start (s)'],
@@ -181,15 +176,14 @@ def associate_segments_common_frame(traj, tracks, distance):
         matches.append(tuple)
 
     matches.sort(key = lambda x: x[2])
-    
     segments_track = [] #The parts of the trajectory are added to this list
     segments_refer = [] #The parts of the reference trajectory are added to this list
 
     for m in matches:
         if m[1]<distance: # if the mismatch is smaller than 1
            # print(m[0].get_statistics()['v_avg (m/s)'])
-           segments_track.append(m[0]) 
-           segments_refer.append(m[3]) 
+           segments_track.append(m[0])
+           segments_refer.append(m[3])
            # print(m[0].get_infos()['t_start (s)'],m[0].get_infos()["path length (m)"])
            # print(m[0].get_statistics()['v_avg (m/s)'])
     if len(segments_track)==0:
@@ -285,7 +279,7 @@ def velocities(idx, b, traj_ref, segments, type_of_exp):
             len(segments) + 2)
     plt.show()
 
-def pose(axarr, idx, b, traj_ref, segments, type_of_exp):
+def pose(axarr, b, traj_ref, segments, type_of_exp):
     """Generates four plots into Report
 
     :ref: PoseTrajectory3D object that is used as reference
@@ -316,7 +310,7 @@ def pose(axarr, idx, b, traj_ref, segments, type_of_exp):
                 segment.positions_xyz[:,1])
         plot.traj_yaw(axarr[1,1],segment, style, c, None,1 ,b.timestamps[0])
 
-def vel(axarr, idx, b, traj_ref, segments, type_of_exp):
+def vel(axarr, b, traj_ref, segments, type_of_exp):
 
     plot.vx_vy(axarr, b, '-', 'gray', 'original')
     whole =trajectory.merge(segments)
@@ -326,14 +320,14 @@ def vel(axarr, idx, b, traj_ref, segments, type_of_exp):
     color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
     for i, segment in enumerate(segments):
         c=next(color)
-        label = "segment" + str(idx + 1)
+        label = "segment" + str(i + 1)
         plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
     handles, labels = axarr[0].get_legend_handles_labels()
     # fig.legend(handles, labels, loc='lower center',ncol =
             # len(segments) + 2)
     # plt.show()
 
-def pose_vel(idx, b, traj_ref, segments, type_of_exp):
+def pose_vel(name, b, traj_ref, segments, type_of_exp):
     """Generates four plots into Report
 
     :ref: PoseTrajectory3D object that is used as reference
@@ -344,10 +338,10 @@ def pose_vel(idx, b, traj_ref, segments, type_of_exp):
 
     """
     fig, axarr = plt.subplots(2,3)
-    # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
+    fig.suptitle(name)
 
-    pose(axarr[:,0:2], idx, b, traj_ref, segments, type_of_exp)
-    vel(axarr[:,2], idx, b, traj_ref, segments, type_of_exp)
+    pose(axarr[:,0:2], b, traj_ref, segments, type_of_exp)
+    vel(axarr[:,2], b, traj_ref, segments, type_of_exp)
 
     # handles, labels = axarr[0,0].get_legend_handles_labels()
     # fig.legend(handles, labels, loc='lower center',ncol =
