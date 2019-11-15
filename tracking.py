@@ -8,7 +8,9 @@ import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.figure as fg
 import numpy as np
-from cycler import cycler
+import seaborn as sns
+import itertools
+
 
 def original_ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         align_origin=False, ref_name="reference", est_name="estimate"):
@@ -239,10 +241,8 @@ def four_plots(idx, b, traj_ref, segments, type_of_exp):
     plot.traj_fourplots(axarr, b,       '*', 'gray', 'original')
     plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     # plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference')
-    axarr[0,1].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-           cycler('lw', [1, 2, 3, 4]))
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
     style='-'
+    palette = itertools.cycle(sns.color_palette())
     for i, segment in enumerate(segments):
         c=next(color)
         label = "segment" + str(i+ 1)
@@ -258,28 +258,26 @@ def four_plots(idx, b, traj_ref, segments, type_of_exp):
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
-def velocities(idx, b, traj_ref, segments, type_of_exp):
-    name = 'bot1'
-    fig, axarr = plt.subplots(3)
-    # fig.tight_layout()
-    fig.suptitle('Speed Estimation ' + name, fontsize=30)
-    plot.traj_vel(axarr, b, '-', 'gray', 'original')
-    whole =trajectory.merge(segments)
-    # plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
-    axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-           cycler('lw', [1, 2, 3, 4]))
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
-    for i, segment in enumerate(segments):
-        c=next(color)
-        label = "segment" + str(idx + 1)
-        plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
-    # fig.subplots_adjust(hspace = 0.2)
-    handles, labels = axarr[0].get_legend_handles_labels()
-    fig.legend(handles, labels, loc='lower center',ncol =
-            len(segments) + 2)
-    plt.show()
+# def velocities(idx, b, traj_ref, segments, type_of_exp):
+    # name = 'bot1'
+    # fig, axarr = plt.subplots(3)
+    # # fig.tight_layout()
+    # fig.suptitle('Speed Estimation ' + name, fontsize=30)
+    # plot.traj_vel(axarr, b, '-', 'gray', 'original')
+    # whole =trajectory.merge(segments)
+    # # plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # palette = itertools.cycle(sns.color_palette())
+    # for i, segment in enumerate(segments):
+        # c=next(palette)
+        # label = "segment" + str(idx + 1)
+        # plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
+    # # fig.subplots_adjust(hspace = 0.2)
+    # handles, labels = axarr[0].get_legend_handles_labels()
+    # fig.legend(handles, labels, loc='lower center',ncol =
+            # len(segments) + 2)
+    # plt.show()
 
-def pose(axarr, b, traj_ref, segments, type_of_exp):
+def x_y_yaw(axarr, b, traj_ref, segments, type_of_exp):
     """Generates four plots into Report
 
     :ref: PoseTrajectory3D object that is used as reference
@@ -290,36 +288,33 @@ def pose(axarr, b, traj_ref, segments, type_of_exp):
 
     """
     # [ Plot ] x,y,xy,yaw 
-    # fig, axarr = plt.subplots(2,2,figsize=(12,8))
-    # fig, axarr = plt.subplots(2,2)
-    # fig.suptitle('Tracking - Vehicle ' + str(idx+1), fontsize=30)
-    # fig.tight_layout()
     # print(len(b.timestamps),len(traj_ref.timestamps))
-    plot.traj_fourplots(axarr, b,       '*', 'gray', 'original')
-    plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # plot.traj_fourplots(axarr, b,       '*', 'gray', 'original')
+    plot.traj_xyyaw(axarr[0:3], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # plot.traj_yaw(axarr[0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     # plot.traj_fourplots(axarr, traj_ref, '-', 'gray', 'reference')
-    axarr[0,1].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-           cycler('lw', [1, 2, 3, 4]))
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
+    # axarr[0,1].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
+           # cycler('lw', [1, 2, 3, 4]))
+    palette = itertools.cycle(sns.color_palette())
     style='-'
     for i, segment in enumerate(segments):
-        c=next(color)
+        c=next(palette)
         label = "segment" + str(i+ 1)
-        plot.traj_xy(axarr[0,0:2], segment, '-', c, label,1 ,b.timestamps[0])
-        axarr[1,0].plot(segment.positions_xyz[:, 0],
-                segment.positions_xyz[:,1])
-        plot.traj_yaw(axarr[1,1],segment, style, c, None,1 ,b.timestamps[0])
+        plot.traj_xy(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
+        # axarr[1,0].plot(segment.positions_xyz[:, 0], segment.positions_xyz[:,1])
+        plot.traj_yaw(axarr[2],segment, style, c, None,1 ,b.timestamps[0])
+        # axarr[0].set_xlim(left=0)
+        # axarr[1].set_xlim(left=0)
+        # axarr[2].set_xlim(left=0)
 
-def vel(axarr, b, traj_ref, segments, type_of_exp):
+def vx_vy(axarr, b, traj_ref, segments, type_of_exp):
 
-    plot.vx_vy(axarr, b, '-', 'gray', 'original')
+    plot.traj_vel(axarr, b, '-', 'gray', 'original')
     whole =trajectory.merge(segments)
     # plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
-    axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-           cycler('lw', [1, 2, 3, 4]))
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
+    palette = itertools.cycle(sns.color_palette())
     for i, segment in enumerate(segments):
-        c=next(color)
+        c=next(palette)
         label = "segment" + str(i + 1)
         plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
     handles, labels = axarr[0].get_legend_handles_labels()
@@ -340,8 +335,8 @@ def pose_vel(name, b, traj_ref, segments, type_of_exp):
     fig, axarr = plt.subplots(2,3)
     fig.suptitle(name)
 
-    pose(axarr[:,0:2], b, traj_ref, segments, type_of_exp)
-    vel(axarr[:,2], b, traj_ref, segments, type_of_exp)
+    x_y_yaw  (axarr[0,0:3], b, traj_ref, segments, type_of_exp)
+    vx_vy(axarr[1,0:3], b, traj_ref, segments, type_of_exp)
 
     # handles, labels = axarr[0,0].get_legend_handles_labels()
     # fig.legend(handles, labels, loc='lower center',ncol =

@@ -12,6 +12,15 @@ import sys
 from evo.core.result import Result
 from evo.core import lie_algebra as lie
 
+try: #colorful errors
+    import IPython.core.ultratb
+except ImportError:
+    # No IPython. Use default exception printing.
+    pass
+else:
+    import sys
+    sys.excepthook = IPython.core.ultratb.ColorTB()
+
 if sys.version_info[0] >= 3 and sys.version_info[1] >= 4:
     ABC = abc.ABC
 else:
@@ -300,7 +309,8 @@ def run(results):
 
     # derive a common index type if possible - preferably timestamps
     common_index = None
-    time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
+    # time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
+    time_indices = ["seconds_from_start"]
     for idx in time_indices:
         if idx not in df.loc["np_arrays"].index:
             continue
@@ -441,13 +451,13 @@ def run(results):
 
     # if args.plot:
     plot_collection.show()
-    if args.save_plot:
-        logger.debug(SEP)
-        plot_collection.export(args.save_plot,
-                               confirm_overwrite=not args.no_warnings)
-    if args.serialize_plot:
-        logger.debug(SEP)
-        plot_collection.serialize(args.serialize_plot,
-                                  confirm_overwrite=not args.no_warnings)
+    # if args.save_plot:
+        # logger.debug(SEP)
+        # plot_collection.export(args.save_plot,
+                               # confirm_overwrite=not args.no_warnings)
+    # if args.serialize_plot:
+        # logger.debug(SEP)
+        # plot_collection.serialize(args.serialize_plot,
+                                  # confirm_overwrite=not args.no_warnings)
 
 
