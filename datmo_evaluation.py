@@ -29,11 +29,11 @@ distance = 3
 
 references= []
 references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
-references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
+# references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
 
 tracks = []
-tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
-# tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
+# tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
+tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
 # tracks.append(('box_kf'    , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
 # tracks.append(('box_ukf', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
@@ -52,7 +52,9 @@ for reference in references:
         segments, traj_reference = \
             tracking.associate_segments_common_frame(reference[1], track[1],distance)
         # tracking.pose_vel(track[0]+reference[0], reference[1], traj_reference, segments, type_of_exp) 
-        tracking.plot_dimensions(segments, reference[1])
+        # tracking.plot_dimensions(segments, reference[1])
+        tracking.report(track[0]+"-"+reference[0], reference[1], traj_reference,
+                segments, type_of_exp)
         # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
         # for segment in segments:
