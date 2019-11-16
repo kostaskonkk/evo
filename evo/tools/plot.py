@@ -723,14 +723,15 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
         xlabel = "index"
     ylabels = ["Yaw [rad]"]
 
-    z = traj.orientations_quat_wxyz
-    print(z)
-    yaw = z[:,3]
+    # z = traj.orientations_quat_wxyz
+    # yaw = z[:,3]
+    # print(z)
 
     # wrapped = np.rad2deg(traj.get_orientations_euler()[:,2])
-    unwrapped = np.unwrap(yaw)
+    # unwrapped = np.unwrap(yaw)
     # unwrapped = np.unwrap(traj.get_orientations_euler()[:,2])
-    ax.plot(x, unwrapped, style, markersize =1,
+    yaw = traj.get_orientations_euler()[:,2]
+    ax.plot(x, yaw, style, markersize =1,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabels[0])
     ax.set_xlabel(xlabel)

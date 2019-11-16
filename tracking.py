@@ -164,7 +164,7 @@ def associate_segments_common_frame(traj, tracks, distance):
 
     for tr in tracks: # Find the best matching tracks to the object trajectory
 
-        traj_ref, traj_est = sync.associate_trajectories(traj, tr, max_diff=0.01)
+        traj_ref, traj_est = sync.associate_trajectories(traj, tr, max_diff=0.1)
         # print("calculating APE for track of length", len(tr.timestamps))
         data = (traj_ref, traj_est)
         ape_metric = metrics.APE(metrics.PoseRelation.translation_part)
@@ -258,25 +258,6 @@ def four_plots(idx, b, traj_ref, segments, type_of_exp):
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
-# def velocities(idx, b, traj_ref, segments, type_of_exp):
-    # name = 'bot1'
-    # fig, axarr = plt.subplots(3)
-    # # fig.tight_layout()
-    # fig.suptitle('Speed Estimation ' + name, fontsize=30)
-    # plot.traj_vel(axarr, b, '-', 'gray', 'original')
-    # whole =trajectory.merge(segments)
-    # # plot.traj_vel(axarr, traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
-    # palette = itertools.cycle(sns.color_palette())
-    # for i, segment in enumerate(segments):
-        # c=next(palette)
-        # label = "segment" + str(idx + 1)
-        # plot.linear_vel(axarr[0:2], segment, '-', c, label,1 ,b.timestamps[0])
-    # # fig.subplots_adjust(hspace = 0.2)
-    # handles, labels = axarr[0].get_legend_handles_labels()
-    # fig.legend(handles, labels, loc='lower center',ncol =
-            # len(segments) + 2)
-    # plt.show()
-
 def x_y_yaw(axarr, b, traj_ref, segments, type_of_exp):
     """Generates four plots into Report
 
@@ -323,7 +304,7 @@ def vx_vy(axarr, b, traj_ref, segments, type_of_exp):
     # plt.show()
 
 def pose_vel(name, b, traj_ref, segments, type_of_exp):
-    """Generates four plots into Report
+    """Generates evaluation plots 
 
     :ref: PoseTrajectory3D object that is used as reference
     :est: PoseTrajectory3D object that is plotted against reference
@@ -365,12 +346,10 @@ def plot_dimensions(segments, reference, style='-', color='black', label="", alp
         raise PlotException("expected an axis array with 2 subplots - got " +
                             str(len(axarr)))
     ylabels = ["$Length$ [m]", "$Width$ [m]"]
-    axarr[0].set_prop_cycle(cycler('color', ['c', 'm', 'y', 'k']) +
-           cycler('lw', [1, 2, 3, 4]))
-    color=iter(plt.cm.rainbow(np.linspace(0,1,len(segments))))
+    palette = itertools.cycle(sns.color_palette())
 
     for i, segment in enumerate(segments):
-        c=next(color)
+        c=next(palette)
         if isinstance(segment, trajectory.PoseTrajectory3D):
             # print("it came here")
             x = segment.timestamps - (segment.timestamps[0]

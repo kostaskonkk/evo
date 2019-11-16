@@ -25,16 +25,16 @@ plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
 bag = rosbag.Bag("/home/kostas/results/sim.bag")
 type_of_exp = 'simulation'
-distance = 10
+distance = 3 
 
 references= []
-# references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
+references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
 references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
 
 tracks = []
-# tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
+tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
 # tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
-tracks.append(('box_kf'    , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
+# tracks.append(('box_kf'    , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
 # tracks.append(('box_ukf', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 bag.close()
@@ -44,24 +44,16 @@ table.add_hline()
 table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 table.add_empty_row()
 
-# for idx,b in enumerate(bot):
 results_translation=[]
 results_rotation=[]
 for reference in references:
     for track in tracks:
         
-        # if track[0]=='mean':
-            # segments, traj_reference = \
-                # tracking.associate_segments_common_frame(reference,track[1],distance)
-            # tracking.four_plots(1, reference, traj_reference, segments, type_of_exp) 
-            # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
-
-        if track[0]=='mean_kf' or track[0]=='box_ukf' or track[0]=='box_kf':
-            segments, traj_reference = \
-                tracking.associate_segments_common_frame(reference[1], track[1],distance)
-            tracking.pose_vel(track[0]+reference[0], reference[1], traj_reference, segments, type_of_exp) 
-            # tracking.velocities(1, reference[1], traj_reference, segments, type_of_exp) 
-            # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
+        segments, traj_reference = \
+            tracking.associate_segments_common_frame(reference[1], track[1],distance)
+        # tracking.pose_vel(track[0]+reference[0], reference[1], traj_reference, segments, type_of_exp) 
+        tracking.plot_dimensions(segments, reference[1])
+        # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
         # for segment in segments:
             # print(segment.linear_vel)
