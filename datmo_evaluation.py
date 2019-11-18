@@ -49,14 +49,14 @@ table.add_empty_row()
 results_translation=[]
 results_rotation=[]
 
-
 for ref in references:
 
     fig, axarr = plt.subplots(2,3)
+    fig.tight_layout()
     palette = itertools.cycle(sns.color_palette())
     plot.traj_xyyaw(axarr[0,0:3], ref[1], '-', 'gray', 'reference',1
             ,ref[1].timestamps[0])
-    plot.traj_vel(axarr[1,0:3], ref[1], '-', 'gray')
+    # plot.traj_vel(axarr[1,0:3], ref[1], '-', 'gray')
 
     for track in tracks:
         
@@ -64,12 +64,11 @@ for ref in references:
             tracking.associate_segments_common_frame(ref[1], track[1],distance)
         color=next(palette)
         # axarr[0,0].legend(track[0])
-        tracking.poses_vel(axarr, color, track[0]+ref[0], ref[1],
-                traj_reference, segments, track[0]) 
+        # tracking.poses_vel(axarr, color, track[0]+ref[0], ref[1],
+                # traj_reference, segments, track[0]) 
         # tracking.pose_vel(track[0]+ref[0], ref[1], traj_reference, segments, type_of_exp) 
         # tracking.plot_dimensions(segments, ref[1])
-        # tracking.report(track[0]+"-"+ref[0], ref[1], traj_reference,
-                # segments, type_of_exp)
+        tracking.report(track[0]+"-"+ref[0], ref[1], traj_reference, segments, type_of_exp)
         # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
         # for segment in segments:
