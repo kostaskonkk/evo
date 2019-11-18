@@ -420,7 +420,7 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$Time$ [s]"
+        xlabel = "Time [s]"
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
@@ -452,7 +452,7 @@ def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$t$ (s)"
+        xlabel = "Time [s]"
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
@@ -461,11 +461,11 @@ def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
+        axarr[i].set_xlabel(xlabel)
     traj_yaw(axarr[2],traj, style, color,
             alpha=alpha, start_timestamp=start_timestamp)
     # axarr[2].plot(x, traj.orientations_euler[:, 2], style, color=color,
                   # label=label, alpha=alpha)
-    # axarr[2].set_xlabel(xlabel)
     # if label:
         # axarr[0].legend(frameon=True)
 def traj_fourplots(axarr, traj, style='-', color='black', label="", alpha=1.0,
@@ -525,7 +525,7 @@ def traj_xyz(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$t$ (s)"
+        xlabel = "Time [s]"
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
@@ -580,7 +580,7 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$t$ (s)"
+        xlabel = "Time [s]"
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
@@ -625,7 +625,7 @@ def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$t$ (s)"
+        xlabel = "Time [s]"
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
@@ -656,14 +656,15 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$t$ (s)"
+        xlabel = "$Time$ [s]"
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
     ylabels = ["$v_x$ [m/s]", "$v_y$ [m/s]"]
     for i in range(0, 2):
-        axarr[i].plot(x, traj.linear_vel[:,i], style,color=color,label=label, alpha=alpha)
+        axarr[i].plot(x, traj.linear_vel[:,i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
+        axarr[i].set_xlabel(xlabel)
     # if label:
         # axarr[0].legend(frameon=True)
 
@@ -721,8 +722,7 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.orientations_euler))
         xlabel = "index"
-    ylabels = ["Yaw [rad]"]
-
+    ylabel = "$\psi$ [rad/s]"
     # z = traj.orientations_quat_wxyz
     # yaw = z[:,3]
     # print(z)
@@ -733,7 +733,7 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     yaw = traj.get_orientations_euler()[:,2]
     ax.plot(x, yaw, style, markersize =1,
                   color=color, label=label, alpha=alpha)
-    ax.set_ylabel(ylabels[0])
+    ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
     if label:
         ax.legend(frameon=True)

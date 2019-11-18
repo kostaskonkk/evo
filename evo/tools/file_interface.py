@@ -59,7 +59,6 @@ def has_utf8_bom(file_path):
     with open(file_path, 'rb') as f:
         return not int(binascii.hexlify(f.read(3)), 16) ^ 0xEFBBBF
 
-
 def csv_read_matrix(file_path, delim=',', comment_str="#"):
     """
     directly parse a csv-like file into a matrix
@@ -87,7 +86,6 @@ def csv_read_matrix(file_path, delim=',', comment_str="#"):
             mat = [row for row in reader]
     return mat
 
-
 def read_tum_trajectory_file(file_path):
     """
     parses trajectory file in TUM format (timestamp tx ty tz qx qy qz qw)
@@ -112,7 +110,6 @@ def read_tum_trajectory_file(file_path):
             len(stamps), file_path))
     return PoseTrajectory3D(xyz, quat, stamps)
 
-
 def write_tum_trajectory_file(file_path, traj, confirm_overwrite=False):
     """
     :param file_path: desired text file for trajectory (string or handle)
@@ -134,7 +131,6 @@ def write_tum_trajectory_file(file_path, traj, confirm_overwrite=False):
     np.savetxt(file_path, mat, delimiter=" ")
     if isinstance(file_path, str):
         logger.info("Trajectory saved to: " + file_path)
-
 
 def read_kitti_poses_file(file_path):
     """
@@ -161,7 +157,6 @@ def read_kitti_poses_file(file_path):
         logger.debug("Loaded {} poses from: {}".format(len(poses), file_path))
     return PosePath3D(poses_se3=poses)
 
-
 def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):
     """
     :param file_path: desired text file for trajectory (string or handle)
@@ -177,7 +172,6 @@ def write_kitti_poses_file(file_path, traj, confirm_overwrite=False):
     np.savetxt(file_path, poses_flat, delimiter=' ')
     if isinstance(file_path, str):
         logger.info("Poses saved to: " + file_path)
-
 
 def read_euroc_csv_trajectory(file_path):
     """
@@ -200,7 +194,6 @@ def read_euroc_csv_trajectory(file_path):
     logger.debug("Loaded {} stamps and poses from: {}".format(
         len(stamps), file_path))
     return PoseTrajectory3D(xyz, quat, stamps)
-
 
 def _get_xyz_quat_from_transform_stamped(msg):
     xyz = [
@@ -310,14 +303,14 @@ def read_TrackArray(bag_handle, topic, min_length):
     frame_id = "map"
     unique_ids = unique(ids)
     list_tracks = []
-    for j in unique_ids:
+    for id in unique_ids:
         stamps, xyz, quat = [], [], []
         linear, angular = [], []
         length, width = [], []
-        pose_covariance, twist_covariance = [], []
+        pose_covar, twist_covar = [], []
         for msg in msgs:
             for i in range(0,len(msg.tracks)):
-                    if msg.tracks[i].id == j:
+                    if msg.tracks[i].id == id:
                         t = msg.tracks[i].odom.header.stamp
                         stamps.append(t.secs + (t.nsecs * 1e-9))
                         xyz_t, quat_t = get_xyz_quat(msg.tracks[i].odom.pose)
@@ -325,15 +318,16 @@ def read_TrackArray(bag_handle, topic, min_length):
                         quat.append(quat_t)
                         linear_t, angular_t = get_twist(msg.tracks[i].odom)
                         linear.append(linear_t)
+                        angular.append(angular_t)
                         length.append(msg.tracks[i].length)
                         width.append(msg.tracks[i].width)
-                        # angular.append(angular_t)
-                        pose_covariance.append(msg.tracks[i].odom.pose.covariance)
-                        twist_covariance.append(msg.tracks[i].odom.twist.covariance)
+                        pose_covar.append(msg.tracks[i].odom.pose.covariance)
+                        twist_covar.append(msg.tracks[i].odom.twist.covariance)
         if len(stamps)>min_length:
             list_tracks.append(PoseTrajectory3D(xyz, quat, stamps,\
-                meta={"frame_id": frame_id},linear_vel=linear,length =
-                length,width = width,twist_covariance = twist_covariance)) 
+                meta={"frame_id":
+                    frame_id},linear_vel=linear, angular_vel=angular, length =
+                length, width = width, twist_covariance = twist_covar)) 
     return list_tracks 
 
 def write_bag_trajectory(bag_handle, traj, topic_name, frame_id=""):

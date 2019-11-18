@@ -14,6 +14,8 @@ import numpy as np
 from cycler import cycler
 import sys # cli arguments in sys.argv
 import tracking, errors
+import seaborn as sns
+import itertools
 
 
 plt.style.use(['seaborn-whitegrid', 'stylerc'])
@@ -34,8 +36,8 @@ references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow'
 tracks = []
 # tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
 tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
-# tracks.append(('box_kf'    , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
-# tracks.append(('box_ukf', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+# tracks.append(('box_kf' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
+tracks.append(('box_ukf', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 bag.close()
 
@@ -46,15 +48,28 @@ table.add_empty_row()
 
 results_translation=[]
 results_rotation=[]
-for reference in references:
+
+
+for ref in references:
+
+    fig, axarr = plt.subplots(2,3)
+    palette = itertools.cycle(sns.color_palette())
+    plot.traj_xyyaw(axarr[0,0:3], ref[1], '-', 'gray', 'reference',1
+            ,ref[1].timestamps[0])
+    plot.traj_vel(axarr[1,0:3], ref[1], '-', 'gray')
+
     for track in tracks:
         
         segments, traj_reference = \
-            tracking.associate_segments_common_frame(reference[1], track[1],distance)
-        # tracking.pose_vel(track[0]+reference[0], reference[1], traj_reference, segments, type_of_exp) 
-        # tracking.plot_dimensions(segments, reference[1])
-        tracking.report(track[0]+"-"+reference[0], reference[1], traj_reference,
-                segments, type_of_exp)
+            tracking.associate_segments_common_frame(ref[1], track[1],distance)
+        color=next(palette)
+        # axarr[0,0].legend(track[0])
+        tracking.poses_vel(axarr, color, track[0]+ref[0], ref[1],
+                traj_reference, segments, track[0]) 
+        # tracking.pose_vel(track[0]+ref[0], ref[1], traj_reference, segments, type_of_exp) 
+        # tracking.plot_dimensions(segments, ref[1])
+        # tracking.report(track[0]+"-"+ref[0], ref[1], traj_reference,
+                # segments, type_of_exp)
         # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
         # for segment in segments:
@@ -65,8 +80,8 @@ for reference in references:
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.translation_part,
-            ref_name=reference[0],
-            est_name=track[0]+reference[0])
+            ref_name=ref[0],
+            est_name=track[0]+ref[0])
         results_translation.append(result_translation)
         # print(result.info)
         # print(result.trajectories)
@@ -75,11 +90,18 @@ for reference in references:
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.rotation_part,
-            ref_name=reference[0],
-            est_name=track[0]+reference[0])
+            ref_name=ref[0],
+            est_name=track[0]+ref[0])
         results_rotation.append(result_rotation)
         # print(result.np_arrays)
         # file_interface.save_res_file("/home/kostas/results/res_files/mean_track", mean_result, False)
+
+    handles, labels = axarr[0,0].get_legend_handles_labels()
+    fig.legend(handles, labels, loc='lower center',ncol = len(labels))
+    plt.waitforbuttonpress(0)
+    plt.close(fig)
+    # plt.savefig("/home/kostas/results/"+type_of_exp+"/tracking" + str(idx+1) +".png",
+            # dpi = 100, bbox_inches='tight')
 # errors.run(results_translation)
 # errors.run(results_rotation)
 
