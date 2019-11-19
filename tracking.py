@@ -465,95 +465,43 @@ from math import sqrt
 default_width = 6.125 # in inches
 default_ratio = 2*(sqrt(5.0) - 1.0) / 2.0 # golden mean
 
-"""
-Returns a figure with an appropriate size and tight layout.
-"""
-def figure(width=default_width, ratio=default_ratio, pad=0, *args, **kwargs):
-    fig = plt.figure(figsize=(width, width * ratio), *args, **kwargs)
-    fig.set_tight_layout({
-        'pad': pad
-    })
-    return fig
+# def figure(width=default_width, ratio=default_ratio, pad=0, *args, **kwargs):
+    # fig = plt.figure(figsize=(width, width * ratio), *args, **kwargs)
+    # fig.set_tight_layout({
+        # 'pad': pad
+    # })
+    # return fig
 
 
-"""
-Returns subplots with an appropriate figure size and tight layout.
-"""
-def subplots(width=default_width, ratio=default_ratio, *args, **kwargs):
-    fig, axes = plt.subplots(figsize=(width, width * ratio), *args, **kwargs)
-    fig.set_tight_layout({
-        'pad': 0
-    })
-    return fig, axes
+# def subplots(width=default_width, ratio=default_ratio, *args, **kwargs):
+    # fig, axes = plt.subplots(figsize=(width, width * ratio), *args, **kwargs)
+    # fig.set_tight_layout({
+        # 'pad': 0
+    # })
+    # return fig, axes
 
-
-"""
-Save both a PDF and a PGF file with the given filename.
-"""
-def savefig(filename, *args, **kwargs):
-    plt.savefig(filename + '.pdf', *args, **kwargs)
-    plt.savefig(filename + '.pgf', *args, **kwargs)
+# def savefig(filename, *args, **kwargs):
+    # plt.savefig(filename + '.pdf', *args, **kwargs)
+    # plt.savefig(filename + '.pgf', *args, **kwargs)
     
 def report(name, b, traj_ref, segments, type_of_exp):
-    # import tikzplotlib
     import matplotlib as mpl
     mpl.use('pgf')
 
-    # default_width = 5.78853 # in inches
-    # default_ratio = (sqrt(5.0) - 1.0) / 2.0 # golden mean
+    default_width = 6.125 # in inches
+    default_ratio = (sqrt(5.0) - 1.0) / 2.0 # golden mean
+    default_height = default_ratio * default_width
 
     mpl.rcParams.update({
         "text.usetex": True,
         "pgf.texsystem": "pdflatex",
-        "pgf.rcfonts": False,
-        "font.family": "serif",
-        "font.serif": [],
-        "font.sans-serif": [],
-        "font.monospace": [],
-        "figure.figsize": [default_width, default_width * default_ratio],
-        "pgf.preamble": [
-            # put LaTeX preamble declarations here
-            r"\usepackage[utf8x]{inputenc}",
-            r"\usepackage[T1]{fontenc}",
-            # macros defined here will be available in plots, e.g.:
-            r"\newcommand{\vect}[1]{#1}",
-            # You can use dummy implementations, since you LaTeX document
-            # will render these properly, anyway.
-        ],
     })
 
-    # import matplotlib.pyplot as plt
-    # height_pt = 636.60028
-    width_pt  = 442.65375
-    inches_per_pt = 1 / 72.27
-    # # height = inches_per_pt * height_pt
-    width  = inches_per_pt * width_pt
-    print(width)
-    # mpl.use('pgf')
-    # pgf_with_latex = {
-        # 'text.usetex': False,
-        # 'pgf.texsystem': 'pdflatex',
-        # 'pgf.rcfonts': False,
-        # "pgf.preamble": [
-                # r"\usepackage{siunitx}"
-                # ]
-    # }
-    # mpl.rcParams.update(pgf_with_latex)
+    # width_pt  = 442.65375
+    # inches_per_pt = 1 / 72.27
+    # width  = inches_per_pt * width_pt
 
-    fig, axarr = plt.subplots(4,2)
-    fig.tight_layout()
-    # print(height/2)
-    # fig, axarr = plt.subplots(4,2,figsize=(height, width))
-    # print(width)
-    # fig.set_size_inches(width, 8)
-    # fig.set_tight_layout
-    # print(fig.get_size_inches)
-    # fig.suptitle(name)
-    # plt.axes([0.125,0.2,0.95-0.125,0.95-0.2])
-
-    # set up figure size
-    # plt.figure(figsize=(5.8, 3.0))
-    # plt.figure(figsize=(4.5, 2.5))
+    fig, axarr = plt.subplots(4,2,figsize=(6.125, 8.5))
 
     plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     # plot.traj_yaw(axarr[0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
@@ -572,12 +520,9 @@ def report(name, b, traj_ref, segments, type_of_exp):
     # handles, labels = axarr[0,0].get_legend_handles_labels()
     # fig.legend(handles, labels, loc='lower center',ncol =
             # len(segments) + 2)
-    # plt.savefig("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pdf",
-            # dpi = 100)
+    fig.tight_layout()
     plt.savefig("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf")
-    print(fig.get_size_inches)
-    # tikzplotlib.save("/home/kostas/report/figures/"+type_of_exp+"/"+ name
-            # +".tex")
+    print("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf")
+    # print(fig.get_size_inches)
     # plt.waitforbuttonpress(0)
-    # plt.close(fig)
 

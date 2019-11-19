@@ -1,29 +1,39 @@
 import pandas as pd 
 from pylatex import Tabular 
-import matplotlib
-# matplotlib.use('agg')
+import matplotlib as mpl
 import matplotlib.pyplot as plt
-# import seaborn as sns
-# import tkinter
-# print(plt.style.available)
-# plt.style.use(['seaborn-whitegrid', 'matplotlibrc'])
 
-plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
-# from evo.tools.settings import SETTINGS
-# figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
-# use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
-# colormap = SETTINGS.plot_multi_cmap if use_cmap else None
-# linestyles = ["-o" for x in args.result_files
-              # ] if args.plot_markers else None
-# sns.set_style(style="whitegrid")
-# sns.set_context("talk")
+def whole(type_of_exp):
 
+    from math import sqrt
+    df_whole = pd.read_csv("/home/kostas/results/exec_time/whole.csv")
+    plt.style.use(['seaborn-whitegrid', 'stylerc'])
+    mpl.use('pgf')
+    mpl.rcParams.update({"text.usetex": True})
+
+    fig_stats = plt.figure(figsize=(6.125,3.785))
+    # df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
+    # ax = df_whole['milli'].plot(marker = '.',c='k',ms =8, ax=fig_stats.gca(), colormap=colormap, stacked=False)
+    ax1 = df_whole['milli'].plot(lw=0.4, c= 'k')
+    ax1 = df_whole['milli'].plot(marker = '.', linestyle = '', c='r',ms =3)
+    ax1.set_ylabel('Execution Time [ms]')
+    ax1.set_xlabel('Iteration')
+
+    # ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    # ax2 = df_whole['objects'].plot(lw=0.2, c= 'k')
+    # ax2.set_ylabel('Tracked Objects')
+    # ax2.grid(False)
+    # ax.set_title('Execution time of DATMO program')
+    # plt.savefig("/home/kostas/report/figures/exec_time/whole.png", dpi = 300, format='png', bbox_inches='tight')
+    fig_stats.tight_layout()
+    plt.savefig("/home/kostas/report/figures/"+type_of_exp+"/exec_time.pgf")
+
+df_whole = pd.read_csv("/home/kostas/results/exec_time/whole.csv")
 df_rect = pd.read_csv("/home/kostas/results/exec_time/rect_fitting.csv")
-df_whole =pd.read_csv("/home/kostas/results/exec_time/whole.csv")
 df_clust =pd.read_csv("/home/kostas/results/exec_time/clustering.csv")
 df_test =pd.read_csv("/home/kostas/results/exec_time/testing.csv")
-print(df_whole.head())
+# print(df_whole.head())
 
 clust_table = Tabular('l c c c c c c')
 clust_table.add_hline()
@@ -69,15 +79,7 @@ print('mean ',df_test['clusters'].mean(),'std',df_test['clusters'].std(),'min ',
 
 print('mean',df_whole['milli'].mean(),'std',df_whole['milli'].std(),'min',df_whole['milli'].min(),'max',df_whole['milli'].max())
 
-fig_stats = plt.figure("Execution Time")
-# df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
-# ax = df_whole['milli'].plot(marker = '.',c='k',ms =8, ax=fig_stats.gca(), colormap=colormap, stacked=False)
-ax = df_whole['milli'].plot(marker = '.',c='k',ms =8, ax=fig_stats.gca(), stacked=False)
-ax = df_whole['milli'].plot(lw=0.5)
-ax.set_title('Execution time of DATMO program')
-ax.set_ylabel('Time $[ms]$')
-plt.savefig("/home/kostas/report/figures/time_statistics.png", dpi = 300, format='png', bbox_inches='tight')
-plt.show()
+
 
 # plt.xlabel
 # plt.ylabel = 'Time [ms]'
