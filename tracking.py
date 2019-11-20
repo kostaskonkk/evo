@@ -406,9 +406,28 @@ def vx_vys(axarr, color, b, traj_ref, segments, method):
     axarr[0].set_xlim(left=0)
     axarr[1].set_xlim(left=0)
     axarr[2].set_xlim(left=0)
-    # fig.legend(handles, labels, loc='lower center',ncol = len(segments) + 2)
-    # plt.show()
 
+def report(axarr, color, name, b, traj_ref, segments, method):
+
+    plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # plot.traj_yaw(axarr[2,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    for i, segment in enumerate(segments):
+        plot.traj_xy(axarr[0,0:2], segment, '-', color, method,1 ,b.timestamps[0])
+        plot.linear_vel(axarr[1,0:2], segment, '-', color, method,1 ,b.timestamps[0])
+        plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,b.timestamps[0])
+        # angular_vel(axarr[2,1], segment, '-', color, None, 1, b.timestamps[0])
+    # handles, labels = axarr[0].get_legend_handles_labels()
+
+    # x_y_yaw  (axarr[0,0:3], b, traj_ref, segments, method)
+    # vx_vy(axarr[1,0:3], b, traj_ref, segments, method)
+
+    # handles, labels = axarr[0,0].get_legend_handles_labels()
+    # fig.legend(handles, labels, loc='lower center',ncol =
+            # len(segments) + 2)
+    # fig.tight_layout()
+    # plt.savefig("/home/kostas/report/figures/"+method+".pgf")
+    # print(fig.get_size_inches)
+    # plt.waitforbuttonpress(0)
 
 def plot_dimensions(segments, reference, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -459,70 +478,4 @@ def plot_dimensions(segments, reference, style='-', color='black', label="", alp
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
-
-from math import sqrt
-# default_width = 5.78853 # in inches
-default_width = 6.125 # in inches
-default_ratio = 2*(sqrt(5.0) - 1.0) / 2.0 # golden mean
-
-# def figure(width=default_width, ratio=default_ratio, pad=0, *args, **kwargs):
-    # fig = plt.figure(figsize=(width, width * ratio), *args, **kwargs)
-    # fig.set_tight_layout({
-        # 'pad': pad
-    # })
-    # return fig
-
-
-# def subplots(width=default_width, ratio=default_ratio, *args, **kwargs):
-    # fig, axes = plt.subplots(figsize=(width, width * ratio), *args, **kwargs)
-    # fig.set_tight_layout({
-        # 'pad': 0
-    # })
-    # return fig, axes
-
-# def savefig(filename, *args, **kwargs):
-    # plt.savefig(filename + '.pdf', *args, **kwargs)
-    # plt.savefig(filename + '.pgf', *args, **kwargs)
-    
-def report(name, b, traj_ref, segments, type_of_exp):
-    import matplotlib as mpl
-    mpl.use('pgf')
-
-    default_width = 6.125 # in inches
-    default_ratio = (sqrt(5.0) - 1.0) / 2.0 # golden mean
-    default_height = default_ratio * default_width
-
-    mpl.rcParams.update({
-        "text.usetex": True,
-        "pgf.texsystem": "pdflatex",
-    })
-
-    # width_pt  = 442.65375
-    # inches_per_pt = 1 / 72.27
-    # width  = inches_per_pt * width_pt
-
-    fig, axarr = plt.subplots(4,2,figsize=(6.125, 8.5))
-
-    plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
-    # plot.traj_yaw(axarr[0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
-    palette = itertools.cycle(sns.color_palette())
-    style='-'
-    for i, segment in enumerate(segments):
-        c=next(palette)
-        label = "segment" + str(i+ 1)
-        plot.traj_xy(axarr[0,0:2], segment, '-', c, label,1 ,b.timestamps[0])
-        plot.linear_vel(axarr[1,0:2], segment, '-', c, label,1 ,b.timestamps[0])
-        plot.traj_yaw(axarr[2,0],segment, style, c, None,1 ,b.timestamps[0])
-
-    # x_y_yaw  (axarr[0,0:3], b, traj_ref, segments, type_of_exp)
-    # vx_vy(axarr[1,0:3], b, traj_ref, segments, type_of_exp)
-
-    # handles, labels = axarr[0,0].get_legend_handles_labels()
-    # fig.legend(handles, labels, loc='lower center',ncol =
-            # len(segments) + 2)
-    fig.tight_layout()
-    plt.savefig("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf")
-    print("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf")
-    # print(fig.get_size_inches)
-    # plt.waitforbuttonpress(0)
 
