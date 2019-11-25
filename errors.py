@@ -44,6 +44,8 @@ class PoseRelation(Enum):
     rotation_part = "rotation part"
     rotation_angle_rad = "rotation angle in radians"
     rotation_angle_deg = "rotation angle in degrees"
+    x = "x"
+    velocity_part = "velocity part"
 
 class Unit(Enum):
     none = "unit-less"
@@ -52,6 +54,7 @@ class Unit(Enum):
     degrees = "deg"
     radians = "rad"
     frames = "frames"
+    speed = "m/s"
 
 class Metric(ABC):
     @abc.abstractmethod
@@ -151,7 +154,7 @@ class PE(Metric):
 class APE(PE):
     """
     APE: absolute pose error
-    metric for investigating the global consistency of a SLAM trajectory
+    metric for investigating the global consistency of a DATMO system
     """
 
     def __init__(self, pose_relation=PoseRelation.translation_part):
@@ -164,6 +167,14 @@ class APE(PE):
             self.unit = Unit.degrees
         elif pose_relation == PoseRelation.rotation_angle_rad:
             self.unit = Unit.radians
+        elif pose_relation == PoseRelation.x:
+            self.unit = Unit.meters
+        elif pose_relation == PoseRelation.y:
+            self.unit = Unit.meters
+        elif pose_relation == PoseRelation.vx:
+            self.unit = Unit.speed
+        elif pose_relation == PoseRelation.vy:
+            self.unit = Unit.speed
         else:
             self.unit = Unit.none  # dimension-less
 
@@ -209,6 +220,9 @@ class APE(PE):
         if self.pose_relation == PoseRelation.translation_part:
             # don't require full SE(3) matrices for faster computation
             self.E = traj_est.positions_xyz - traj_ref.positions_xyz
+        elif self.pose_relation == PoseRelation.x:
+            # don't require full SE(3) matrices for faster computation
+            self.E = traj_est.positions_xyz[:,0] - traj_ref.positions_xyz[:,0]
         else:
             self.E = [
                 self.ape_base(x_t, x_t_star) for x_t, x_t_star in zip(
@@ -217,6 +231,8 @@ class APE(PE):
 
         if self.pose_relation == PoseRelation.translation_part:
             # E is an array of position vectors only in this case
+            self.error = [np.linalg.norm(E_i) for E_i in self.E]
+        elif self.pose_relation == PoseRelation.x:
             self.error = [np.linalg.norm(E_i) for E_i in self.E]
         elif self.pose_relation == PoseRelation.rotation_part:
             self.error = np.array([
@@ -333,7 +349,7 @@ def run(results):
             }, index=df.loc["np_arrays", common_index][key])
             duplicates = new_error_df.index.duplicated(keep="first")
             if any(duplicates):
-                logger.warning(
+                print(
                     "duplicate indices in error array of {} - "
                     "keeping only first occurrence of duplicates".format(key))
                 new_error_df = new_error_df[~duplicates]
@@ -373,9 +389,9 @@ def run(results):
 
     # check if data has NaN "holes" due to different indices
     inconsistent = error_df.isnull().values.any()
-    if inconsistent and common_index != "timestamps" and not args.no_warnings:
-        logger.debug(SEP)
-        logger.warning("Data lengths/indices are not consistent, "
+    if inconsistent and common_index != "timestamps":
+        # logger.debug(SEP)
+        print("Data lengths/indices are not consistent, "
                        "raw value plot might not be correctly aligned")
 
     from evo.tools import plot

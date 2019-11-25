@@ -275,14 +275,16 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$Time [s]$"
+        xlabel = "$Time\; [s]$"
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabel = "$\dot{\psi}$ [rad/s]"
+    ylabel = "$\dot{\psi}\; [rad/s]$"
     ax.plot(x, traj.angular_vel[:,2], style, color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
+    ax.set_xlim(left=0)
+
 
 def x_y_yaw(axarr, b, traj_ref, segments, type_of_exp):
     """Generates plots for x, y and yaw onto an axarray
@@ -310,9 +312,6 @@ def x_y_yaw(axarr, b, traj_ref, segments, type_of_exp):
         plot.traj_xy(axarr[0:2], segment, '-', c, None,1 ,b.timestamps[0])
         # axarr[1,0].plot(segment.positions_xyz[:, 0], segment.positions_xyz[:,1])
         plot.traj_yaw(axarr[2],segment, style, c, None,1 ,b.timestamps[0])
-        # axarr[0].set_xlim(left=0)
-        # axarr[1].set_xlim(left=0)
-        # axarr[2].set_xlim(left=0)
 
 def vx_vy(axarr, b, traj_ref, segments, type_of_exp):
 
@@ -403,23 +402,20 @@ def vx_vys(axarr, color, b, traj_ref, segments, method):
         angular_vel(axarr[2], segment, '-', color, method, 1, b.timestamps[0])
     # handles, labels = axarr[0].get_legend_handles_labels()
 
-    axarr[0].set_xlim(left=0)
-    axarr[1].set_xlim(left=0)
-    axarr[2].set_xlim(left=0)
+    # axarr[0].set_xlim(left=0)
+    # axarr[1].set_xlim(left=0)
+    # axarr[2].set_xlim(left=0)
 
 def report(axarr, color, name, b, traj_ref, segments, method):
 
-    plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
+    # plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     # plot.traj_yaw(axarr[2,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     for i, segment in enumerate(segments):
-        plot.traj_xy(axarr[0,0:2], segment, '-', color, method,1 ,b.timestamps[0])
-        plot.linear_vel(axarr[1,0:2], segment, '-', color, method,1 ,b.timestamps[0])
-        plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,b.timestamps[0])
-        # angular_vel(axarr[2,1], segment, '-', color, None, 1, b.timestamps[0])
+        plot.traj_xy(axarr[0,0:2], segment, '-', color, name,1 ,b.timestamps[0])
+        plot.linear_vel(axarr[1,0:2], segment, '-', color, name,1 ,b.timestamps[0])
+        plot.traj_yaw(axarr[2,0],segment, '-', color, name, 1 ,b.timestamps[0])
+        angular_vel(axarr[2,1], segment, '-', color, name, 1, b.timestamps[0])
     # handles, labels = axarr[0].get_legend_handles_labels()
-
-    # x_y_yaw  (axarr[0,0:3], b, traj_ref, segments, method)
-    # vx_vy(axarr[1,0:3], b, traj_ref, segments, method)
 
     # handles, labels = axarr[0,0].get_legend_handles_labels()
     # fig.legend(handles, labels, loc='lower center',ncol =

@@ -420,16 +420,17 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "Time [s]"
+        xlabel = "$Time\; [s]$"
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
-    ylabels = ["$x$ [m]", "$y$ [m]"]
+    ylabels = ["$x\; [m]$", "$y\; [m]$"]
     for i in range(0, 2):
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
-    axarr[1].set_xlabel(xlabel)
+        axarr[i].set_xlabel(xlabel)
+        axarr[i].set_xlim(left=0)
     # if label:
         # axarr[0].legend(frameon=True)
 
@@ -594,6 +595,40 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     # if label:
         # axarr[0].legend(frameon=True)
 
+def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    calculates the velocities of a trajectory object and plots them on an axis
+    :param axarr: an axis array (for x, y)
+                  e.g. from 'fig, axarr = plt.subplots(2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    """
+    # dot_yaw = [
+        # trajectory.calc_angular_velocity(traj.positions_xyz[i,1],
+                              # traj.positions_xyz[i + 1,1],
+                              # traj.timestamps[i], traj.timestamps[i + 1])
+        # for i in range(len(traj.positions_xyz) - 1)]
+    dot_yaw = [
+        trajectory.calc_angular_velocity(traj.poses_se3[i],
+                              traj.poses_se3[i + 1],
+                              traj.timestamps[i], traj.timestamps[i + 1])
+        for i in range(len(traj.poses_se3) - 1)]
+    dot_yaw.append(0)
+    x = traj.timestamps - (traj.timestamps[0]
+                           if start_timestamp is None else start_timestamp)
+    xlabel = "Time [s]"
+    ylabel = ["$\dot {\psi}$ (rad/s)"]
+
+    ax.plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
+    ax.set_xlabel(xlabel)
+    ax.set_ylabel(ylabel)
+    # if label:
+        # axarr[0].legend(frameon=True)
+
 def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
     """
@@ -656,15 +691,16 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$Time$ [s]"
+        xlabel = "$Time\; [s]$"
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabels = ["$v_x$ [m/s]", "$v_y$ [m/s]"]
+    ylabels = ["$v_x\; [m/s]$", "$v_y\;[m/s]$"]
     for i in range(0, 2):
         axarr[i].plot(x, traj.linear_vel[:,i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
+        axarr[i].set_xlim(left=0)
     # if label:
         # axarr[0].legend(frameon=True)
 
@@ -718,11 +754,11 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "Time [s]"
+        xlabel = "$Time\; [s]$"
     else:
         x = range(0, len(traj.orientations_euler))
         xlabel = "index"
-    ylabel = "$\psi$ [rad/s]"
+    ylabel = "$\psi\; [rad/s]$"
     # z = traj.orientations_quat_wxyz
     # yaw = z[:,3]
     # print(z)
@@ -735,8 +771,9 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
-    if label:
-        ax.legend(frameon=True)
+    ax.set_xlim(left=0)
+    # if label:
+        # ax.legend(frameon=True)
             
 def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
                  subplot_arg="111"):

@@ -22,18 +22,18 @@ plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
 # bag = rosbag.Bag(sys.argv[1])
 
-# bag = rosbag.Bag("/home/kostas/results/exp.bag")
-# type_of_exp = 'experiment'
-# distance = 0.9
+bag = rosbag.Bag("/home/kostas/results/exp.bag")
+type_of_exp = 'experiment'
+distance = 0.9
 
-bag = rosbag.Bag("/home/kostas/results/sim.bag")
-type_of_exp = 'simulation'
-distance = 3 
+# bag = rosbag.Bag("/home/kostas/results/sim.bag")
+# type_of_exp = 'simulation'
+# distance = 3 
 
 references= []
 if type_of_exp=='simulation':
-    # references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
-    references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
+    references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
+    # references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
 else:
     references.append(('robot_1', file_interface.read_bag_trajectory(bag,
         '/robot_1')))
@@ -59,17 +59,25 @@ results_rotation=[]
 
 # exec_time.whole(type_of_exp) # Make execution time plots
 
-# mpl.use('pgf')
-# mpl.rcParams.update({
-    # "text.usetex": True,
-    # "pgf.texsystem": "pdflatex",
-# })
+mpl.use('pgf')
+mpl.rcParams.update({
+    "text.usetex": True,
+    "pgf.texsystem": "pdflatex",
+})
 
 for ref in references:
 
-    # fig, axarr = plt.subplots(2,3,figsize=(6.125,7))
+    # fig, axarr = plt.subplots(2,3)
     palette = itertools.cycle(sns.color_palette())
+    # plot.traj_vel(axarr[1,0:3], ref[1], '-', 'gray')
+
     fig_rep, axarr_rep = plt.subplots(3,2,figsize=(6.125,7))
+    plot.traj_xy(axarr_rep[0,0:2], ref[1], '-', 'gray', 'reference',1
+            ,ref[1].timestamps[0])
+    # plot.vx_vy(axarr_rep[1,0:2], ref[1], '-', 'gray', 'reference', 1,
+            # ref[1].timestamps[0])
+    plot.traj_yaw(axarr_rep[2,0],ref[1], '-', 'gray', None, 1 ,ref[1].timestamps[0])
+    # plot.angular_vel(axarr_rep[2,1], ref[1], '-', 'gray', None, 1, ref[1].timestamps[0])
 
 
     # plot.traj_xyyaw(axarr[0,0:3], ref[1], '-', 'gray', 'reference',1
@@ -77,7 +85,6 @@ for ref in references:
     # plot.traj_vel(axarr[1,0:3], ref[1], '-', 'gray')
 
     for track in tracks:
-        
         segments, traj_reference = \
             tracking.associate_segments_common_frame(ref[1], track[1],distance)
         color=next(palette)
@@ -91,12 +98,13 @@ for ref in references:
 
         # for segment in segments:
             # print(segment.linear_vel)
-        whole =trajectory.merge(segments)
+        # whole =trajectory.merge(segments)
 
         # result_translation = errors.ape(
             # traj_ref=traj_reference,
             # traj_est=whole,
-            # pose_relation=errors.PoseRelation.translation_part,
+            # pose_relation=errors.PoseRelation.x,
+            # # pose_relation=errors.PoseRelation.translation_part,
             # ref_name=ref[0],
             # est_name=track[0]+ref[0])
         # results_translation.append(result_translation)
@@ -112,14 +120,17 @@ for ref in references:
     # fig.tight_layout()
     # handles, labels = axarr[0,0].get_legend_handles_labels()
     # lgd = fig.legend(handles, labels, loc='lower center',ncol = len(labels))
-    plt.waitforbuttonpress(0)
-    plt.close(fig)
+    # plt.waitforbuttonpress(0)
+    # plt.close(fig)
 
-    # name = track[0]+"-"+ref[0]
-    # fig_rep.subplots_adjust(bottom=0.1)
+    name = track[0]+"-"+ref[0]
+    handles, labels = axarr_rep[0,0].get_legend_handles_labels()
+    lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+    fig_rep.tight_layout()
+    fig_rep.subplots_adjust(bottom=0.11)
     # fig_rep.savefig("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf",
             # bbox_extra_artists=(lgd,), bbox_inches='tight')
-    # fig.savefig("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf", bbox_inches='tight')
+    fig_rep.savefig("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf")
 
     # plt.savefig("/home/kostas/results/"+type_of_exp+"/tracking" + str(idx+1) +".png",
             # dpi = 100, bbox_inches='tight')
