@@ -556,13 +556,13 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
                               traj.positions_xyz[i + 1,0],
                               traj.timestamps[i], traj.timestamps[i + 1])
         for i in range(len(traj.positions_xyz) - 1)]
-    dot_x.append(0)
+    dot_x.append(dot_x[-1]) #last two velocities are given the same
     dot_y = [
         trajectory.calc_velocity(traj.positions_xyz[i,1],
                               traj.positions_xyz[i + 1,1],
                               traj.timestamps[i], traj.timestamps[i + 1])
         for i in range(len(traj.positions_xyz) - 1)]
-    dot_y.append(0)
+    dot_y.append(dot_y[-1])
     # dot_yaw = [
         # trajectory.calc_angular_velocity(traj.positions_xyz[i,1],
                               # traj.positions_xyz[i + 1,1],
@@ -573,7 +573,7 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
                               traj.poses_se3[i + 1],
                               traj.timestamps[i], traj.timestamps[i + 1])
         for i in range(len(traj.poses_se3) - 1)]
-    dot_yaw.append(0)
+    dot_yaw.append(dot_yaw[-1])
     vels = [dot_x, dot_y]
     if len(axarr) != 3:
         raise PlotException("expected an axis array with 3 subplots - got " +
@@ -764,10 +764,10 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     # print(z)
 
     # wrapped = np.rad2deg(traj.get_orientations_euler()[:,2])
-    # unwrapped = np.unwrap(yaw)
-    # unwrapped = np.unwrap(traj.get_orientations_euler()[:,2])
+    # wrapped = np.wrap(traj.get_orientations_euler()[:,2])
     yaw = traj.get_orientations_euler()[:,2]
-    ax.plot(x, yaw, style, markersize =1,
+    unwrapped = np.unwrap(yaw)
+    ax.plot(x, unwrapped, style, markersize =1,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
