@@ -563,11 +563,6 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
                               traj.timestamps[i], traj.timestamps[i + 1])
         for i in range(len(traj.positions_xyz) - 1)]
     dot_y.append(dot_y[-1])
-    # dot_yaw = [
-        # trajectory.calc_angular_velocity(traj.positions_xyz[i,1],
-                              # traj.positions_xyz[i + 1,1],
-                              # traj.timestamps[i], traj.timestamps[i + 1])
-        # for i in range(len(traj.positions_xyz) - 1)]
     dot_yaw = [
         trajectory.calc_angular_velocity(traj.poses_se3[i],
                               traj.poses_se3[i + 1],

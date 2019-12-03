@@ -5,7 +5,6 @@ from evo.core  import trajectory, sync
 from enum import Enum  # requires enum34 in Python 2.7
 
 import numpy as np
-
 import abc
 import math
 import sys
@@ -45,7 +44,11 @@ class PoseRelation(Enum):
     rotation_angle_rad = "rotation angle in radians"
     rotation_angle_deg = "rotation angle in degrees"
     x = "x"
-    velocity_part = "velocity part"
+    y = "y"
+    vx = "vx"
+    vy = "vy"
+    psi = "psi"
+    omega = "omega"
 
 class Unit(Enum):
     none = "unit-less"
@@ -55,6 +58,7 @@ class Unit(Enum):
     radians = "rad"
     frames = "frames"
     speed = "m/s"
+    angular_speed = "rad/s"
 
 class Metric(ABC):
     @abc.abstractmethod
@@ -138,7 +142,30 @@ class PE(Metric):
         :return:
         """
         result = Result()
-        metric_name = self.__class__.__name__
+        result.add_stats(self.get_all_statistics())
+
+        if hasattr(self, "error"):
+            result.add_np_array("error_array", self.error)
+            metric_name = self.pose_relation.value
+        # if hasattr(self, "error_x"):
+            # result.add_np_array("error_array_x", self.error_x)
+            # metric_name = "x_error"
+        # if hasattr(self, "error_y"):
+            # result.add_np_array("error_array_y", self.error_y)
+            # metric_name = "y_error"
+        # if hasattr(self, "error_vx"):
+            # result.add_np_array("error_array_vx", self.error_vx)
+            # metric_name = "vx_error"
+        # if hasattr(self, "error_vy"):
+            # result.add_np_array("error_array_vy", self.error_vy)
+            # metric_name = "vy_error"
+        # if hasattr(self, "error_psi"):
+            # result.add_np_array("error_array_psi", self.error_psi)
+            # metric_name = "psi_error"
+        # if hasattr(self, "error_omega"):
+            # result.add_np_array("error_array_omega", self.error_omega)
+            # metric_name = "omega_error"
+
         result.add_info({
             "title": str(self),
             "ref_name": ref_name,
@@ -146,10 +173,39 @@ class PE(Metric):
             "label": "{} {}".format(metric_name,
                                     "({})".format(self.unit.value))
         })
-        result.add_stats(self.get_all_statistics())
-        if hasattr(self, "error"):
-            result.add_np_array("error_array", self.error)
+
         return result
+
+def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
+        align_origin=False, ref_name="reference", est_name="estimate"):
+    ''' Based on main_ape.py
+    '''
+    traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
+    # Align the trajectories.
+    only_scale = correct_scale and not align
+    if align or correct_scale:
+        traj_est = trajectory.align_trajectory(traj_est, traj_ref,
+                                               correct_scale, only_scale)
+    elif align_origin:
+        traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
+
+    # Calculate APE.
+    data = (traj_ref, traj_est)
+    ape_metric = APE(pose_relation)
+    ape_metric.process_data(data)
+
+    ape_result = ape_metric.get_result(ref_name, est_name)
+
+    ape_result.add_trajectory(ref_name, traj_ref)
+    ape_result.add_trajectory(est_name, traj_est)
+    if isinstance(traj_est, trajectory.PoseTrajectory3D):
+        seconds_from_start = [
+            t - traj_est.timestamps[0] for t in traj_est.timestamps
+        ]
+        ape_result.add_np_array("seconds_from_start", seconds_from_start)
+        ape_result.add_np_array("timestamps", traj_est.timestamps)
+
+    return ape_result
 
 class APE(PE):
     """
@@ -161,6 +217,12 @@ class APE(PE):
         self.pose_relation = pose_relation
         self.E = []
         self.error = []
+        # self.error_x = []
+        # self.error_y = []
+        # self.error_vx = []
+        # self.error_vy = []
+        # self.error_psi = []
+        # self.error_omega = []
         if pose_relation == PoseRelation.translation_part:
             self.unit = Unit.meters
         elif pose_relation == PoseRelation.rotation_angle_deg:
@@ -171,15 +233,18 @@ class APE(PE):
             self.unit = Unit.meters
         elif pose_relation == PoseRelation.y:
             self.unit = Unit.meters
-        elif pose_relation == PoseRelation.vx:
+        elif pose_relation == PoseRelation.vx or pose_relation ==\
+            PoseRelation.vy:
             self.unit = Unit.speed
-        elif pose_relation == PoseRelation.vy:
-            self.unit = Unit.speed
+        elif pose_relation == PoseRelation.psi:
+            self.unit = Unit.radians
+        elif pose_relation == PoseRelation.omega:
+            self.unit = Unit.angular_speed
         else:
             self.unit = Unit.none  # dimension-less
 
     def __str__(self):
-        title = "APE w.r.t. "
+        title = "ASE "
         title += (str(self.pose_relation.value) + " " +
                   ("(" + self.unit.value + ")" if self.unit else ""))
         return title
@@ -217,108 +282,89 @@ class APE(PE):
             raise MetricsException(
                 "trajectories must have same number of poses")
 
-        if self.pose_relation == PoseRelation.translation_part:
-            # don't require full SE(3) matrices for faster computation
-            self.E = traj_est.positions_xyz - traj_ref.positions_xyz
-        elif self.pose_relation == PoseRelation.x:
-            # don't require full SE(3) matrices for faster computation
-            self.E = traj_est.positions_xyz[:,0] - traj_ref.positions_xyz[:,0]
-        else:
-            self.E = [
-                self.ape_base(x_t, x_t_star) for x_t, x_t_star in zip(
-                    traj_est.poses_se3, traj_ref.poses_se3)
-            ]
+        self.E = traj_est.positions_xyz - traj_ref.positions_xyz
 
-        if self.pose_relation == PoseRelation.translation_part:
-            # E is an array of position vectors only in this case
-            self.error = [np.linalg.norm(E_i) for E_i in self.E]
-        elif self.pose_relation == PoseRelation.x:
-            self.error = [np.linalg.norm(E_i) for E_i in self.E]
-        elif self.pose_relation == PoseRelation.rotation_part:
-            self.error = np.array([
-                np.linalg.norm(lie.so3_from_se3(E_i) - np.eye(3))
-                for E_i in self.E
-            ])
-        elif self.pose_relation == PoseRelation.full_transformation:
-            self.error = np.array(
-                [np.linalg.norm(E_i - np.eye(4)) for E_i in self.E])
-        elif self.pose_relation == PoseRelation.rotation_angle_rad:
-            self.error = np.array(
-                [abs(lie.so3_log(E_i[:3, :3])) for E_i in self.E])
-        elif self.pose_relation == PoseRelation.rotation_angle_deg:
-            self.error = np.array([
-                abs(lie.so3_log(E_i[:3, :3])) * 180 / np.pi for E_i in self.E
-            ])
+        if self.pose_relation == PoseRelation.x:
+            self.error = [np.linalg.norm(E_i) for E_i in self.E[:,0]]
+        elif self.pose_relation == PoseRelation.y:
+            self.error = [np.linalg.norm(E_i) for E_i in self.E[:,1]]
+
+        elif self.pose_relation == PoseRelation.vx:
+            dot_x = [
+                trajectory.calc_velocity(traj_ref.positions_xyz[i,0],
+                                      traj_ref.positions_xyz[i + 1,0],
+                                      traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
+                for i in range(len(traj_ref.positions_xyz) - 1)]
+            dot_x.append(dot_x[-1]) #last two velocities are given the same
+            evx = traj_est.linear_vel[:,0] - dot_x
+            self.error = [np.linalg.norm(E_i) for E_i in evx]
+
+        elif self.pose_relation == PoseRelation.vy:
+            dot_y = [
+                trajectory.calc_velocity(traj_ref.positions_xyz[i,1],
+                                      traj_ref.positions_xyz[i + 1,1],
+                                      traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
+                for i in range(len(traj_ref.positions_xyz) - 1)]
+            dot_y.append(dot_y[-1])
+            evy = traj_est.linear_vel[:,1] - dot_y
+            self.error = [np.linalg.norm(E_i) for E_i in evy]
+
+        elif self.pose_relation == PoseRelation.vy:
+            dot_y = [
+                trajectory.calc_velocity(traj_ref.positions_xyz[i,1],
+                                      traj_ref.positions_xyz[i + 1,1],
+                                      traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
+                for i in range(len(traj_ref.positions_xyz) - 1)]
+            dot_y.append(dot_y[-1])
+
+        elif self.pose_relation == PoseRelation.psi:
+            dot_yaw = [
+                trajectory.calc_angular_velocity(traj_ref.poses_se3[i],
+                                      traj_ref.poses_se3[i + 1],
+                                      traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
+                for i in range(len(traj_ref.poses_se3) - 1)]
+            dot_yaw.append(dot_yaw[-1])
+
+            epsi =  traj_est.get_orientations_euler()[:,2] - traj_ref.get_orientations_euler()[:,2]
+            self.error = [np.linalg.norm(E_i) for E_i in epsi]
+        elif self.pose_relation == PoseRelation.omega:
+            dot_yaw = [
+                trajectory.calc_angular_velocity(traj_ref.poses_se3[i],
+                                      traj_ref.poses_se3[i + 1],
+                                      traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
+                for i in range(len(traj_ref.poses_se3) - 1)]
+            dot_yaw.append(dot_yaw[-1])
+
+            eomega = traj_est.angular_vel[:,2] - dot_yaw
+            self.error = [np.linalg.norm(E_i) for E_i in eomega]
         else:
             raise MetricsException("unsupported pose_relation")
 
-def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
-        align_origin=False, ref_name="reference", est_name="estimate"):
-    ''' Based on main_ape.py
-    '''
-    traj_ref, traj_est = sync.associate_trajectories(traj_ref, traj_est)
-    # Align the trajectories.
-    only_scale = correct_scale and not align
-    if align or correct_scale:
-        traj_est = trajectory.align_trajectory(traj_est, traj_ref,
-                                               correct_scale, only_scale)
-    elif align_origin:
-        traj_est = trajectory.align_trajectory_origin(traj_est, traj_ref)
-
-    # Calculate APE.
-    data = (traj_ref, traj_est)
-    ape_metric = APE(pose_relation)
-    ape_metric.process_data(data)
-
-    ape_result = ape_metric.get_result(ref_name, est_name)
-
-    ape_result.add_trajectory(ref_name, traj_ref)
-    ape_result.add_trajectory(est_name, traj_est)
-    if isinstance(traj_est, trajectory.PoseTrajectory3D):
-        seconds_from_start = [
-            t - traj_est.timestamps[0] for t in traj_est.timestamps
-        ]
-        ape_result.add_np_array("seconds_from_start", seconds_from_start)
-        ape_result.add_np_array("timestamps", traj_est.timestamps)
-
-    return ape_result
-
-def results_as_dataframe(result_files, use_filenames=False, merge=False):
-    import pandas as pd
-    from evo.tools import pandas_bridge
-
-    df = pd.DataFrame()
-    for result_file in result_files:
-        result = result_file
-        # result = file_interface.load_res_file(result_file)
-        name = result_file if use_filenames else None
-        df = pd.concat([df, pandas_bridge.result_to_df(result, name)],
-                       axis="columns")
-    return df
-
 def run(results):
     import sys
-
     import pandas as pd
-
     from evo.tools import log, user, settings
     from evo.tools.settings import SETTINGS
+    from evo.tools import pandas_bridge
 
     pd.options.display.width = 80
     pd.options.display.max_colwidth = 20
 
-    # log.configure_logging(args.verbose, args.silent, args.debug,
-                          # local_logfile=args.logfile)
+    df = pd.DataFrame()
+    for result in results:
+        name = None
+        df = pd.concat([df, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
 
-    df = results_as_dataframe(results, False, False)
 
     keys = df.columns.values.tolist()
+    # print(keys)
     if SETTINGS.plot_usetex:
         keys = [key.replace("_", "\\_") for key in keys]
         df.columns = keys
     duplicates = [x for x in keys if keys.count(x) > 1]
     if duplicates:
-        logger.error("Values of 'est_name' must be unique - duplicates: {}\n"
+        print("Values of 'est_name' must be unique - duplicates: {}\n"
                      "Try using the --use_filenames option to use filenames "
                      "for labeling instead.".format(", ".join(duplicates)))
         sys.exit(1)
@@ -339,22 +385,24 @@ def run(results):
     # build error_df (raw values) according to common_index
     if common_index is None:
         # use a non-timestamp index
-        error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(),
-                                index=keys).T
+        # error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(),
+                                # index=keys).T
+        print("it came here")
     else:
-        error_df = pd.DataFrame()
-        for key in keys:
-            new_error_df = pd.DataFrame({
-                key: df.loc["np_arrays", "error_array"][key]
-            }, index=df.loc["np_arrays", common_index][key])
-            duplicates = new_error_df.index.duplicated(keep="first")
-            if any(duplicates):
-                print(
-                    "duplicate indices in error array of {} - "
-                    "keeping only first occurrence of duplicates".format(key))
-                new_error_df = new_error_df[~duplicates]
-            error_df = pd.concat([error_df, new_error_df], axis=1)
 
+            error_df = pd.DataFrame()
+            for key in keys:
+                new_error_df = pd.DataFrame({
+                    key: df.loc["np_arrays", "error_array"][key]
+                }, index=df.loc["np_arrays", common_index][key])
+                # duplicates = new_error_df.index.duplicated(keep="first")
+                # if any(duplicates):
+                    # print(
+                        # "duplicate indices in error array of {} - "
+                        # "keeping only first occurrence of duplicates".format(key))
+                    # new_error_df = new_error_df[~duplicates]
+                error_df = pd.concat([error_df, new_error_df], axis=1)
+    # print(error_df)
     # check titles
     first_title = df.loc["info", "title"][0]
     # first_file = args.result_files[0]
@@ -365,32 +413,18 @@ def run(results):
         if not differs:
             continue
         else:
-            mismatching_title = df.loc["info", "title"][i]
-            mismatching_file = args.result_files[i]
-            logger.debug(SEP)
-            logger.warning(
-                CONFLICT_TEMPLATE.format(first_file, first_title,
-                                         mismatching_title,
-                                         mismatching_file))
-            if not user.confirm(
-                    "You can use --ignore_title to just aggregate data.\n"
-                    "Go on anyway? - enter 'y' or any other key to exit"):
-                sys.exit()
+            print("problem")
 
-    # logger.debug(SEP)
-    # logger.debug("Aggregated dataframe:\n{}".format(
-        # df.to_string(line_width=80)))
+    print("Aggregated dataframe:\n{}".format(
+        df.to_string(line_width=80)))
 
     # show a statistics overview
-    # logger.debug(SEP)
-    # if not args.ignore_title:
-        # logger.info("\n" + first_title + "\n\n")
-    # logger.info(df.loc["stats"].T.to_string(line_width=80) + "\n")
+    print("\n" + first_title + "\n\n")
+    print(df.loc["stats"].T.to_string(line_width=80) + "\n")
 
     # check if data has NaN "holes" due to different indices
     inconsistent = error_df.isnull().values.any()
     if inconsistent and common_index != "timestamps":
-        # logger.debug(SEP)
         print("Data lengths/indices are not consistent, "
                        "raw value plot might not be correctly aligned")
 
@@ -413,7 +447,8 @@ def run(results):
         index_label = df.loc["info", "xlabel"][0]
     else:
         index_label = "$t$ (s)" if common_index else "index"
-    metric_label = df.loc["info", "label"][0]
+    # metric_label = df.loc["info", "label"][0]
+    metric_label = "x"
 
     plot_collection = plot.PlotCollection(first_title)
     # raw value plot
@@ -459,21 +494,178 @@ def run(results):
     plot_collection.add_figure("box_plot", fig_box)
 
     # violin plot
-    fig_violin = plt.figure(figsize=figsize)
-    ax = sns.violinplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
-                        ax=fig_violin.gca())
+    # fig_violin = plt.figure(figsize=figsize)
+    # ax = sns.violinplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
+                        # ax=fig_violin.gca())
     # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
-    plot_collection.add_figure("violin_histogram", fig_violin)
+    # plot_collection.add_figure("violin_histogram", fig_violin)
 
-    # if args.plot:
-    plot_collection.show()
     # if args.save_plot:
         # logger.debug(SEP)
         # plot_collection.export(args.save_plot,
                                # confirm_overwrite=not args.no_warnings)
-    # if args.serialize_plot:
-        # logger.debug(SEP)
-        # plot_collection.serialize(args.serialize_plot,
-                                  # confirm_overwrite=not args.no_warnings)
+
+    # if args.plot:
+    # plot_collection.show()
+
+def stats(results_x, results_y, results_vx, results_vy, results_psi,
+        results_omega):
+    import pandas as pd
+    # from evo.tools import log, user, settings
+    from evo.tools.settings import SETTINGS
+    from evo.tools import pandas_bridge, plot
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    import seaborn as sns
+
+    pd.options.display.width = 80
+    pd.options.display.max_colwidth = 20
+
+    df_x = pd.DataFrame()
+    df_y = pd.DataFrame()
+    df_vx =pd.DataFrame()
+    df_vy =pd.DataFrame()
+    df_psi=pd.DataFrame()
+    df_ome=pd.DataFrame()
+
+    for result in results_x:
+        name = None
+        df_x = pd.concat([df_x, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
+    for result in results_y:
+        name = None
+        df_y = pd.concat([df_y, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
+    for result in results_vx:
+        name = None
+        df_vx = pd.concat([df_vx, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
+    for result in results_vy:
+        name = None
+        df_vy = pd.concat([df_vy, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
+    for result in results_psi:
+        name = None
+        df_psi = pd.concat([df_psi, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
+    for result in results_omega:
+        name = None
+        df_ome = pd.concat([df_ome, pandas_bridge.result_to_df(result, name)],
+                       axis="columns")
+    print(df_x.loc["info","label"][0])
+    # statistics plot
+
+    mpl.use('pgf')
+    mpl.rcParams.update({
+        "text.usetex": True,
+        "pgf.texsystem": "pdflatex",
+    })
+    fig_stats, axarr = plt.subplots(3,2,figsize=(6.125,7))
+    include = df_x.loc["stats"].index.isin(SETTINGS.plot_statistics)
+    if any(include):
+        df_x.loc["stats"][include].plot(kind="barh", ax =  axarr[0,0],legend
+        =None)
+        axarr[0,0].set_xlabel("Absolute error $x$ [m]")
+        df_y.loc["stats"][include].plot(kind="barh", ax =  axarr[0,1],
+                legend=None)
+        axarr[0,1].set_xlabel("Absolute error $y$ [m]")
+        df_vx.loc["stats"][include].plot(kind="barh", ax =  axarr[1,0],
+                legend=None)
+        axarr[1,0].set_xlabel("Absolute error $v_y$ [m/s]")
+        df_vy.loc["stats"][include].plot(kind="barh", ax =  axarr[1,1],
+                legend=None)
+        axarr[1,1].set_xlabel("Absolute error $v_x$ [m/s]")
+        df_psi.loc["stats"][include].plot(kind="barh", ax =  axarr[2,0],
+                legend=None)
+        axarr[2,0].set_xlabel("Absolute error $\psi$ [rad]")
+        df_ome.loc["stats"][include].plot(kind="barh", ax =  axarr[2,1],
+                legend=None)
+        axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ [rad/s]")
+
+    handles, labels = axarr[0,0].get_legend_handles_labels()
+    lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
+    fig_stats.tight_layout()
+    fig_stats.subplots_adjust(bottom=0.13)
+    # plt.show()
+    fig_stats.savefig("/home/kostas/report/figures/simulation/test_stats.pgf")
+    keys = df.columns.values.tolist()
+    # print(keys)
+    # duplicates = [x for x in keys if keys.count(x) > 1]
+    # if duplicates:
+        # print("Values of 'est_name' must be unique - duplicates: {}\n"
+                     # "Try using the --use_filenames option to use filenames "
+                     # "for labeling instead.".format(", ".join(duplicates)))
+        # sys.exit(1)
+
+    # derive a common index type if possible - preferably timestamps
+    common_index = None
+    # time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
+    time_indices = ["seconds_from_start"]
+    for idx in time_indices:
+        if idx not in df.loc["np_arrays"].index:
+            continue
+        if df.loc["np_arrays", idx].isnull().values.any():
+            continue
+        else:
+            common_index = idx
+            break
+
+    # build error_df (raw values) according to common_index
+    if common_index is None:
+        # use a non-timestamp index
+        # error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(),
+                                # index=keys).T
+        print("it came here")
+    else:
+
+            error_df = pd.DataFrame()
+            for key in keys:
+                new_error_df = pd.DataFrame({
+                    key: df.loc["np_arrays", "error_array"][key]
+                }, index=df.loc["np_arrays", common_index][key])
+                # duplicates = new_error_df.index.duplicated(keep="first")
+                # if any(duplicates):
+                    # print(
+                        # "duplicate indices in error array of {} - "
+                        # "keeping only first occurrence of duplicates".format(key))
+                    # new_error_df = new_error_df[~duplicates]
+                error_df = pd.concat([error_df, new_error_df], axis=1)
+    # print(error_df)
+    # check titles
+    first_title = df.loc["info", "title"][0]
+    # first_file = args.result_files[0]
+    first_file = results[0]
+
+    checks = df.loc["info", "title"] != first_title
+    for i, differs in enumerate(checks):
+        if not differs:
+            continue
+        else:
+            print("problem")
+
+    # print("Aggregated dataframe:\n{}".format(
+        # df.to_string(line_width=80)))
+
+    # show a statistics overview
+    print("\n" + first_title + "\n\n")
+    print(df.loc["stats"].T.to_string(line_width=80) + "\n")
+
+
+    # use default plot settings
+    figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
+    use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
+    colormap = SETTINGS.plot_multi_cmap if use_cmap else None
+    # linestyles = ["-o" for x in args.result_files
+                  # ] if args.plot_markers else None
+    linestyles = ["-o" for x in results]
+
+    # labels according to first dataset
+    if "xlabel" in df.loc["info"].index and not df.loc[
+            "info", "xlabel"].isnull().values.any():
+        index_label = df.loc["info", "xlabel"][0]
+    else:
+        index_label = "$t$ (s)" if common_index else "index"
+    # metric_label = df.loc["info", "label"][0]
+    metric_label = "x"
 
 

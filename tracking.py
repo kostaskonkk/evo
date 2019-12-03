@@ -2,6 +2,7 @@
 
 from __future__ import print_function
 from evo.core  import trajectory, sync, metrics
+from evo.core.trajectory import PoseTrajectory3D
 from evo.tools import file_interface, plot
 
 import matplotlib as mpl
@@ -475,3 +476,23 @@ def plot_dimensions(segments, reference, style='-', color='black', label="", alp
     plt.close(fig)
 
 
+def merge(tracks):
+    """
+    Merges multiple tracks into a single, timestamp-sorted one.
+    :param tracks: list of PoseTrajectory3D objects
+    :return: merged PoseTrajectory3D
+    """
+    merged_stamps = np.concatenate([t.timestamps for t in tracks])
+    merged_xyz = np.concatenate([t.positions_xyz for t in tracks])
+    merged_linear_vel = np.concatenate([t.linear_vel for t in tracks])
+    merged_angular_vel = np.concatenate([t.angular_vel for t in tracks])
+    merged_quat = np.concatenate(
+        [t.orientations_quat_wxyz for t in tracks])
+    order = merged_stamps.argsort()
+    merged_stamps = merged_stamps[order]
+    merged_xyz = merged_xyz[order]
+    merged_quat = merged_quat[order]
+    merged_linear_vel = merged_linear_vel[order]
+    merged_angular_vel = merged_angular_vel[order]
+    return PoseTrajectory3D(merged_xyz, merged_quat, merged_stamps, linear_vel
+            = merged_linear_vel, angular_vel = merged_angular_vel)
