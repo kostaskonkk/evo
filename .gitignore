@@ -1,4 +1,5 @@
 # Additions by Kostas
+*.swp
 *.bag
 tags
 .evo.vim

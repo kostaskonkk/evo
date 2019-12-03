@@ -426,54 +426,26 @@ def report(axarr, color, name, b, traj_ref, segments, method):
     # print(fig.get_size_inches)
     # plt.waitforbuttonpress(0)
 
-def plot_dimensions(segments, reference, style='-', color='black', label="", alpha=1.0,
-        start_timestamp=None):
-    """
-    plot a path/trajectory based on xy coordinates into an axis
-    :param axarr: an axis array (for Length, Width)
-                  e.g. from 'fig, axarr = plt.subplots(2)'
-    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
-    :param style: matplotlib line style
-    :param color: matplotlib color
-    :param label: label (for legend)
-    :param alpha: alpha value for transparency
-    """
-    # [ Plot ] x,y,xy,yaw 
-    fig, axarr = plt.subplots(2)
+def plot_dimensions(segments, reference, axarr, style='-', color='black', label="", alpha=1.0, start_timestamp=None):
 
-    if len(axarr) != 2:
-        raise PlotException("expected an axis array with 2 subplots - got " +
-                            str(len(axarr)))
-    ylabels = ["$Length$ [m]", "$Width$ [m]"]
-    palette = itertools.cycle(sns.color_palette())
+    ylabels = ["Length [m]", "Width [m]"]
 
     for i, segment in enumerate(segments):
-        c=next(palette)
         if isinstance(segment, trajectory.PoseTrajectory3D):
-            # print("it came here")
             x = segment.timestamps - (segment.timestamps[0]
                                    if start_timestamp is None else start_timestamp)
-            xlabel = "$Time$ [s]"
-            # print("X: ",len(x), len(segment.platos) )
-            # print(x)
-            # print(segment.platos)
+            xlabel = "Time [s]"
         else:
-            print("itcame here")
             x = range(0, len(segments))
             xlabel = "index"
 
-        axarr[0].plot(x, segment.length, style, color=c,
-                      label=label, alpha=alpha)
-        axarr[1].plot(x, segment.width, style, color=c,
-                      label=label, alpha=alpha)
+        axarr[0].plot(x, segment.length, style, color=color, label=label, alpha=alpha)
+        axarr[1].plot(x, segment.width, style, color=color, label=label, alpha=alpha)
 
     axarr[0].set_ylabel(ylabels[0])
     axarr[1].set_ylabel(ylabels[1])
     axarr[0].set_xlabel(xlabel)
     axarr[1].set_xlabel(xlabel)
-
-    plt.waitforbuttonpress(0)
-    plt.close(fig)
 
 
 def merge(tracks):

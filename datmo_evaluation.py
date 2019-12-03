@@ -60,21 +60,25 @@ results_omega=[]
 
 # exec_time.whole(type_of_exp) # Make execution time plots
 
+mpl.use('pgf')
+mpl.rcParams.update({
+    "text.usetex": True,
+    "pgf.texsystem": "pdflatex",})
+fig_dimen, axarr_dimen = plt.subplots(2,1)
 
 for ref in references:
 
     palette = itertools.cycle(sns.color_palette())
 
-    fig, axarr = plt.subplots(2,3)
-    plot.traj_xyyaw(axarr[0,0:3], ref[1], '-', 'gray', 'reference',1
-            ,ref[1].timestamps[0])
-    plot.traj_vel(axarr[1,0:3], ref[1], '-', 'gray')
+    # fig, axarr = plt.subplots(2,3)
+    # plot.traj_xyyaw(axarr[0,0:3], ref[1], '-', 'gray', 'reference',1
+            # ,ref[1].timestamps[0])
+    # plot.traj_vel(axarr[1,0:3], ref[1], '-', 'gray')
 
     # mpl.use('pgf')
     # mpl.rcParams.update({
         # "text.usetex": True,
-        # "pgf.texsystem": "pdflatex",
-    # })
+        # "pgf.texsystem": "pdflatex",})
     # fig_rep, axarr_rep = plt.subplots(3,2,figsize=(6.125,7))
     # plot.traj_xy(axarr_rep[0,0:2], ref[1], '-', 'gray', 'reference',1
             # ,ref[1].timestamps[0])
@@ -90,7 +94,7 @@ for ref in references:
         # tracking.poses_vel(axarr, color, track[0]+ref[0], ref[1],
                 # traj_reference, segments, track[0]) 
         # tracking.pose_vel(track[0]+ref[0], ref[1], traj_reference, segments, type_of_exp) 
-        # tracking.plot_dimensions(segments, ref[1])
+        tracking.plot_dimensions(segments, ref[1], axarr_dimen, color = color)
         # tracking.report(axarr_rep, color, track[0]+"-"+ref[0], ref[1], traj_reference, segments, type_of_exp)
         # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
@@ -157,12 +161,20 @@ for ref in references:
     # handles, labels = axarr_rep[0,0].get_legend_handles_labels()
     # lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
     # fig_rep.tight_layout()
-    # fig_rep.subplots_adjust(bottom=0.11)
+    # fig_rep.subplots_adjust(bottom=0.13)
     # fig_rep.savefig("/home/kostas/report/figures/"+type_of_exp+"/"+ name +".pgf")
 
-errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
-        results_omega)
+    # handles, labels = axarr_rep[0,0].get_legend_handles_labels()
+    # lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+
+
+
+# errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
+        # results_omega)
 # errors.run(results)
 
+fig_dimen.tight_layout()
+# fig_dimen.subplots_adjust(bottom=0.11)
+fig_dimen.savefig("/home/kostas/report/figures/"+type_of_exp+"/dimensions.pgf")
 
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')
