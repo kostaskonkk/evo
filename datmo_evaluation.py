@@ -33,7 +33,7 @@ distance = 3
 references= []
 if type_of_exp=='simulation':
     references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
-    # references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
+    references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
 else:
     references.append(('red', file_interface.read_bag_trajectory(bag, '/red_pose')))
 
@@ -174,7 +174,9 @@ for ref in references:
 # errors.run(results)
 
 fig_dimen.tight_layout()
-# fig_dimen.subplots_adjust(bottom=0.11)
+fig_dimen.subplots_adjust(bottom=0.11)
+handles, labels = axarr_dimen[0].get_legend_handles_labels()
+lgd = fig_dimen.legend(handles, labels, loc='lower center',ncol = len(labels))
 fig_dimen.savefig("/home/kostas/report/figures/"+type_of_exp+"/dimensions.pgf")
 
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')
