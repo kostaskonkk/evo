@@ -6,16 +6,18 @@ import matplotlib.pyplot as plt
 from golden_plots import set_size
 import rosbag
 from pylatex import Tabular 
+import seaborn as sns
+import itertools
 # import sys # cli arguments in sys.argv
 # print(plt.style.available)
-plt.style.use('seaborn-whitegrid')
+# plt.style.use('seaborn-whitegrid')
 # plt.style.use('seaborn-paper')
 # plt.rcParams['grid.color'] = 'gray'
-plt.rcParams['grid.alpha'] = '0.5'
-plt.rcParams['axes.edgecolor'] = 'k'
+# plt.rcParams['grid.alpha'] = '0.5'
+# plt.rcParams['axes.edgecolor'] = 'k'
 # plt.rcParams['axes.facecolor'] = 'w'
-plt.rcParams['legend.edgecolor'] = 'k'
-plt.rcParams['legend.facecolor'] = 'w'
+# plt.rcParams['legend.edgecolor'] = 'k'
+# plt.rcParams['legend.facecolor'] = 'w'
 
 def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         align_origin=False, ref_name="reference", est_name="estimate"):
@@ -66,19 +68,30 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 
     return ape_result
 
-nice_fonts = {
-    # Use LaTeX to write all text
-    # "text.usetex": True,
-    # "font.family": "serif",
-    # Use 10pt font in plots, to match 10pt font in document
-    "axes.labelsize": 11,
-    "font.size": 11,
-    # Make the legend/label fonts a little smaller
-    "legend.fontsize": 9,
-    "xtick.labelsize": 9,
-    "ytick.labelsize": 9,
-}
-mpl.rcParams.update(nice_fonts)
+# nice_fonts = {
+    # # Use LaTeX to write all text
+    # # "text.usetex": True,
+    # # "font.family": "serif",
+    # # Use 10pt font in plots, to match 10pt font in document
+    # "axes.labelsize": 11,
+    # "font.size": 11,
+    # # Make the legend/label fonts a little smaller
+    # "legend.fontsize": 9,
+    # "xtick.labelsize": 9,
+    # "ytick.labelsize": 9,
+# }
+# mpl.rcParams.update(nice_fonts)
+
+# loc_table = Tabular('l c c c c c c c')
+# loc_table.add_hline()
+# plt.rcParams['xtick.direction'] = 'in'
+# plt.rcParams['ytick.direction'] = 'in'
+# # plt.rcParams['grid.color'] = 'gray'
+# # plt.rcParams['grid.alpha'] = '0.5'
+# plt.rcParams['axes.edgecolor'] = 'k'
+# # plt.rcParams['axes.facecolor'] = 'w'
+# plt.rcParams['legend.edgecolor'] = 'k'
+# plt.rcParams['legend.facecolor'] = 'w'
 
 # bag = rosbag.Bag(sys.argv[1])
 bag = rosbag.Bag('/home/kostas/results/local.bag')
@@ -89,17 +102,6 @@ odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
 slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
 fuse = file_interface.read_bag_trajectory(bag,'/odometry/map')
 bag.close()
-
-loc_table = Tabular('l c c c c c c c')
-loc_table.add_hline()
-plt.rcParams['xtick.direction'] = 'in'
-plt.rcParams['ytick.direction'] = 'in'
-# plt.rcParams['grid.color'] = 'gray'
-# plt.rcParams['grid.alpha'] = '0.5'
-plt.rcParams['axes.edgecolor'] = 'k'
-# plt.rcParams['axes.facecolor'] = 'w'
-plt.rcParams['legend.edgecolor'] = 'k'
-plt.rcParams['legend.facecolor'] = 'w'
 
 loc_table = Tabular('l c c c c c c c')
 loc_table.add_hline()
@@ -176,22 +178,23 @@ def four_plots(ref, est, table, name):
     if name=='slam':
         style = 'o'
 
-    width = 442.65375
-    print(set_size(width))  
+    plt.style.use(['seaborn-whitegrid', 'stylerc'])
+    mpl.use('pgf')
+    mpl.rcParams.update({
+        "text.usetex": True,
+        "pgf.texsystem": "pdflatex",})
+
     fig, axarr = plt.subplots(2, 2, figsize=(6.125,4))
-    # fig, axarr = plt.subplots(2,2,figsize=(12,8))
-    plot.traj_fourplots(axarr, est, style, 'red',
-            'estimation',1,ref.timestamps[0])
-    plot.traj_fourplots(axarr, ref, '-', 'gray', 'original')
+    plot.traj_fourplots(axarr, est, style, 'red', 'Estimation',1,ref.timestamps[0])
+    plot.traj_fourplots(axarr, ref, '-', 'gray', 'MoCap Ground Truth')
     handles, labels = axarr[0,0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', ncol = 2,
             bbox_to_anchor=(0.5, 0))
     plt.tight_layout()
      
-    # plt.savefig("/home/kostas/results/test.png", dpi=100, format='png' )
-    plt.savefig("/home/kostas/results/latest/"+name+".png", dpi=600, format='png',  bbox_inches='tight' )
-    # plt.waitforbuttonpress(0)
-    # plt.close(fig)
+    fig.tight_layout()
+    fig.subplots_adjust(bottom=0.2)
+    fig.savefig("/home/kostas/report/figures/localization/"+name+".pgf")
 
     if name=='slam':
         name = name.upper()
