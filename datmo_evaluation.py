@@ -41,7 +41,7 @@ tracks = []
 # tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
 # tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
 tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
-tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+# tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 
 bag.close()
@@ -65,10 +65,10 @@ mpl.rcParams.update({
     "text.usetex": True,
     "pgf.texsystem": "pdflatex",})
 fig_dimen, axarr_dimen = plt.subplots(2,1)
+palette = itertools.cycle(sns.color_palette())
 
 for ref in references:
 
-    palette = itertools.cycle(sns.color_palette())
 
     # fig, axarr = plt.subplots(2,3)
     # plot.traj_xyyaw(axarr[0,0:3], ref[1], '-', 'gray', 'reference',1
@@ -94,7 +94,8 @@ for ref in references:
         # tracking.poses_vel(axarr, color, track[0]+ref[0], ref[1],
                 # traj_reference, segments, track[0]) 
         # tracking.pose_vel(track[0]+ref[0], ref[1], traj_reference, segments, type_of_exp) 
-        tracking.plot_dimensions(segments, ref[1], axarr_dimen, color = color)
+        tracking.plot_dimensions(segments, ref[1], axarr_dimen, color = color, label = ref[0])
+        print(ref[0])
         # tracking.report(axarr_rep, color, track[0]+"-"+ref[0], ref[1], traj_reference, segments, type_of_exp)
         # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
@@ -174,9 +175,10 @@ for ref in references:
 # errors.run(results)
 
 fig_dimen.tight_layout()
-fig_dimen.subplots_adjust(bottom=0.11)
+fig_dimen.subplots_adjust(bottom=0.2)
 handles, labels = axarr_dimen[0].get_legend_handles_labels()
 lgd = fig_dimen.legend(handles, labels, loc='lower center',ncol = len(labels))
 fig_dimen.savefig("/home/kostas/report/figures/"+type_of_exp+"/dimensions.pgf")
+print("end")
 
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')

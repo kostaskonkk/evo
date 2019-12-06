@@ -427,7 +427,6 @@ def report(axarr, color, name, b, traj_ref, segments, method):
     # plt.waitforbuttonpress(0)
 
 def plot_dimensions(segments, reference, axarr, style='-', color='black', label="", alpha=1.0, start_timestamp=None):
-
     ylabels = ["Length [m]", "Width [m]"]
 
     for i, segment in enumerate(segments):
@@ -446,6 +445,8 @@ def plot_dimensions(segments, reference, axarr, style='-', color='black', label=
     axarr[1].set_ylabel(ylabels[1])
     axarr[0].set_xlabel(xlabel)
     axarr[1].set_xlabel(xlabel)
+    axarr[0].set_xlim(left=0)
+    axarr[1].set_xlim(left=0)
 
 
 def merge(tracks):
