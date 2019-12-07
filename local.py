@@ -8,16 +8,6 @@ import rosbag
 from pylatex import Tabular 
 import seaborn as sns
 import itertools
-# import sys # cli arguments in sys.argv
-# print(plt.style.available)
-# plt.style.use('seaborn-whitegrid')
-# plt.style.use('seaborn-paper')
-# plt.rcParams['grid.color'] = 'gray'
-# plt.rcParams['grid.alpha'] = '0.5'
-# plt.rcParams['axes.edgecolor'] = 'k'
-# plt.rcParams['axes.facecolor'] = 'w'
-# plt.rcParams['legend.edgecolor'] = 'k'
-# plt.rcParams['legend.facecolor'] = 'w'
 
 def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         align_origin=False, ref_name="reference", est_name="estimate"):
@@ -67,31 +57,6 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
         ape_result.add_np_array("timestamps", traj_est.timestamps)
 
     return ape_result
-
-# nice_fonts = {
-    # # Use LaTeX to write all text
-    # # "text.usetex": True,
-    # # "font.family": "serif",
-    # # Use 10pt font in plots, to match 10pt font in document
-    # "axes.labelsize": 11,
-    # "font.size": 11,
-    # # Make the legend/label fonts a little smaller
-    # "legend.fontsize": 9,
-    # "xtick.labelsize": 9,
-    # "ytick.labelsize": 9,
-# }
-# mpl.rcParams.update(nice_fonts)
-
-# loc_table = Tabular('l c c c c c c c')
-# loc_table.add_hline()
-# plt.rcParams['xtick.direction'] = 'in'
-# plt.rcParams['ytick.direction'] = 'in'
-# # plt.rcParams['grid.color'] = 'gray'
-# # plt.rcParams['grid.alpha'] = '0.5'
-# plt.rcParams['axes.edgecolor'] = 'k'
-# # plt.rcParams['axes.facecolor'] = 'w'
-# plt.rcParams['legend.edgecolor'] = 'k'
-# plt.rcParams['legend.facecolor'] = 'w'
 
 # bag = rosbag.Bag(sys.argv[1])
 bag = rosbag.Bag('/home/kostas/results/local.bag')
