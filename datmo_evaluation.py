@@ -2,46 +2,54 @@
 
 from __future__ import print_function
 from evo.core  import trajectory, sync, metrics
-from evo.tools import file_interface, plot
+from evo.tools import file_interface
 from datmo.msg import Track, TrackArray
 import rosbag
 from pylatex import Tabular 
 
-import matplotlib as mpl
 import matplotlib.pyplot as plt
-import matplotlib.figure as fg
 import numpy as np
 from cycler import cycler
 import sys # cli arguments in sys.argv
-import tracking, errors, exec_time
+import tracking, errors, exec_time, output
 import seaborn as sns
 import itertools
+import os
 
+
+path = "/home/kostas/results/experiment/test.bag"
+
+type_of_exp = os.path.basename(os.path.dirname(path))
+scenario = os.path.splitext(os.path.basename(path))[0]
+
+filename = type_of_exp +"/" + scenario
+# print(filename)
+# print(type_of_exp)
 
 plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
 # bag = rosbag.Bag(sys.argv[1])
 
-# bag = rosbag.Bag("/home/kostas/results/experiment/test.bag")
-# type_of_exp = 'experiment'
-# distance = 0.5
+bag = rosbag.Bag("/home/kostas/results/experiment/test.bag")
+type_of_exp = 'experiment'
+distance = 0.35
 
-bag = rosbag.Bag("/home/kostas/results/sim.bag")
-type_of_exp = 'simulation'
-distance = 3 
+# bag = rosbag.Bag("/home/kostas/results/sim.bag")
+# type_of_exp = 'simulation'
+# distance = 3 
 
 references= []
 if type_of_exp=='simulation':
-    references.append(('slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
-    references.append(('fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
+    references.append(('-slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
+    references.append(('-fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
 else:
-    references.append(('red', file_interface.read_bag_trajectory(bag, '/red_pose')))
+    references.append(('', file_interface.read_bag_trajectory(bag, '/red_pose')))
 
 tracks = []
 # tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
 # tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
 tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
-# tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 
 bag.close()
@@ -58,14 +66,19 @@ results_vy=[]
 results_psi=[]
 results_omega=[]
 
+output.screen_states(references, tracks, distance)
+# output.report_states(references, tracks, distance, filename)
+
 # exec_time.whole(type_of_exp) # Make execution time plots
 
-mpl.use('pgf')
-mpl.rcParams.update({
-    "text.usetex": True,
-    "pgf.texsystem": "pdflatex",})
-fig_dimen, axarr_dimen = plt.subplots(2,1)
+# mpl.use('pgf')
+# mpl.rcParams.update({
+    # "text.usetex": True,
+    # "pgf.texsystem": "pdflatex",})
+# fig_dimen, axarr_dimen = plt.subplots(2,1)
 palette = itertools.cycle(sns.color_palette())
+
+
 
 for ref in references:
 
@@ -94,8 +107,8 @@ for ref in references:
         # tracking.poses_vel(axarr, color, track[0]+ref[0], ref[1],
                 # traj_reference, segments, track[0]) 
         # tracking.pose_vel(track[0]+ref[0], ref[1], traj_reference, segments, type_of_exp) 
-        tracking.plot_dimensions(segments, ref[1], axarr_dimen, color = color, label = ref[0])
-        print(ref[0])
+        # tracking.plot_dimensions(segments, ref[1], axarr_dimen, color = color, label = ref[0])
+        # print(ref[0])
         # tracking.report(axarr_rep, color, track[0]+"-"+ref[0], ref[1], traj_reference, segments, type_of_exp)
         # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
@@ -174,11 +187,10 @@ for ref in references:
         # results_omega)
 # errors.run(results)
 
-fig_dimen.tight_layout()
-fig_dimen.subplots_adjust(bottom=0.2)
-handles, labels = axarr_dimen[0].get_legend_handles_labels()
-lgd = fig_dimen.legend(handles, labels, loc='lower center',ncol = len(labels))
-fig_dimen.savefig("/home/kostas/report/figures/"+type_of_exp+"/dimensions.pgf")
-print("end")
+# fig_dimen.tight_layout()
+# fig_dimen.subplots_adjust(bottom=0.2)
+# handles, labels = axarr_dimen[0].get_legend_handles_labels()
+# lgd = fig_dimen.legend(handles, labels, loc='lower center',ncol = len(labels))
+# fig_dimen.savefig("/home/kostas/report/figures/"+type_of_exp+"/dimensions.pgf")
 
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')

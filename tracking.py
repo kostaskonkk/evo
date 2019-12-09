@@ -184,6 +184,7 @@ def associate_segments_common_frame(traj, tracks, distance):
 
     for m in matches:
         if m[1]<distance: # if the mismatch is smaller than 1
+           # print(m[1],distance)
            # print(m[0].get_statistics()['v_avg (m/s)'])
            segments_track.append(m[0])
            segments_refer.append(m[3])
@@ -276,11 +277,11 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "$Time\; [s]$"
+        xlabel = "Time [s]"
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabel = "$\dot{\psi}\; [rad/s]$"
+    ylabel = "$\dot{\psi}$ [rad/s]"
     ax.plot(x, traj.angular_vel[:,2], style, color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
@@ -407,12 +408,15 @@ def vx_vys(axarr, color, b, traj_ref, segments, method):
     # axarr[1].set_xlim(left=0)
     # axarr[2].set_xlim(left=0)
 
-def report(axarr, color, name, b, traj_ref, segments, method):
+def report(axarr, color, name, b, traj_ref, segments):
 
     # plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     # plot.traj_yaw(axarr[2,0:2], traj_ref, '-', 'gray', 'reference',1 ,b.timestamps[0])
     for i, segment in enumerate(segments):
-        plot.traj_xy(axarr[0,0:2], segment, '-', color, name,1 ,b.timestamps[0])
+        if i==0:
+            plot.traj_xy(axarr[0,0:2], segment, '-', color, name,1 ,b.timestamps[0])
+        else:
+            plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,b.timestamps[0])
         plot.linear_vel(axarr[1,0:2], segment, '-', color, name,1 ,b.timestamps[0])
         plot.traj_yaw(axarr[2,0],segment, '-', color, name, 1 ,b.timestamps[0])
         angular_vel(axarr[2,1], segment, '-', color, name, 1, b.timestamps[0])

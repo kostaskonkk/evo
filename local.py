@@ -61,7 +61,6 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 # bag = rosbag.Bag(sys.argv[1])
 bag = rosbag.Bag('/home/kostas/results/local.bag')
 
-bot= []
 mocap= file_interface.read_bag_trajectory(bag, '/mocap_pose')
 odom = file_interface.read_bag_trajectory(bag,'/odometry/wheel_imu')
 slam = file_interface.read_bag_trajectory(bag,'/poseupdate')
