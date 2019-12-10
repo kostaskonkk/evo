@@ -411,8 +411,6 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     """
     x = traj.positions_xyz[:, 0]
     y = traj.positions_xyz[:, 1]
-    # ax.plot(x, y, style, color=color, label=label, alpha=alpha)
-    # ax.set_title('Estimation and reference trajectory')
 
     if len(axarr) != 2:
         raise PlotException("expected an axis array with 2 subplots - got " +
@@ -422,17 +420,15 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
                                if start_timestamp is None else start_timestamp)
         xlabel = "Time [s]"
     else:
-        x = range(0, len(traj.positions_xyz))
-        xlabel = "index"
+        # x = range(0, len(traj.positions_xyz))
+        # xlabel = "index"
+        print("not correct timestamp")
     ylabels = ["$x$ [m]", "$y$ [m]"]
     for i in range(0, 2):
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
-        axarr[i].set_xlim(left=0)
-    # if label:
-        # axarr[0].legend(frameon=True)
 
 def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -457,7 +453,7 @@ def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
-    ylabels = ["$x$ (m)", "$y$ (m)"]
+    ylabels = ["$x$ [m]", "$y$ [m]"]
     for i in range(2):
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
@@ -580,15 +576,13 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabels = ["$\dot x$ (m/s)", "$\dot y$ (m/s)", "$\dot {yaw}$ (deg/s)"]
+    ylabels = ["$\dot x$ [m/s]", "$\dot y$ [m/s]", "$\dot {psi}$ [rad/s]"]
     for i in range(0, 2):
         axarr[i].plot(x, vels[i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
 
     axarr[2].plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
     axarr[2].set_xlabel(xlabel)
-    # if label:
-        # axarr[0].legend(frameon=True)
 
 def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -621,8 +615,6 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     ax.plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
     ax.set_xlabel(xlabel)
     ax.set_ylabel(ylabel)
-    # if label:
-        # axarr[0].legend(frameon=True)
 
 def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -695,9 +687,6 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         axarr[i].plot(x, traj.linear_vel[:,i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
-        axarr[i].set_xlim(left=0)
-    # if label:
-        # axarr[0].legend(frameon=True)
 
 def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
              start_timestamp=None):
@@ -734,7 +723,7 @@ def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         axarr[0].legend(frameon=True)
 
 def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
-        start_timestamp=None):
+        start_timestamp=None, wrap=0):
     """
     plots the estimation and reference yaw angles
     :param ax: an axis to draw one
@@ -762,13 +751,10 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     # wrapped = np.wrap(traj.get_orientations_euler()[:,2])
     yaw = traj.get_orientations_euler()[:,2]
     unwrapped = np.unwrap(yaw)
-    ax.plot(x, unwrapped, style, markersize =1,
+    ax.plot(x, unwrapped + wrap, style, markersize =1,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
-    ax.set_xlim(left=0)
-    # if label:
-        # ax.legend(frameon=True)
             
 def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
                  subplot_arg="111"):

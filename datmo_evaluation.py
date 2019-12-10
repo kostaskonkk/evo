@@ -62,9 +62,9 @@ results_vy=[]
 results_psi=[]
 results_omega=[]
 
-# output.screen_states(references, tracks, distance)
-output.report_states(references, tracks, distance, filename)
-output.report_dimensions(references, tracks, distance, filename)
+output.screen_states(references, tracks, distance)
+# output.report_states(references, tracks, distance, filename)
+# output.report_dimensions(references, tracks, distance, filename)
 
 # exec_time.whole(type_of_exp) # Make execution time plots
 
@@ -128,7 +128,7 @@ for ref in references:
             est_name=track[0]+ref[0])
         results_omega.append(result_omega)
 
-errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
-        results_omega, filename)
+# errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
+        # results_omega, filename)
 
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')
