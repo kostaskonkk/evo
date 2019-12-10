@@ -35,7 +35,6 @@ def report_states(references, tracks, distance, filename):
     fig_rep.savefig("/home/kostas/report/figures/"+ filename +".pgf")
     handles, labels = axarr_rep[0,0].get_legend_handles_labels()
     lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
-        
 
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())
@@ -58,7 +57,7 @@ def screen_states(references, tracks, distance):
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
-def report_dimensions(references, tracks):
+def report_dimensions(references, tracks, distance, filename):
     mpl.use('pgf')
     mpl.rcParams.update({
         "text.usetex": True,
@@ -80,5 +79,5 @@ def report_dimensions(references, tracks):
     fig_dimen.subplots_adjust(bottom=0.2)
     handles, labels = axarr_dimen[0].get_legend_handles_labels()
     lgd = fig_dimen.legend(handles, labels, loc='lower center',ncol = len(labels))
-    fig_dimen.savefig("/home/kostas/report/figures/"+type_of_exp+"/dimensions.pgf")
+    fig_dimen.savefig("/home/kostas/report/figures/"+filename+"_dimensions.pgf")
 

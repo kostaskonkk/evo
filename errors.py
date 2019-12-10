@@ -509,7 +509,7 @@ def run(results):
     # plot_collection.show()
 
 def stats(results_x, results_y, results_vx, results_vy, results_psi,
-        results_omega):
+        results_omega, filename):
     import pandas as pd
     # from evo.tools import log, user, settings
     from evo.tools.settings import SETTINGS
@@ -587,7 +587,7 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
     fig_stats.tight_layout()
     fig_stats.subplots_adjust(bottom=0.13)
     # plt.show()
-    fig_stats.savefig("/home/kostas/report/figures/simulation/test_stats.pgf")
+    fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
     keys = df.columns.values.tolist()
     # print(keys)
     # duplicates = [x for x in keys if keys.count(x) > 1]
