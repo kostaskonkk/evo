@@ -609,12 +609,12 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     dot_yaw.append(0)
     x = traj.timestamps - (traj.timestamps[0]
                            if start_timestamp is None else start_timestamp)
-    xlabel = "Time [s]"
-    ylabel = ["$\dot {\psi}$ (rad/s)"]
+    # xlabel = "Time [s]"
+    # ylabel = ["$\dot{\psi}$ [rad/s]"]
 
     ax.plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
-    ax.set_xlabel(xlabel)
-    ax.set_ylabel(ylabel)
+    ax.set_xlabel("Time [s]")
+    ax.set_ylabel("$\dot{\psi}$ [rad/s]")
 
 def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -651,12 +651,10 @@ def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabels = ["$v_x$ (m/s)", "$v_y$ (m/s)"]
+    ylabels = ["$v_x$ [m/s]", "$v_y$ [m/s]"]
     for i in range(0, 2):
         axarr[i].plot(x, vels[i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
-    # if label:
-        # axarr[0].legend(frameon=True)
 
 def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -742,7 +740,7 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.orientations_euler))
         xlabel = "index"
-    ylabel = "$\psi$ [rad/s]"
+    ylabel = "$\psi$ [rad]"
     # z = traj.orientations_quat_wxyz
     # yaw = z[:,3]
     # print(z)

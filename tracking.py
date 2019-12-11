@@ -320,24 +320,22 @@ def report(axarr, color, name, b, traj_ref, segments):
     for i, segment in enumerate(segments):
         if i==0:
             plot.traj_xy(axarr[0,0:2], segment, '-', color, name,1 ,b.timestamps[0])
-            plot.traj_yaw(axarr[0,2],segment, '-', color, None,1 ,b.timestamps[0])
+            plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,b.timestamps[0])
         else:
             plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,b.timestamps[0])
-            plot.traj_yaw(axarr[0,2],segment, '-', color, None, 1
-                    ,b.timestamps[0], 6.28 )
+            plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,b.timestamps[0], 6.28 )
         plot.linear_vel(axarr[1,0:2], segment, '-', color, name,1 ,b.timestamps[0])
-        plot.traj_yaw(axarr[2,0],segment, '-', color, name, 1 ,b.timestamps[0])
         angular_vel(axarr[2,1], segment, '-', color, name, 1, b.timestamps[0])
 
     axarr[0][0].set_xlim(left=0)
     axarr[0][1].set_xlim(left=0)
-    axarr[0][2].set_xlim(left=0)
     axarr[1][0].set_xlim(left=0)
     axarr[1][1].set_xlim(left=0)
-    axarr[1][2].set_xlim(left=0)
+    axarr[2][0].set_xlim(left=0)
+    axarr[2][1].set_xlim(left=0)
 
 
-def plot_dimensions(segments, reference, axarr, style='-', color='black', label="", alpha=1.0, start_timestamp=None):
+def plot_dimensions(segments, reference, axarr, color='black', label="", start_timestamp=None):
     ylabels = ["Length [m]", "Width [m]"]
 
     for i, segment in enumerate(segments):
@@ -349,8 +347,8 @@ def plot_dimensions(segments, reference, axarr, style='-', color='black', label=
             x = range(0, len(segments))
             xlabel = "index"
 
-        axarr[0].plot(x, segment.length, style, color=color, label=label, alpha=alpha)
-        axarr[1].plot(x, segment.width, style, color=color, label=label, alpha=alpha)
+        axarr[0].plot(x, segment.length, '-', color=color, label=label)
+        axarr[1].plot(x, segment.width, '-', color=color, label=label)
 
     axarr[0].set_ylabel(ylabels[0])
     axarr[1].set_ylabel(ylabels[1])

@@ -4,9 +4,9 @@ from __future__ import print_function
 from evo.core  import trajectory, sync, metrics
 from evo.tools import file_interface
 from datmo.msg import Track, TrackArray
-import rosbag
 from pylatex import Tabular 
 
+import rosbag
 import matplotlib.pyplot as plt
 import numpy as np
 from cycler import cycler
@@ -16,7 +16,9 @@ import seaborn as sns
 import itertools
 import os
 
-path = "/home/kostas/results/experiment/overtakes.bag"
+# path = "/home/kostas/results/experiment/overtakes.bag"
+# path = "/home/kostas/results/experiment/intersection.bag"
+path = "/home/kostas/results/simulation/lane_change.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
 scenario = os.path.splitext(os.path.basename(path))[0]
@@ -26,9 +28,8 @@ filename = type_of_exp +"/" + scenario
 plt.style.use(['seaborn-whitegrid', 'stylerc'])
 # bag = rosbag.Bag(sys.argv[1])
 
-bag = rosbag.Bag("/home/kostas/results/experiment/overtakes.bag")
-type_of_exp = 'experiment'
-distance = 0.35
+bag = rosbag.Bag(path)
+# type_of_exp = 'experiment'
 
 # bag = rosbag.Bag("/home/kostas/results/sim.bag")
 # type_of_exp = 'simulation'
@@ -38,8 +39,10 @@ references= []
 if type_of_exp=='simulation':
     references.append(('-slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
     references.append(('-fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
+    distance = 3 
 else:
     references.append(('', file_interface.read_bag_trajectory(bag, '/red_pose')))
+    distance = 0.35
 
 tracks = []
 # tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
@@ -62,8 +65,8 @@ results_vy=[]
 results_psi=[]
 results_omega=[]
 
-output.screen_states(references, tracks, distance)
-# output.report_states(references, tracks, distance, filename)
+# output.screen_states(references, tracks, distance)
+output.report_states(references, tracks, distance, filename)
 # output.report_dimensions(references, tracks, distance, filename)
 
 # exec_time.whole(type_of_exp) # Make execution time plots

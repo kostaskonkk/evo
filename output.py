@@ -15,18 +15,18 @@ def report_states(references, tracks, distance, filename):
 
     for ref in references:
         fig_rep, axarr_rep = plt.subplots(3,2,figsize=(6.125,7))
-        plot.traj_xy(axarr_rep[0,0:2], ref[1], '-', 'gray', 'reference',1
-                ,ref[1].timestamps[0])
-        plot.vx_vy(axarr_rep[1,0:2], ref[1], '-', 'gray', 'reference', 1,
-                ref[1].timestamps[0])
-        plot.traj_yaw(axarr_rep[2,0],ref[1], '-', 'gray', None, 1 ,ref[1].timestamps[0])
-        plot.angular_vel(axarr_rep[2,1], ref[1], '-', 'gray', None, 1, ref[1].timestamps[0])
 
         for track in tracks:
             segments, traj_ref = \
                 tracking.associate_segments_common_frame(ref[1], track[1],distance)
             color=next(palette)
             tracking.report(axarr_rep, color, track[0]+ref[0], ref[1], traj_ref, segments)
+    plot.traj_xy(axarr_rep[0,0:2], traj_ref, '-', 'gray', 'reference',1
+            ,ref[1].timestamps[0])
+    plot.vx_vy(axarr_rep[1,0:2], traj_ref, '-', 'gray', 'reference', 1,
+            ref[1].timestamps[0])
+    plot.traj_yaw(axarr_rep[2,0], traj_ref, '-', 'gray', None, 1 ,ref[1].timestamps[0])
+    plot.angular_vel(axarr_rep[2,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
 
     handles, labels = axarr_rep[0,0].get_legend_handles_labels()
     lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
@@ -73,13 +73,13 @@ def report_dimensions(references, tracks, distance, filename):
             segments, traj_ref = \
                 tracking.associate_segments_common_frame(ref[1], track[1],distance)
             color=next(palette)
-            tracking.plot_dimensions(segments, ref[1], axarr_dimen, color = color, label = ref[0])
+            tracking.plot_dimensions(segments, ref[1], axarr_dimen,  color, ref[0], ref[1].timestamps[0])
 
             whole =tracking.merge(segments)
 
     fig_dimen.tight_layout()
     fig_dimen.subplots_adjust(bottom=0.2)
-    handles, labels = axarr_dimen[0].get_legend_handles_labels()
-    lgd = fig_dimen.legend(handles, labels, loc='lower center',ncol = len(labels))
+    # handles, labels = axarr_dimen[0].get_legend_handles_labels()
+    # lgd = fig_dimen.legend(handles, labels, loc='lower center',ncol = len(labels))
     fig_dimen.savefig("/home/kostas/report/figures/"+filename+"_dimensions.pgf")
 
