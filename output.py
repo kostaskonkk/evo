@@ -57,7 +57,7 @@ def screen_states(references, tracks, distance):
     handles, labels = axarr[0,0].get_legend_handles_labels()
     lgd = fig.legend(handles, labels, loc='lower center',ncol = len(labels))
     plt.show()
-    fig.waitforbuttonpress(0)
+    # fig.waitforbuttonpress(0)
 
 def report_dimensions(references, tracks, distance, filename):
     mpl.use('pgf')

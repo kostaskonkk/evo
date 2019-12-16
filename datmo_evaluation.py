@@ -17,8 +17,14 @@ import itertools
 import os
 
 # path = "/home/kostas/results/experiment/overtakes.bag"
+# path = "/home/kostas/results/experiment/parallel.bag"
+# path = "/home/kostas/results/experiment/overtake_ego.bag"
+# path = "/home/kostas/results/experiment/overtake_red.bag"
 # path = "/home/kostas/results/experiment/intersection.bag"
-path = "/home/kostas/results/simulation/lane_change.bag"
+path = "/home/kostas/experiments/datmo.bag"
+
+# path = "/home/kostas/results/simulation/lane_change.bag"
+# path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
 scenario = os.path.splitext(os.path.basename(path))[0]
@@ -65,8 +71,8 @@ results_vy=[]
 results_psi=[]
 results_omega=[]
 
-# output.screen_states(references, tracks, distance)
-output.report_states(references, tracks, distance, filename)
+output.screen_states(references, tracks, distance)
+# output.report_states(references, tracks, distance, filename)
 # output.report_dimensions(references, tracks, distance, filename)
 
 # exec_time.whole(type_of_exp) # Make execution time plots
@@ -131,7 +137,7 @@ for ref in references:
             est_name=track[0]+ref[0])
         results_omega.append(result_omega)
 
-# errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
-        # results_omega, filename)
+errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
+        results_omega, filename)
 
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')

@@ -51,8 +51,9 @@ def traj_fourplots(axarr, traj, style='-', color='black', label="", alpha=1.0,
     traj_yaw(axarr[1,1],traj, style, color,
             alpha=alpha, start_timestamp=start_timestamp)
 
-bag = rosbag.Bag('/home/kostas/experiments/dsv/maybe2.bag')
-# bag = rosbag.Bag('/home/kostas/experiments/dsv/test.bag')
+bag = rosbag.Bag('/home/kostas/experiments/mocap.bag')
+# bag = rosbag.Bag('/home/kostas/datmo_ws/src/datmo/examples/parallel.bag')
+# bag = rosbag.Bag('/home/kostas/experiments/dsv/parallel/14-18-17.bag_')
 
 ego = file_interface.read_bag_trajectory(bag, '/ego_pose')
 red = file_interface.read_bag_trajectory(bag, '/red_pose')

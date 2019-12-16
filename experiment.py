@@ -42,8 +42,8 @@ def vx_vys(axarr, color, b, traj_ref, segments, method):
 
 plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
-bag = rosbag.Bag("/home/kostas/results/experiment/test.bag")
-# bag = rosbag.Bag("/home/kostas/experiments/dsv/datmo.bag")
+# bag = rosbag.Bag("/home/kostas/results/experiment/test.bag")
+bag = rosbag.Bag("/home/kostas/experiments/datmo.bag")
 type_of_exp = 'experiment'
 distance = 0.35
 
