@@ -488,7 +488,7 @@ def traj_fourplots(axarr, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
-    ylabels = ["x [m]", "y [m]"]
+    ylabels = ["$x$ [m]", "$y$ [m]"]
     for i in range(2):
         axarr[0,i].plot(x, traj.positions_xyz[:, i], style,markersize = 1, color=color,
                       label=label, alpha=alpha)

@@ -69,7 +69,7 @@ bag.close()
 
 loc_table = Tabular('l c c c c c c c')
 loc_table.add_hline()
-loc_table.add_row(('method','rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
+loc_table.add_row(('Method','RMSE', 'Mean', 'Median', 'STD', 'Min', 'Max', 'SSE'))
 loc_table.add_hline() 
 loc_table.add_empty_row()
 
@@ -148,8 +148,8 @@ def four_plots(ref, est, table, name):
         "text.usetex": True,
         "pgf.texsystem": "pdflatex",})
 
-    fig, axarr = plt.subplots(2, 2, figsize=(6.125,4))
-    plot.traj_fourplots(axarr, est, style, 'red', 'Estimation',1,ref.timestamps[0])
+    fig, axarr = plt.subplots(2, 2, figsize=(6.125,4.8))
+    plot.traj_fourplots(axarr, est, style, sns.xkcd_rgb["pale red"], 'Estimation',1,ref.timestamps[0])
     plot.traj_fourplots(axarr, ref, '-', 'gray', 'MoCap Ground Truth')
     handles, labels = axarr[0,0].get_legend_handles_labels()
     fig.legend(handles, labels, loc='lower center', ncol = 2,
@@ -157,7 +157,7 @@ def four_plots(ref, est, table, name):
     plt.tight_layout()
      
     fig.tight_layout()
-    fig.subplots_adjust(bottom=0.2)
+    fig.subplots_adjust(bottom=0.18)
     fig.savefig("/home/kostas/report/figures/localization/"+name+".pgf")
 
     if name=='slam':
