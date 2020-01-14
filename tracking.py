@@ -281,7 +281,7 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabel = "$\dot{\psi}$ [rad/s]"
+    ylabel = "$\dot{\psi}$ (rad/s)"
     ax.plot(x, traj.angular_vel[:,2], style, color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
@@ -319,12 +319,13 @@ def report(axarr, color, name, b, traj_ref, segments):
     for i, segment in enumerate(segments):
         if i==0:
             plot.traj_xy(axarr[0,0:2], segment, '-', color, name,1 ,b.timestamps[0])
-            plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,b.timestamps[0])
         else:
             plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,b.timestamps[0])
             plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,b.timestamps[0], 6.28 )
+        if name != 'KF':
+            plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,b.timestamps[0])
+            angular_vel(axarr[2,1], segment, '-', color, name, 1, b.timestamps[0])
         plot.linear_vel(axarr[1,0:2], segment, '-', color, name,1 ,b.timestamps[0])
-        angular_vel(axarr[2,1], segment, '-', color, name, 1, b.timestamps[0])
 
     axarr[0][0].set_xlim(left=0)
     axarr[0][1].set_xlim(left=0)
@@ -335,13 +336,13 @@ def report(axarr, color, name, b, traj_ref, segments):
 
 
 def plot_dimensions(segments, reference, axarr, color='black', label="", start_timestamp=None):
-    ylabels = ["Length [m]", "Width [m]"]
+    ylabels = ["Length (m)", "Width (m)"]
 
     for i, segment in enumerate(segments):
         if isinstance(segment, trajectory.PoseTrajectory3D):
             x = segment.timestamps - (segment.timestamps[0]
                                    if start_timestamp is None else start_timestamp)
-            xlabel = "Time [s]"
+            xlabel = "Time (s)"
         else:
             x = range(0, len(segments))
             xlabel = "index"

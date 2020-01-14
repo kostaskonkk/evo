@@ -21,10 +21,10 @@ import os
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
 # path = "/home/kostas/results/experiment/intersection.bag"
-path = "/home/kostas/experiments/datmo.bag"
+# path = "/home/kostas/experiments/datmo.bag"
 
-# path = "/home/kostas/results/simulation/lane_change.bag"
-# path = "/home/kostas/results/simulation/lane_keeping.bag"
+# path = "/home/kostas/results/simulation/double_lane_change.bag"
+path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
 scenario = os.path.splitext(os.path.basename(path))[0]
@@ -53,8 +53,8 @@ else:
 tracks = []
 # tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
 # tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
-tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
 tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
 
 
 bag.close()
@@ -71,9 +71,9 @@ results_vy=[]
 results_psi=[]
 results_omega=[]
 
-output.screen_states(references, tracks, distance)
-# output.report_states(references, tracks, distance, filename)
-# output.report_dimensions(references, tracks, distance, filename)
+# output.screen_states(references, tracks, distance)
+output.report_states(references, tracks, distance, filename)
+output.report_dimensions(references, tracks, distance, filename)
 
 # exec_time.whole(type_of_exp) # Make execution time plots
 
