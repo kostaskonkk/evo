@@ -633,13 +633,13 @@ def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
                               traj.positions_xyz[i + 1,0],
                               traj.timestamps[i], traj.timestamps[i + 1])
         for i in range(len(traj.positions_xyz) - 1)]
-    dot_x.append(0)
+    dot_x.append(dot_x[-1])
     dot_y = [
         trajectory.calc_velocity(traj.positions_xyz[i,1],
                               traj.positions_xyz[i + 1,1],
                               traj.timestamps[i], traj.timestamps[i + 1])
         for i in range(len(traj.positions_xyz) - 1)]
-    dot_y.append(0)
+    dot_y.append(dot_y[-1])
     vels = [dot_x, dot_y]
     if len(axarr) != 2:
         raise PlotException("expected an axis array with 2 subplots - got " +
