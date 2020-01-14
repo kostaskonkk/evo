@@ -160,19 +160,21 @@ def four_plots(ref, est, table, name):
     fig.subplots_adjust(bottom=0.2)
     fig.savefig("/home/kostas/report/figures/localization/"+name+".pgf")
 
-    if name=='slam':
+    if name == 'slam':
         name = name.upper()
+    elif name == 'odometry':
+        name = 'Odometry+IMU'
     else:
         name = name.capitalize()
 
     table.add_row((name,
-        round(ape_statistics["rmse"],3),
-        round(ape_statistics["mean"],3),
-        round(ape_statistics["median"],3),
-        round(ape_statistics["std"],3),
-        round(ape_statistics["min"],3),
-        round(ape_statistics["max"],3),
-        round(ape_statistics["sse"],3),))
+        round(ape_statistics["rmse"], 3),
+        round(ape_statistics["mean"], 3),
+        round(ape_statistics["median"], 3),
+        round(ape_statistics["std"], 3),
+        round(ape_statistics["min"], 3),
+        round(ape_statistics["max"], 3),
+        round(ape_statistics["sse"], 3),))
     table.add_hline
 
 four_plots(mocap ,odom, loc_table, 'odometry')
