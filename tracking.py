@@ -316,7 +316,6 @@ def screen(axarr, color, b, traj_ref, segments, method):
 
 
 def report(axarr, color, name, b, traj_ref, segments):
-
     for i, segment in enumerate(segments):
         if i==0:
             plot.traj_xy(axarr[0,0:2], segment, '-', color, name,1 ,b.timestamps[0])

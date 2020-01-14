@@ -20,21 +20,20 @@ def report_states(references, tracks, distance, filename):
             segments, traj_ref = \
                 tracking.associate_segments_common_frame(ref[1], track[1],distance)
             color=next(palette)
-            tracking.report(axarr_rep, color, track[0]+ref[0], ref[1], traj_ref, segments)
-    plot.traj_xy(axarr_rep[0,0:2], traj_ref, '-', 'gray', 'reference',1
-            ,ref[1].timestamps[0])
-    plot.vx_vy(axarr_rep[1,0:2], traj_ref, '-', 'gray', 'reference', 1,
-            ref[1].timestamps[0])
-    plot.traj_yaw(axarr_rep[2,0], traj_ref, '-', 'gray', None, 1 ,ref[1].timestamps[0])
-    plot.angular_vel(axarr_rep[2,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+            tracking.report(axarr_rep, color, track[0], ref[1], traj_ref, segments)
+        plot.traj_xy(axarr_rep[0,0:2], traj_ref, '-', 'gray', 'reference',1 ,ref[1].timestamps[0])
+        plot.vx_vy(axarr_rep[1,0:2], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
+        plot.traj_yaw(axarr_rep[2,0], traj_ref, '-', 'gray', None, 1 ,ref[1].timestamps[0])
+        plot.angular_vel(axarr_rep[2,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
 
-    handles, labels = axarr_rep[0,0].get_legend_handles_labels()
-    lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
-    fig_rep.tight_layout()
-    fig_rep.subplots_adjust(bottom=0.13)
-    fig_rep.savefig("/home/kostas/report/figures/"+ filename +".pgf")
-    handles, labels = axarr_rep[0,0].get_legend_handles_labels()
-    lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+        handles, labels = axarr_rep[0,0].get_legend_handles_labels()
+        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+        fig_rep.tight_layout()
+        fig_rep.subplots_adjust(bottom=0.13)
+        print(filename)
+        fig_rep.savefig("/home/kostas/report/figures/"+ filename +ref[0]+".pgf")
+        handles, labels = axarr_rep[0,0].get_legend_handles_labels()
+        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
 
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())

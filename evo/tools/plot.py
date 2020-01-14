@@ -418,12 +418,12 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "Time [s]"
+        xlabel = "Time (s)"
     else:
         # x = range(0, len(traj.positions_xyz))
         # xlabel = "index"
         print("not correct timestamp")
-    ylabels = ["$x$ [m]", "$y$ [m]"]
+    ylabels = ["$x$ (m)", "$y$ (m)"]
     for i in range(0, 2):
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
