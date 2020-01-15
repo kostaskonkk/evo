@@ -23,8 +23,8 @@ import os
 # path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/experiments/datmo.bag"
 
-# path = "/home/kostas/results/simulation/double_lane_change.bag"
-path = "/home/kostas/results/simulation/lane_keeping.bag"
+path = "/home/kostas/results/simulation/double_lane_change.bag"
+# path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
 scenario = os.path.splitext(os.path.basename(path))[0]
@@ -135,7 +135,7 @@ for ref in references:
             est_name=track[0]+ref[0])
         results_omega.append(result_omega)
 
-errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
-        results_omega, filename)
-
+# errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
+        # results_omega, filename)
+print("DONE!!")
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')

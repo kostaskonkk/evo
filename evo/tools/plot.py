@@ -429,7 +429,6 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
-        axarr[i].set_xlim(left=0)
 
 def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -614,7 +613,6 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     ax.plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("$\dot{\psi}$ (rad/s)")
-    ax.set_xlim(left=0)
 
 def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -685,7 +683,6 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         axarr[i].plot(x, traj.linear_vel[:,i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
-        axarr[i].set_xlim(left=0)
 
 def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
              start_timestamp=None):
@@ -754,7 +751,6 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
-    ax.set_xlim(left=0)
 
 def dimensions(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -788,7 +784,6 @@ def dimensions(axarr, traj, style='-', color='black', label="", alpha=1.0,
 
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
-        axarr[i].set_xlim(left=0)
             
 def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
                  subplot_arg="111"):

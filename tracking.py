@@ -343,7 +343,6 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     ax.set_xlabel(xlabel)
 
 def report_states(references, tracks, distance, filename):
-
     mpl.use('pgf')
     mpl.rcParams.update({
         "text.usetex": True,
@@ -352,12 +351,13 @@ def report_states(references, tracks, distance, filename):
 
     for ref in references:
         # fig_rep, axarr = plt.subplots(3,2,figsize=(6.125,7))
-        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,7.5))
+        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,7.7))
 
         for track in tracks:
             segments, traj_ref = \
                 associate_segments_common_frame(ref[1], track[1],distance)
             color=next(palette)
+            
 
             for i, segment in enumerate(segments):
                 if i==0:
@@ -365,25 +365,38 @@ def report_states(references, tracks, distance, filename):
                             ,ref[1].timestamps[0])
                 else:
                     plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,ref[1].timestamps[0])
-                    plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,ref[1].timestamps[0], 6.28 )
                 if track[0] != 'KF':
-                    plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,ref[1].timestamps[0])
+                    if i==0:
+                        plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,ref[1].timestamps[0])
+                    else:
+                        plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,ref[1].timestamps[0], 6.28 )
                     angular_vel(axarr[2,1], segment, '-', color, track[0], 1,
                             ref[1].timestamps[0])
+                    plot.dimensions(axarr[3,0:2], segment, '-', color, track[0], 1
+                            ,ref[1].timestamps[0])
                 plot.linear_vel(axarr[1,0:2], segment, '-', color, track[0],1
                         ,ref[1].timestamps[0])
-                plot.dimensions(axarr[3,0:2], segment, '-', color, track[0],1
-                        ,ref[1].timestamps[0])
 
-        plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'Reference',1 ,ref[1].timestamps[0])
+        plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'Reference', 1, ref[1].timestamps[0])
         plot.vx_vy(axarr[1,0:2], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
-        plot.traj_yaw(axarr[2,0], traj_ref, '-', 'gray', None, 1 ,ref[1].timestamps[0])
+        plot.traj_yaw(axarr[2,0], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
         plot.angular_vel(axarr[2,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+
+        if filename.split('/')[0] == 'simulation':
+            axarr[3,0].axhline(y=3.9, color='gray')
+            axarr[3,1].axhline(y=1.78, color='gray')
+        else:
+            axarr[3,0].axhline(y=0.4, color='gray')
+            axarr[3,1].axhline(y=0.2, color='gray')
+
+        for i in range(0,4):
+            for j in range(0,2):
+                axarr[i,j].set_xlim(left=0)
 
         handles, labels = axarr[0,0].get_legend_handles_labels()
         lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
         fig_rep.tight_layout()
-        fig_rep.subplots_adjust(bottom=0.13)
+        fig_rep.subplots_adjust(bottom=0.1)
         fig_rep.savefig("/home/kostas/report/figures/"+ filename +ref[0]+".pgf")
         handles, labels = axarr[0,0].get_legend_handles_labels()
         lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
