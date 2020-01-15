@@ -194,6 +194,7 @@ def associate_segments_common_frame(traj, tracks, distance):
         print("No matching segments")
 
     traj_ref = trajectory.merge(segments_refer)
+    # print(traj_ref.length)
     return segments_track, traj_ref
 
 def stats_to_latex_table(traj_ref, segments, idx, table):
@@ -260,32 +261,6 @@ def four_plots(idx, b, traj_ref, segments, type_of_exp):
     plt.waitforbuttonpress(0)
     plt.close(fig)
 
-def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
-        start_timestamp=None):
-    """
-    plots the angular velocities of a trajectory object 
-    :param axarr: an axis array (for x, y)
-                  e.g. from 'fig, axarr = plt.subplots(2)'
-    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
-    :param style: matplotlib line style
-    :param color: matplotlib color
-    :param label: label (for legend)
-    :param alpha: alpha value for transparency
-    :param start_timestamp: optional start time of the reference
-                            (for x-axis alignment)
-    """
-    if isinstance(traj, trajectory.PoseTrajectory3D):
-        x = traj.timestamps - (traj.timestamps[0]
-                               if start_timestamp is None else start_timestamp)
-        xlabel = "Time [s]"
-    else:
-        x = range(0, len(traj.positions_xyz - 1))
-        xlabel = "index"
-    ylabel = "$\dot{\psi}$ (rad/s)"
-    ax.plot(x, traj.angular_vel[:,2], style, color=color, label=label, alpha=alpha)
-    ax.set_ylabel(ylabel)
-    ax.set_xlabel(xlabel)
-
 def screen(axarr, color, b, traj_ref, segments, method):
     """Generates plots for x, y and yaw onto an axarray
 
@@ -314,50 +289,6 @@ def screen(axarr, color, b, traj_ref, segments, method):
     axarr[1][1].set_xlim(left=0)
     axarr[1][2].set_xlim(left=0)
 
-
-def report(axarr, color, name, b, traj_ref, segments):
-    for i, segment in enumerate(segments):
-        if i==0:
-            plot.traj_xy(axarr[0,0:2], segment, '-', color, name,1 ,b.timestamps[0])
-        else:
-            plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,b.timestamps[0])
-            plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,b.timestamps[0], 6.28 )
-        if name != 'KF':
-            plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,b.timestamps[0])
-            angular_vel(axarr[2,1], segment, '-', color, name, 1, b.timestamps[0])
-        plot.linear_vel(axarr[1,0:2], segment, '-', color, name,1 ,b.timestamps[0])
-
-    axarr[0][0].set_xlim(left=0)
-    axarr[0][1].set_xlim(left=0)
-    axarr[1][0].set_xlim(left=0)
-    axarr[1][1].set_xlim(left=0)
-    axarr[2][0].set_xlim(left=0)
-    axarr[2][1].set_xlim(left=0)
-
-
-def plot_dimensions(segments, reference, axarr, color='black', label="", start_timestamp=None):
-    ylabels = ["Length (m)", "Width (m)"]
-
-    for i, segment in enumerate(segments):
-        if isinstance(segment, trajectory.PoseTrajectory3D):
-            x = segment.timestamps - (segment.timestamps[0]
-                                   if start_timestamp is None else start_timestamp)
-            xlabel = "Time (s)"
-        else:
-            x = range(0, len(segments))
-            xlabel = "index"
-
-        axarr[0].plot(x, segment.length, '-', color=color, label=label)
-        axarr[1].plot(x, segment.width, '-', color=color, label=label)
-
-    axarr[0].set_ylabel(ylabels[0])
-    axarr[1].set_ylabel(ylabels[1])
-    axarr[0].set_xlabel(xlabel)
-    axarr[1].set_xlabel(xlabel)
-    axarr[0].set_xlim(left=0)
-    axarr[1].set_xlim(left=0)
-
-
 def merge(tracks):
     """
     Merges multiple tracks into a single, timestamp-sorted one.
@@ -366,6 +297,9 @@ def merge(tracks):
     """
     merged_stamps = np.concatenate([t.timestamps for t in tracks])
     merged_xyz = np.concatenate([t.positions_xyz for t in tracks])
+    merged_length = np.concatenate([t.length for t in tracks])
+    merged_width = np.concatenate([t.width for t in tracks])
+    merged_angular_vel = np.concatenate([t.angular_vel for t in tracks])
     merged_linear_vel = np.concatenate([t.linear_vel for t in tracks])
     merged_angular_vel = np.concatenate([t.angular_vel for t in tracks])
     merged_quat = np.concatenate(
@@ -376,5 +310,103 @@ def merge(tracks):
     merged_quat = merged_quat[order]
     merged_linear_vel = merged_linear_vel[order]
     merged_angular_vel = merged_angular_vel[order]
+    merged_length = merged_length[order]
+    merged_width = merged_width[order]
     return PoseTrajectory3D(merged_xyz, merged_quat, merged_stamps, linear_vel
-            = merged_linear_vel, angular_vel = merged_angular_vel)
+            = merged_linear_vel, angular_vel = merged_angular_vel, length =
+            merged_length, width = merged_width)
+
+def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plots the angular velocity of a trajectory object 
+    :param axarr: an axis array (for x, y)
+                  e.g. from 'fig, axarr = plt.subplots(2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
+    """
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "Time [s]"
+    else:
+        x = range(0, len(traj.positions_xyz - 1))
+        xlabel = "index"
+    ylabel = "$\dot{\psi}$ (rad/s)"
+    ax.plot(x, traj.angular_vel[:,2], style, color=color, label=label, alpha=alpha)
+    ax.set_ylabel(ylabel)
+    ax.set_xlabel(xlabel)
+
+def report_states(references, tracks, distance, filename):
+
+    mpl.use('pgf')
+    mpl.rcParams.update({
+        "text.usetex": True,
+        "pgf.texsystem": "pdflatex",})
+    palette = itertools.cycle(sns.color_palette())
+
+    for ref in references:
+        # fig_rep, axarr = plt.subplots(3,2,figsize=(6.125,7))
+        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,7.5))
+
+        for track in tracks:
+            segments, traj_ref = \
+                associate_segments_common_frame(ref[1], track[1],distance)
+            color=next(palette)
+
+            for i, segment in enumerate(segments):
+                if i==0:
+                    plot.traj_xy(axarr[0,0:2], segment, '-', color, track[0],1
+                            ,ref[1].timestamps[0])
+                else:
+                    plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,ref[1].timestamps[0])
+                    plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,ref[1].timestamps[0], 6.28 )
+                if track[0] != 'KF':
+                    plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,ref[1].timestamps[0])
+                    angular_vel(axarr[2,1], segment, '-', color, track[0], 1,
+                            ref[1].timestamps[0])
+                plot.linear_vel(axarr[1,0:2], segment, '-', color, track[0],1
+                        ,ref[1].timestamps[0])
+                plot.dimensions(axarr[3,0:2], segment, '-', color, track[0],1
+                        ,ref[1].timestamps[0])
+
+        plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'Reference',1 ,ref[1].timestamps[0])
+        plot.vx_vy(axarr[1,0:2], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
+        plot.traj_yaw(axarr[2,0], traj_ref, '-', 'gray', None, 1 ,ref[1].timestamps[0])
+        plot.angular_vel(axarr[2,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+
+        handles, labels = axarr[0,0].get_legend_handles_labels()
+        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+        fig_rep.tight_layout()
+        fig_rep.subplots_adjust(bottom=0.13)
+        fig_rep.savefig("/home/kostas/report/figures/"+ filename +ref[0]+".pgf")
+        handles, labels = axarr[0,0].get_legend_handles_labels()
+        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+
+def screen_states(references, tracks, distance):
+    palette = itertools.cycle(sns.color_palette())
+    for ref in references:
+        fig, axarr = plt.subplots(2,3)
+        # plot.traj_xyyaw(axarr[0,0:3], ref[1], '-', 'gray', 'reference',1 ,ref[1].timestamps[0])
+        # plot.traj_vel  (axarr[1,0:3], ref[1], '-', 'gray')
+
+        for track in tracks:
+            segments, traj_ref = \
+                tracking.associate_segments_common_frame(ref[1], track[1],distance)
+            color=next(palette)
+            tracking.screen(axarr, color, ref[1], traj_ref, segments, track[0])
+
+        plot.traj_xyyaw(axarr[0,0:3], traj_ref, '-', 'gray', 'reference',1
+                ,ref[1].timestamps[0])
+        plot.traj_vel  (axarr[1,0:3], traj_ref, '-', 'gray')
+
+    fig.tight_layout()
+    handles, labels = axarr[0,0].get_legend_handles_labels()
+    lgd = fig.legend(handles, labels, loc='lower center',ncol = len(labels))
+    plt.show()
+    # fig.waitforbuttonpress(0)

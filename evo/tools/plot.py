@@ -429,6 +429,7 @@ def traj_xy(axarr, traj, style='-', color='black', label="", alpha=1.0,
                       label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
+        axarr[i].set_xlim(left=0)
 
 def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -587,7 +588,7 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
 def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
     """
-    calculates the velocities of a trajectory object and plots them on an axis
+    calculates the angular velocity of a trajectory object and plots it on an axis
     :param axarr: an axis array (for x, y)
                   e.g. from 'fig, axarr = plt.subplots(2)'
     :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
@@ -609,12 +610,11 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     dot_yaw.append(0)
     x = traj.timestamps - (traj.timestamps[0]
                            if start_timestamp is None else start_timestamp)
-    # xlabel = "Time [s]"
-    # ylabel = ["$\dot{\psi}$ [rad/s]"]
 
     ax.plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
     ax.set_xlabel("Time (s)")
     ax.set_ylabel("$\dot{\psi}$ (rad/s)")
+    ax.set_xlim(left=0)
 
 def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):
@@ -685,6 +685,7 @@ def linear_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
         axarr[i].plot(x, traj.linear_vel[:,i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
         axarr[i].set_xlabel(xlabel)
+        axarr[i].set_xlim(left=0)
 
 def traj_rpy(axarr, traj, style='-', color='black', label="", alpha=1.0,
              start_timestamp=None):
@@ -753,6 +754,41 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
                   color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
+    ax.set_xlim(left=0)
+
+def dimensions(axarr, traj, style='-', color='black', label="", alpha=1.0,
+        start_timestamp=None):
+    """
+    plots the dimensions of a trajectory object 
+    :param axarr: an axis array (for x, y)
+                  e.g. from 'fig, axarr = plt.subplots(2)'
+    :param traj: trajectory.PosePath3D or trajectory.PoseTrajectory3D object
+    :param style: matplotlib line style
+    :param color: matplotlib color
+    :param label: label (for legend)
+    :param alpha: alpha value for transparency
+    :param start_timestamp: optional start time of the reference
+                            (for x-axis alignment)
+    """
+    if len(axarr) != 2:
+        raise PlotException("expected an axis array with 2 subplots - got " +
+                            str(len(axarr)))
+    if isinstance(traj, trajectory.PoseTrajectory3D):
+        x = traj.timestamps - (traj.timestamps[0]
+                               if start_timestamp is None else start_timestamp)
+        xlabel = "Time (s)"
+    else:
+        x = range(0, len(traj.positions_xyz - 1))
+        xlabel = "index"
+    ylabels = ["Length (m)", "Width (m)"]
+    axarr[0].plot(x, traj.length, style, color=color, label=label, alpha=alpha)
+    axarr[1].plot(x, traj.width, style, color=color, label=label, alpha=alpha)
+
+    for i in range(0, 2):
+
+        axarr[i].set_ylabel(ylabels[i])
+        axarr[i].set_xlabel(xlabel)
+        axarr[i].set_xlim(left=0)
             
 def trajectories(fig, trajectories, plot_mode=PlotMode.xy, title="",
                  subplot_arg="111"):

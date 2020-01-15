@@ -236,7 +236,7 @@ class PoseTrajectory3D(PosePath3D, object):
 
     def __init__(self, positions_xyz=None, orientations_quat_wxyz=None,
                  timestamps=None, poses_se3=None, meta=None, linear_vel=None,
-                 angular_vel=None,length=None, width=None, pose_covariance=None,
+                 angular_vel=None, length=None, width=None, pose_covariance=None,
                  twist_covariance=None):
         """
         :param timestamps: optional nx1 list of timestamps

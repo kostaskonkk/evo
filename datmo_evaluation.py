@@ -11,7 +11,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from cycler import cycler
 import sys # cli arguments in sys.argv
-import tracking, errors, exec_time, output
+import tracking, errors, exec_time
 import seaborn as sns
 import itertools
 import os
@@ -49,7 +49,6 @@ if type_of_exp=='simulation':
 else:
     references.append(('', file_interface.read_bag_trajectory(bag, '/red_pose')))
     distance = 0.35
-
 tracks = []
 # tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
 # tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
@@ -72,8 +71,7 @@ results_psi=[]
 results_omega=[]
 
 # output.screen_states(references, tracks, distance)
-output.report_states(references, tracks, distance, filename)
-output.report_dimensions(references, tracks, distance, filename)
+tracking.report_states(references, tracks, distance, filename)
 
 # exec_time.whole(type_of_exp) # Make execution time plots
 
