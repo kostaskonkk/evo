@@ -352,6 +352,7 @@ def report_states(references, tracks, distance, filename):
     for ref in references:
         # fig_rep, axarr = plt.subplots(3,2,figsize=(6.125,7))
         fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,7.7))
+        # fig_rep, axarr = plt.subplots(4,2,figsize=(7.14,7.7))
 
         for track in tracks:
             segments, traj_ref = \
@@ -394,12 +395,12 @@ def report_states(references, tracks, distance, filename):
                 axarr[i,j].set_xlim(left=0)
 
         handles, labels = axarr[0,0].get_legend_handles_labels()
-        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol =
+                len(labels), borderpad=0.7)
         fig_rep.tight_layout()
-        fig_rep.subplots_adjust(bottom=0.1)
-        fig_rep.savefig("/home/kostas/report/figures/"+ filename +ref[0]+".pgf")
-        handles, labels = axarr[0,0].get_legend_handles_labels()
-        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol = len(labels))
+        fig_rep.subplots_adjust(bottom=0.11)
+        fig_rep.savefig("/home/kostas/report/figures/"+ filename
+                +ref[0]+".pgf",bbox_inches='tight')
 
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())
