@@ -70,9 +70,8 @@ results_vy=[]
 results_psi=[]
 results_omega=[]
 
-# output.screen_states(references, tracks, distance)
-tracking.report_states(references, tracks, distance, filename)
-
+# tracking.screen_states(references, tracks, distance)
+# tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 
 palette = itertools.cycle(sns.color_palette())
@@ -94,6 +93,7 @@ for ref in references:
             ref_name=ref[0],
             est_name=track[0]+" "+ref[0])
         results_x.append(result_x)
+        # print(result_x)
 
         result_y = errors.ape(
             traj_ref=traj_reference,
@@ -135,7 +135,7 @@ for ref in references:
             est_name=track[0]+ref[0])
         results_omega.append(result_omega)
 
-# errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
-        # results_omega, filename)
+errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
+        results_omega, filename)
 print("DONE!!")
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')

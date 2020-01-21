@@ -359,7 +359,6 @@ def report_states(references, tracks, distance, filename):
                 associate_segments_common_frame(ref[1], track[1],distance)
             color=next(palette)
             
-
             for i, segment in enumerate(segments):
                 if i==0:
                     plot.traj_xy(axarr[0,0:2], segment, '-', color, track[0],1
@@ -411,11 +410,11 @@ def screen_states(references, tracks, distance):
 
         for track in tracks:
             segments, traj_ref = \
-                tracking.associate_segments_common_frame(ref[1], track[1],distance)
+                associate_segments_common_frame(ref[1], track[1],distance)
             color=next(palette)
-            tracking.screen(axarr, color, ref[1], traj_ref, segments, track[0])
+            screen(axarr, color, ref[1], traj_ref, segments, track[0])
 
-        plot.traj_xyyaw(axarr[0,0:3], traj_ref, '-', 'gray', 'reference',1
+        plot.traj_xyyaw(axarr[0,0:3], traj_ref, '-', 'gray', 'Reference',1
                 ,ref[1].timestamps[0])
         plot.traj_vel  (axarr[1,0:3], traj_ref, '-', 'gray')
 

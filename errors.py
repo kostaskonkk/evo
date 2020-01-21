@@ -445,10 +445,9 @@ def run(results):
     if "xlabel" in df.loc["info"].index and not df.loc[
             "info", "xlabel"].isnull().values.any():
         index_label = df.loc["info", "xlabel"][0]
-    else:
-        index_label = "$t$ (s)" if common_index else "index"
-    # metric_label = df.loc["info", "label"][0]
+    else: index_label = "$t$ (s)" if common_index else "index" # metric_label = df.loc["info", "label"][0]
     metric_label = "x"
+
 
     plot_collection = plot.PlotCollection(first_title)
     # raw value plot
@@ -552,42 +551,72 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
         name = None
         df_ome = pd.concat([df_ome, pandas_bridge.result_to_df(result, name)],
                        axis="columns")
-    print(df_x.loc["info","label"][0])
+
+    error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
+    error_x = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
+
+    print(error_x)
+    print(df_x.loc["np_arrays", "error_array"].tolist())
+
+    # plot_collection = plot.PlotCollection(first_title)
+    # raw value plot
+    fig_raw, ax_raw  = plt.subplots(3,2,figsize=(6.125,7))
+    # handle NaNs from concat() above
+    # error_df.interpolate(method="index").plot(
+        # ax=fig_raw.gca(), colormap=colormap, style=linestyles,
+        # title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
+    # print(df_x)
+    error_x.interpolate(method="index").plot(ax=ax_raw[0,0], legend=None, alpha=1)
+
+    ax_raw[0,0].set_ylabel("Absolute error $x$ (m)")
+    ax_raw[0,1].set_ylabel("Absolute error $y$ (m)")
+    ax_raw[2,1].set_ylabel("Absolute error $\dot{\psi}$ (rad/s)")
+
+
+    handles, labels = ax_raw[0,0].get_legend_handles_labels()
+    lgd = fig_raw.legend(handles, labels, loc='lower center',ncol = len(labels))
+    fig_raw.tight_layout()
+    fig_raw.subplots_adjust(bottom=0.13)
+
+    plt.show()
+
+    # plt.legend(frameon=True)
+    # plot_collection.add_figure("raw", fig_raw)
     # statistics plot
 
-    mpl.use('pgf')
-    mpl.rcParams.update({
-        "text.usetex": True,
-        "pgf.texsystem": "pdflatex",
-    })
+    # mpl.use('pgf')
+    # mpl.rcParams.update({
+        # "text.usetex": True,
+        # "pgf.texsystem": "pdflatex",
+    # })
     fig_stats, axarr = plt.subplots(3,2,figsize=(6.125,7))
     include = df_x.loc["stats"].index.isin(SETTINGS.plot_statistics)
     if any(include):
         df_x.loc["stats"][include].plot(kind="barh", ax =  axarr[0,0],legend
         =None)
-        axarr[0,0].set_xlabel("Absolute error $x$ [m]")
+        axarr[0,0].set_xlabel("Absolute error $x$ (m)")
         df_y.loc["stats"][include].plot(kind="barh", ax =  axarr[0,1],
                 legend=None)
-        axarr[0,1].set_xlabel("Absolute error $y$ [m]")
+        axarr[0,1].set_xlabel("Absolute error $y$ (m)")
         df_vx.loc["stats"][include].plot(kind="barh", ax =  axarr[1,0],
                 legend=None)
-        axarr[1,0].set_xlabel("Absolute error $v_y$ [m/s]")
+        axarr[1,0].set_xlabel("Absolute error $v_y$ (m/s)")
         df_vy.loc["stats"][include].plot(kind="barh", ax =  axarr[1,1],
                 legend=None)
-        axarr[1,1].set_xlabel("Absolute error $v_x$ [m/s]")
+        axarr[1,1].set_xlabel("Absolute error $v_x$ (m/s)")
         df_psi.loc["stats"][include].plot(kind="barh", ax =  axarr[2,0],
                 legend=None)
-        axarr[2,0].set_xlabel("Absolute error $\psi$ [rad]")
+        axarr[2,0].set_xlabel("Absolute error $\psi$ (rad)")
         df_ome.loc["stats"][include].plot(kind="barh", ax =  axarr[2,1],
                 legend=None)
-        axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ [rad/s]")
+        axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (rad/s)")
 
     handles, labels = axarr[0,0].get_legend_handles_labels()
     lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
     fig_stats.tight_layout()
     fig_stats.subplots_adjust(bottom=0.13)
     # plt.show()
-    fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
+    # fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
     keys = df.columns.values.tolist()
     # print(keys)
     # duplicates = [x for x in keys if keys.count(x) > 1]
