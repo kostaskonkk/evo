@@ -16,8 +16,8 @@ import seaborn as sns
 import itertools
 import os
 
-path = "/home/kostas/results/experiment/overtakes_new.bag"
-# path = "/home/kostas/results/experiment/overtakes.bag"
+# path = "/home/kostas/results/experiment/overtakes_new.bag"
+path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/results/experiment/parallel.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
@@ -71,7 +71,8 @@ results_psi=[]
 results_omega=[]
 
 # tracking.screen_states(references, tracks, distance)
-tracking.report_states(references, tracks, distance, filename)
+tracking.presentation_states(references, tracks, distance, filename)
+# tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 
 palette = itertools.cycle(sns.color_palette())

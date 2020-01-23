@@ -401,6 +401,64 @@ def report_states(references, tracks, distance, filename):
         fig_rep.savefig("/home/kostas/report/figures/"+ filename
                 +ref[0]+".pgf",bbox_inches='tight')
 
+def presentation_states(references, tracks, distance, filename):
+
+    palette = itertools.cycle(sns.color_palette())
+
+    for ref in references:
+        # fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,7.7))
+        fig_rep, axarr = plt.subplots(2,4,figsize=(19.2,10.8))
+
+        for track in tracks:
+            segments, traj_ref = \
+                associate_segments_common_frame(ref[1], track[1],distance)
+            color=next(palette)
+            
+            for i, segment in enumerate(segments):
+                if i==0:
+                    plot.traj_xy(axarr[0:2,0], segment, '-', color, track[0],1
+                            ,ref[1].timestamps[0])
+                else:
+                    plot.traj_xy(axarr[0:2,0], segment, '-', color, None,1 ,ref[1].timestamps[0])
+                if track[0] != 'KF':
+                    if i==0:
+                        plot.traj_yaw(axarr[0,2],segment, '-', color, None,1 ,ref[1].timestamps[0])
+                    else:
+                        plot.traj_yaw(axarr[0,2],segment, '-', color, None, 1 ,ref[1].timestamps[0], 6.28 )
+                    angular_vel(axarr[1,2], segment, '-', color, track[0], 1,
+                            ref[1].timestamps[0])
+                    plot.dimensions(axarr[0:2,3], segment, '-', color, track[0], 1
+                            ,ref[1].timestamps[0])
+                plot.linear_vel(axarr[0:2,1], segment, '-', color, track[0],1
+                        ,ref[1].timestamps[0])
+
+        plot.traj_xy(axarr[0:2,0], traj_ref, '-', 'gray', 'Reference', 1, ref[1].timestamps[0])
+        plot.vx_vy(axarr[0:2,1], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
+        plot.traj_yaw(axarr[0,2], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+        plot.angular_vel(axarr[1,2], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+
+        if filename.split('/')[0] == 'simulation':
+            axarr[0,3].axhline(y=3.9, color='gray')
+            axarr[1,3].axhline(y=1.78, color='gray')
+        else:
+            axarr[0,3].axhline(y=0.4, color='gray')
+            axarr[1,3].axhline(y=0.2, color='gray')
+
+        for i in range(0,4):
+            for j in range(0,2):
+                axarr[j,i].set_xlim(left=0)
+
+        handles, labels = axarr[0,0].get_legend_handles_labels()
+        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol =
+                len(labels), borderpad=0.7)
+        # fig_rep.subplots_adjust(bottom=0.11)
+        fig_rep.tight_layout()
+        # plt.show()
+        # fig_rep.savefig("/home/kostas/presentation/figures/"+ filename
+                # +ref[0]+".pgf",bbox_inches='tight')
+        fig_rep.savefig("/home/kostas/presentation/"+ filename
+                +ref[0]+".png",bbox_inches='tight',transparent=True)
+
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())
     for ref in references:

@@ -449,11 +449,11 @@ def traj_xyyaw(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "Time [s]"
+        xlabel = "Time (s)"
     else:
         x = range(0, len(traj.positions_xyz))
         xlabel = "index"
-    ylabels = ["$x$ [m]", "$y$ [m]"]
+    ylabels = ["$x$ (m)", "$y$ (m)"]
     for i in range(2):
         axarr[i].plot(x, traj.positions_xyz[:, i], style, color=color,
                       label=label, alpha=alpha)
@@ -572,11 +572,11 @@ def traj_vel(axarr, traj, style='-', color='black', label="", alpha=1.0,
     if isinstance(traj, trajectory.PoseTrajectory3D):
         x = traj.timestamps - (traj.timestamps[0]
                                if start_timestamp is None else start_timestamp)
-        xlabel = "Time [s]"
+        xlabel = "Time (s)"
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabels = ["$\dot x$ [m/s]", "$\dot y$ [m/s]", "$\dot {psi}$ [rad/s]"]
+    ylabels = ["$v_x$ (m/s)", "$v_y$ (m/s)", "$\dot {psi}$ (rad/s)"]
     for i in range(0, 2):
         axarr[i].plot(x, vels[i], style, color=color, label=label, alpha=alpha)
         axarr[i].set_ylabel(ylabels[i])
