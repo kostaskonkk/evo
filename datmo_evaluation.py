@@ -16,6 +16,7 @@ import seaborn as sns
 import itertools
 import os
 
+path = "/home/kostas/results/experiment/overtakes_new.bag"
 # path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/results/experiment/parallel.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
@@ -23,7 +24,7 @@ import os
 # path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/experiments/datmo.bag"
 
-path = "/home/kostas/results/simulation/double_lane_change.bag"
+# path = "/home/kostas/results/simulation/double_lane_change.bag"
 # path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
@@ -55,7 +56,6 @@ tracks = []
 tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
 
-
 bag.close()
 
 table = Tabular('l c c c c c c c')
@@ -71,7 +71,7 @@ results_psi=[]
 results_omega=[]
 
 # tracking.screen_states(references, tracks, distance)
-# tracking.report_states(references, tracks, distance, filename)
+tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 
 palette = itertools.cycle(sns.color_palette())
@@ -135,7 +135,7 @@ for ref in references:
             est_name=track[0]+ref[0])
         results_omega.append(result_omega)
 
-errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
-        results_omega, filename)
+# errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
+        # results_omega, filename)
 print("DONE!!")
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')

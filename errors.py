@@ -525,7 +525,7 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
     df_vx =pd.DataFrame()
     df_vy =pd.DataFrame()
     df_psi=pd.DataFrame()
-    df_ome=pd.DataFrame()
+    df_omega=pd.DataFrame()
 
     for result in results_x:
         name = None
@@ -549,11 +549,16 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
                        axis="columns")
     for result in results_omega:
         name = None
-        df_ome = pd.concat([df_ome, pandas_bridge.result_to_df(result, name)],
+        df_omega = pd.concat([df_omega, pandas_bridge.result_to_df(result, name)],
                        axis="columns")
 
     error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
-    error_x = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
+    error_y = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
+    error_vx = pd.DataFrame(df_vx.loc["np_arrays", "error_array"].tolist()).T
+    error_vy = pd.DataFrame(df_vy.loc["np_arrays", "error_array"].tolist()).T
+    error_psi = pd.DataFrame(df_psi.loc["np_arrays", "error_array"].tolist()).T
+    error_omega = pd.DataFrame(df_omega.loc["np_arrays", "error_array"].tolist()).T
+
 
     print(error_x)
     print(df_x.loc["np_arrays", "error_array"].tolist())
@@ -567,11 +572,18 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
         # title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
     # print(df_x)
     error_x.interpolate(method="index").plot(ax=ax_raw[0,0], legend=None, alpha=1)
+    error_y.interpolate(method="index").plot(ax=ax_raw[0,1], legend=None, alpha=1)
+    error_vx.interpolate(method="index").plot(ax=ax_raw[1,0], legend=None, alpha=1)
+    error_vy.interpolate(method="index").plot(ax=ax_raw[1,1], legend=None, alpha=1)
+    error_psi.interpolate(method="index").plot(ax=ax_raw[2,0], legend=None, alpha=1)
+    error_omega.interpolate(method="index").plot(ax=ax_raw[2,1], legend=None, alpha=1)
 
     ax_raw[0,0].set_ylabel("Absolute error $x$ (m)")
     ax_raw[0,1].set_ylabel("Absolute error $y$ (m)")
+    ax_raw[1,0].set_ylabel("Absolute error $v_y$ (m/s)")
+    ax_raw[1,1].set_ylabel("Absolute error $v_x$ (m/s)")
     ax_raw[2,1].set_ylabel("Absolute error $\dot{\psi}$ (rad/s)")
-
+    ax_raw[2,0].set_ylabel("Absolute error $\psi$ (rad)")
 
     handles, labels = ax_raw[0,0].get_legend_handles_labels()
     lgd = fig_raw.legend(handles, labels, loc='lower center',ncol = len(labels))
@@ -607,7 +619,7 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
         df_psi.loc["stats"][include].plot(kind="barh", ax =  axarr[2,0],
                 legend=None)
         axarr[2,0].set_xlabel("Absolute error $\psi$ (rad)")
-        df_ome.loc["stats"][include].plot(kind="barh", ax =  axarr[2,1],
+        df_omega.loc["stats"][include].plot(kind="barh", ax =  axarr[2,1],
                 legend=None)
         axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (rad/s)")
 
@@ -615,7 +627,7 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
     lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
     fig_stats.tight_layout()
     fig_stats.subplots_adjust(bottom=0.13)
-    # plt.show()
+    plt.show()
     # fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
     keys = df.columns.values.tolist()
     # print(keys)
