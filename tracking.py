@@ -456,7 +456,7 @@ def presentation_states(references, tracks, distance, filename):
         # plt.show()
         # fig_rep.savefig("/home/kostas/presentation/figures/"+ filename
                 # +ref[0]+".pgf",bbox_inches='tight')
-        fig_rep.savefig("/home/kostas/presentation/"+ filename
+        fig_rep.savefig("/home/kostas/Dropbox/presentation/final/figures/"+ filename
                 +ref[0]+".png",bbox_inches='tight',transparent=True)
 
 def screen_states(references, tracks, distance):
