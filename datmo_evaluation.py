@@ -51,8 +51,6 @@ else:
     references.append(('', file_interface.read_bag_trajectory(bag, '/red_pose')))
     distance = 0.35
 tracks = []
-# tracks.append(('mean'   , file_interface.read_TrackArray(bag, '/tracks/mean',3)))
-# tracks.append(('mean_kf', file_interface.read_TrackArray(bag,'/tracks/mean_kf', 3)))
 tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
 

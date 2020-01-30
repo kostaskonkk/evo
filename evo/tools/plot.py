@@ -746,9 +746,10 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
     # wrapped = np.rad2deg(traj.get_orientations_euler()[:,2])
     # wrapped = np.wrap(traj.get_orientations_euler()[:,2])
     yaw = traj.get_orientations_euler()[:,2]
-    unwrapped = np.unwrap(yaw)
-    ax.plot(x, unwrapped + wrap, style, markersize =1,
-                  color=color, label=label, alpha=alpha)
+    # unwrapped = np.unwrap(yaw)
+    # ax.plot(x, yaw, style, markersize =1,
+            # color=color, label=label, alpha=alpha)
+    ax.plot(x, yaw,'.', markersize=1, color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
 

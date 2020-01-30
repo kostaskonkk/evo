@@ -207,6 +207,11 @@ def ape(traj_ref, traj_est, pose_relation, align=False, correct_scale=False,
 
     return ape_result
 
+def smallestSignedAngleBetween(x, y):
+    a = (x - y) % (2*math.pi)
+    b = (y - x) % (2*math.pi)
+    return -a if a < b else b
+
 class APE(PE):
     """
     APE: absolute pose error
@@ -260,7 +265,7 @@ class APE(PE):
     def ape_base(x_t, x_t_star):
         """
         Computes the absolute error pose for a single SE(3) pose pair
-        following the notation of the Kümmerle paper.
+        following the notation of the Kummerle paper.
         :param x_t: estimated absolute pose at t
         :param x_t_star: reference absolute pose at t
         .:return: the delta pose
@@ -318,15 +323,15 @@ class APE(PE):
             dot_y.append(dot_y[-1])
 
         elif self.pose_relation == PoseRelation.psi:
-            dot_yaw = [
-                trajectory.calc_angular_velocity(traj_ref.poses_se3[i],
-                                      traj_ref.poses_se3[i + 1],
-                                      traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
-                for i in range(len(traj_ref.poses_se3) - 1)]
-            dot_yaw.append(dot_yaw[-1])
 
-            epsi =  traj_est.get_orientations_euler()[:,2] - traj_ref.get_orientations_euler()[:,2]
-            self.error = [np.linalg.norm(E_i) for E_i in epsi]
+            epsi2 =[]
+            for i in range(0, len(traj_est.get_orientations_euler()[:,2])):
+                epsi2.append(smallestSignedAngleBetween(traj_est.get_orientations_euler()[i,2],
+                    traj_ref.get_orientations_euler()[i,2]))
+
+            # epsi =  traj_est.get_orientations_euler()[:,2] - traj_ref.get_orientations_euler()[:,2]
+            # self.error = [np.linalg.norm(E_i) for E_i in epsi]
+            self.error = [np.linalg.norm(E_i) for E_i in epsi2]
         elif self.pose_relation == PoseRelation.omega:
             dot_yaw = [
                 trajectory.calc_angular_velocity(traj_ref.poses_se3[i],
@@ -380,7 +385,7 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
         name = None
         df_omega = pd.concat([df_omega, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
-    print(df_omega)
+    # print(df_omega)
 
     error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
     error_y = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
@@ -427,7 +432,7 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     fig_raw.tight_layout()
     fig_raw.subplots_adjust(bottom=0.13)
 
-    # plt.show()
+    plt.show()
 
     # plt.legend(frameon=True)
     # plot_collection.add_figure("raw", fig_raw)
