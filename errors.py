@@ -29,13 +29,13 @@ class MetricsException(EvoException):
     pass
 
 class StatisticsType(Enum):
-    rmse = "rmse"
-    mean = "mean"
-    median = "median"
-    std = "std"
-    min = "min"
-    max = "max"
-    sse = "sse"
+    rmse = "RMSE"
+    mean = "Mean"
+    median = "Median"
+    std = "STD"
+    min = "Min"
+    max = "Max"
+    sse = "SSE"
 
 class PoseRelation(Enum):
     full_transformation = "full transformation"
@@ -340,185 +340,14 @@ class APE(PE):
         else:
             raise MetricsException("unsupported pose_relation")
 
-def run(results):
-    import sys
-    import pandas as pd
-    from evo.tools import log, user, settings
-    from evo.tools.settings import SETTINGS
-    from evo.tools import pandas_bridge
-
-    pd.options.display.width = 80
-    pd.options.display.max_colwidth = 20
-
-    df = pd.DataFrame()
-    for result in results:
-        name = None
-        df = pd.concat([df, pandas_bridge.result_to_df(result, name)],
-                       axis="columns")
-
-
-    keys = df.columns.values.tolist()
-    # print(keys)
-    if SETTINGS.plot_usetex:
-        keys = [key.replace("_", "\\_") for key in keys]
-        df.columns = keys
-    duplicates = [x for x in keys if keys.count(x) > 1]
-    if duplicates:
-        print("Values of 'est_name' must be unique - duplicates: {}\n"
-                     "Try using the --use_filenames option to use filenames "
-                     "for labeling instead.".format(", ".join(duplicates)))
-        sys.exit(1)
-
-    # derive a common index type if possible - preferably timestamps
-    common_index = None
-    # time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
-    time_indices = ["seconds_from_start"]
-    for idx in time_indices:
-        if idx not in df.loc["np_arrays"].index:
-            continue
-        if df.loc["np_arrays", idx].isnull().values.any():
-            continue
-        else:
-            common_index = idx
-            break
-
-    # build error_df (raw values) according to common_index
-    if common_index is None:
-        # use a non-timestamp index
-        # error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(),
-                                # index=keys).T
-        print("it came here")
-    else:
-
-            error_df = pd.DataFrame()
-            for key in keys:
-                new_error_df = pd.DataFrame({
-                    key: df.loc["np_arrays", "error_array"][key]
-                }, index=df.loc["np_arrays", common_index][key])
-                # duplicates = new_error_df.index.duplicated(keep="first")
-                # if any(duplicates):
-                    # print(
-                        # "duplicate indices in error array of {} - "
-                        # "keeping only first occurrence of duplicates".format(key))
-                    # new_error_df = new_error_df[~duplicates]
-                error_df = pd.concat([error_df, new_error_df], axis=1)
-    # print(error_df)
-    # check titles
-    first_title = df.loc["info", "title"][0]
-    # first_file = args.result_files[0]
-    first_file = results[0]
-
-    checks = df.loc["info", "title"] != first_title
-    for i, differs in enumerate(checks):
-        if not differs:
-            continue
-        else:
-            print("problem")
-
-    print("Aggregated dataframe:\n{}".format(
-        df.to_string(line_width=80)))
-
-    # show a statistics overview
-    print("\n" + first_title + "\n\n")
-    print(df.loc["stats"].T.to_string(line_width=80) + "\n")
-
-    # check if data has NaN "holes" due to different indices
-    inconsistent = error_df.isnull().values.any()
-    if inconsistent and common_index != "timestamps":
-        print("Data lengths/indices are not consistent, "
-                       "raw value plot might not be correctly aligned")
-
-    from evo.tools import plot
-    import matplotlib.pyplot as plt
-    import seaborn as sns
-    import math
-
-    # use default plot settings
-    figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
-    use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
-    colormap = SETTINGS.plot_multi_cmap if use_cmap else None
-    # linestyles = ["-o" for x in args.result_files
-                  # ] if args.plot_markers else None
-    linestyles = ["-o" for x in results]
-
-    # labels according to first dataset
-    if "xlabel" in df.loc["info"].index and not df.loc[
-            "info", "xlabel"].isnull().values.any():
-        index_label = df.loc["info", "xlabel"][0]
-    else: index_label = "$t$ (s)" if common_index else "index" # metric_label = df.loc["info", "label"][0]
-    metric_label = "x"
-
-
-    plot_collection = plot.PlotCollection(first_title)
-    # raw value plot
-    fig_raw = plt.figure(figsize=figsize)
-    # handle NaNs from concat() above
-    error_df.interpolate(method="index").plot(
-        ax=fig_raw.gca(), colormap=colormap, style=linestyles,
-        title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
-    plt.xlabel(index_label)
-    plt.ylabel(metric_label)
-    plt.legend(frameon=True)
-    plot_collection.add_figure("raw", fig_raw)
-
-    # statistics plot
-    if SETTINGS.plot_statistics:
-        fig_stats = plt.figure(figsize=figsize)
-        include = df.loc["stats"].index.isin(SETTINGS.plot_statistics)
-        if any(include):
-            df.loc["stats"][include].plot(kind="barh", ax=fig_stats.gca(),
-                                          colormap=colormap, stacked=False)
-            plt.xlabel(metric_label)
-            plt.legend(frameon=True)
-            plot_collection.add_figure("stats", fig_stats)
-
-    # grid of distribution plots
-    raw_tidy = pd.melt(error_df, value_vars=list(error_df.columns.values),
-                       var_name="estimate", value_name=metric_label)
-    col_wrap = 2 if len(results) <= 2 else math.ceil(
-        len(results) / 2.0)
-    dist_grid = sns.FacetGrid(raw_tidy, col="estimate", col_wrap=col_wrap)
-    # TODO: see issue #98
-    import warnings
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        dist_grid.map(sns.distplot, metric_label)  # fits=stats.gamma
-    plot_collection.add_figure("histogram", dist_grid.fig)
-
-    # box plot
-    fig_box = plt.figure(figsize=figsize)
-    ax = sns.boxplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
-                     ax=fig_box.gca())
-    # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
-    plot_collection.add_figure("box_plot", fig_box)
-
-    # violin plot
-    # fig_violin = plt.figure(figsize=figsize)
-    # ax = sns.violinplot(x=raw_tidy["estimate"], y=raw_tidy[metric_label],
-                        # ax=fig_violin.gca())
-    # ax.set_xticklabels(labels=[item.get_text() for item in ax.get_xticklabels()], rotation=30)
-    # plot_collection.add_figure("violin_histogram", fig_violin)
-
-    # if args.save_plot:
-        # logger.debug(SEP)
-        # plot_collection.export(args.save_plot,
-                               # confirm_overwrite=not args.no_warnings)
-
-    # if args.plot:
-    # plot_collection.show()
-
-def stats(results_x, results_y, results_vx, results_vy, results_psi,
-        results_omega, filename):
+def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
+        apes_omega, filename):
     import pandas as pd
     # from evo.tools import log, user, settings
-    from evo.tools.settings import SETTINGS
+    # from evo.tools.settings import SETTINGS
     from evo.tools import pandas_bridge, plot
     import matplotlib.pyplot as plt
-    import matplotlib as mpl
-    import seaborn as sns
 
-    pd.options.display.width = 80
-    pd.options.display.max_colwidth = 20
 
     df_x = pd.DataFrame()
     df_y = pd.DataFrame()
@@ -527,30 +356,31 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
     df_psi=pd.DataFrame()
     df_omega=pd.DataFrame()
 
-    for result in results_x:
+    for ape in apes_x:
         name = None
-        df_x = pd.concat([df_x, pandas_bridge.result_to_df(result, name)],
+        df_x = pd.concat([df_x, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
-    for result in results_y:
+    for ape in apes_y:
         name = None
-        df_y = pd.concat([df_y, pandas_bridge.result_to_df(result, name)],
+        df_y = pd.concat([df_y, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
-    for result in results_vx:
+    for ape in apes_vx:
         name = None
-        df_vx = pd.concat([df_vx, pandas_bridge.result_to_df(result, name)],
+        df_vx = pd.concat([df_vx, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
-    for result in results_vy:
+    for ape in apes_vy:
         name = None
-        df_vy = pd.concat([df_vy, pandas_bridge.result_to_df(result, name)],
+        df_vy = pd.concat([df_vy, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
-    for result in results_psi:
+    for ape in apes_psi:
         name = None
-        df_psi = pd.concat([df_psi, pandas_bridge.result_to_df(result, name)],
+        df_psi = pd.concat([df_psi, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
-    for result in results_omega:
+    for ape in apes_omega:
         name = None
-        df_omega = pd.concat([df_omega, pandas_bridge.result_to_df(result, name)],
+        df_omega = pd.concat([df_omega, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
+    print(df_omega)
 
     error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
     error_y = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
@@ -558,10 +388,11 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
     error_vy = pd.DataFrame(df_vy.loc["np_arrays", "error_array"].tolist()).T
     error_psi = pd.DataFrame(df_psi.loc["np_arrays", "error_array"].tolist()).T
     error_omega = pd.DataFrame(df_omega.loc["np_arrays", "error_array"].tolist()).T
+    # print(error_x)
 
 
-    print(error_x)
-    print(df_x.loc["np_arrays", "error_array"].tolist())
+    # print(error_x)
+    # print(df_x.loc["np_arrays", "error_array"].tolist())
 
     # plot_collection = plot.PlotCollection(first_title)
     # raw value plot
@@ -571,6 +402,12 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
         # ax=fig_raw.gca(), colormap=colormap, style=linestyles,
         # title=first_title, alpha=SETTINGS.plot_trajectory_alpha)
     # print(df_x)
+
+    # t = df_x.loc["np_arrays", "seconds_from_start"].tolist() 
+    # print(t)
+    # ax_raw[0,0].plot(t,df_x.loc["np_arrays", "error_array"].tolist(), linestyle='-')
+    # plt.show()
+
     error_x.interpolate(method="index").plot(ax=ax_raw[0,0], legend=None, alpha=1)
     error_y.interpolate(method="index").plot(ax=ax_raw[0,1], legend=None, alpha=1)
     error_vx.interpolate(method="index").plot(ax=ax_raw[1,0], legend=None, alpha=1)
@@ -590,7 +427,7 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
     fig_raw.tight_layout()
     fig_raw.subplots_adjust(bottom=0.13)
 
-    plt.show()
+    # plt.show()
 
     # plt.legend(frameon=True)
     # plot_collection.add_figure("raw", fig_raw)
@@ -601,35 +438,42 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
         # "text.usetex": True,
         # "pgf.texsystem": "pdflatex",
     # })
+
     fig_stats, axarr = plt.subplots(3,2,figsize=(6.125,7))
-    include = df_x.loc["stats"].index.isin(SETTINGS.plot_statistics)
-    if any(include):
-        df_x.loc["stats"][include].plot(kind="barh", ax =  axarr[0,0],legend
-        =None)
-        axarr[0,0].set_xlabel("Absolute error $x$ (m)")
-        df_y.loc["stats"][include].plot(kind="barh", ax =  axarr[0,1],
-                legend=None)
-        axarr[0,1].set_xlabel("Absolute error $y$ (m)")
-        df_vx.loc["stats"][include].plot(kind="barh", ax =  axarr[1,0],
-                legend=None)
-        axarr[1,0].set_xlabel("Absolute error $v_y$ (m/s)")
-        df_vy.loc["stats"][include].plot(kind="barh", ax =  axarr[1,1],
-                legend=None)
-        axarr[1,1].set_xlabel("Absolute error $v_x$ (m/s)")
-        df_psi.loc["stats"][include].plot(kind="barh", ax =  axarr[2,0],
-                legend=None)
-        axarr[2,0].set_xlabel("Absolute error $\psi$ (rad)")
-        df_omega.loc["stats"][include].plot(kind="barh", ax =  axarr[2,1],
-                legend=None)
-        axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (rad/s)")
+    # print(SETTINGS.plot_statistics)
+    setting = ["Mean", "STD", "Max","Min","RMSE"]
+    include = df_x.loc["stats"].index.isin(setting)
+    # include = df_x.loc["stats"].index.isin(SETTINGS.plot_statistics)
+    # print(include)
+    # if any(include):
+
+    df_x.loc["stats"][include].plot(kind="barh", ax =  axarr[0,0],legend
+    =None)
+    axarr[0,0].set_xlabel("Absolute error $x$ (m)")
+    df_y.loc["stats"][include].plot(kind="barh", ax =  axarr[0,1],
+            legend=None)
+    axarr[0,1].set_xlabel("Absolute error $y$ (m)")
+    df_vx.loc["stats"][include].plot(kind="barh", ax =  axarr[1,0],
+            legend=None)
+    axarr[1,0].set_xlabel("Absolute error $v_y$ (m/s)")
+    df_vy.loc["stats"][include].plot(kind="barh", ax =  axarr[1,1],
+            legend=None)
+    axarr[1,1].set_xlabel("Absolute error $v_x$ (m/s)")
+    df_psi.loc["stats"][include].plot(kind="barh", ax = axarr[2,0],
+            legend=None)
+    axarr[2,0].set_xlabel("Absolute error $\psi$ (rad)")
+    df_omega.loc["stats"][include].plot(kind="barh", ax =  axarr[2,1],
+            legend=None)
+    axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (rad/s)")
 
     handles, labels = axarr[0,0].get_legend_handles_labels()
     lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
     fig_stats.tight_layout()
     fig_stats.subplots_adjust(bottom=0.13)
     plt.show()
+
     # fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
-    keys = df.columns.values.tolist()
+    # keys = df.columns.values.tolist()
     # print(keys)
     # duplicates = [x for x in keys if keys.count(x) > 1]
     # if duplicates:
@@ -639,74 +483,74 @@ def stats(results_x, results_y, results_vx, results_vy, results_psi,
         # sys.exit(1)
 
     # derive a common index type if possible - preferably timestamps
-    common_index = None
-    # time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
-    time_indices = ["seconds_from_start"]
-    for idx in time_indices:
-        if idx not in df.loc["np_arrays"].index:
-            continue
-        if df.loc["np_arrays", idx].isnull().values.any():
-            continue
-        else:
-            common_index = idx
-            break
+    # common_index = None
+    # # time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
+    # time_indices = ["seconds_from_start"]
+    # for idx in time_indices:
+        # if idx not in df.loc["np_arrays"].index:
+            # continue
+        # if df.loc["np_arrays", idx].isnull().values.any():
+            # continue
+        # else:
+            # common_index = idx
+            # break
 
-    # build error_df (raw values) according to common_index
-    if common_index is None:
-        # use a non-timestamp index
-        # error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(),
-                                # index=keys).T
-        print("it came here")
-    else:
+    # # build error_df (raw values) according to common_index
+    # if common_index is None:
+        # # use a non-timestamp index
+        # # error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(),
+                                # # index=keys).T
+        # print("it came here")
+    # else:
 
-            error_df = pd.DataFrame()
-            for key in keys:
-                new_error_df = pd.DataFrame({
-                    key: df.loc["np_arrays", "error_array"][key]
-                }, index=df.loc["np_arrays", common_index][key])
-                # duplicates = new_error_df.index.duplicated(keep="first")
-                # if any(duplicates):
-                    # print(
-                        # "duplicate indices in error array of {} - "
-                        # "keeping only first occurrence of duplicates".format(key))
-                    # new_error_df = new_error_df[~duplicates]
-                error_df = pd.concat([error_df, new_error_df], axis=1)
-    # print(error_df)
-    # check titles
-    first_title = df.loc["info", "title"][0]
-    # first_file = args.result_files[0]
-    first_file = results[0]
+            # error_df = pd.DataFrame()
+            # for key in keys:
+                # new_error_df = pd.DataFrame({
+                    # key: df.loc["np_arrays", "error_array"][key]
+                # }, index=df.loc["np_arrays", common_index][key])
+                # # duplicates = new_error_df.index.duplicated(keep="first")
+                # # if any(duplicates):
+                    # # print(
+                        # # "duplicate indices in error array of {} - "
+                        # # "keeping only first occurrence of duplicates".format(key))
+                    # # new_error_df = new_error_df[~duplicates]
+                # error_df = pd.concat([error_df, new_error_df], axis=1)
+    # # print(error_df)
+    # # check titles
+    # first_title = df.loc["info", "title"][0]
+    # # first_file = args.result_files[0]
+    # first_file = results[0]
 
-    checks = df.loc["info", "title"] != first_title
-    for i, differs in enumerate(checks):
-        if not differs:
-            continue
-        else:
-            print("problem")
+    # checks = df.loc["info", "title"] != first_title
+    # for i, differs in enumerate(checks):
+        # if not differs:
+            # continue
+        # else:
+            # print("problem")
 
-    # print("Aggregated dataframe:\n{}".format(
-        # df.to_string(line_width=80)))
+    # # print("Aggregated dataframe:\n{}".format(
+        # # df.to_string(line_width=80)))
 
-    # show a statistics overview
-    print("\n" + first_title + "\n\n")
-    print(df.loc["stats"].T.to_string(line_width=80) + "\n")
+    # # show a statistics overview
+    # print("\n" + first_title + "\n\n")
+    # print(df.loc["stats"].T.to_string(line_width=80) + "\n")
 
 
-    # use default plot settings
-    figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
-    use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
-    colormap = SETTINGS.plot_multi_cmap if use_cmap else None
-    # linestyles = ["-o" for x in args.result_files
-                  # ] if args.plot_markers else None
-    linestyles = ["-o" for x in results]
+    # # use default plot settings
+    # figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
+    # use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
+    # colormap = SETTINGS.plot_multi_cmap if use_cmap else None
+    # # linestyles = ["-o" for x in args.result_files
+                  # # ] if args.plot_markers else None
+    # linestyles = ["-o" for x in results]
 
-    # labels according to first dataset
-    if "xlabel" in df.loc["info"].index and not df.loc[
-            "info", "xlabel"].isnull().values.any():
-        index_label = df.loc["info", "xlabel"][0]
-    else:
-        index_label = "$t$ (s)" if common_index else "index"
-    # metric_label = df.loc["info", "label"][0]
-    metric_label = "x"
+    # # labels according to first dataset
+    # if "xlabel" in df.loc["info"].index and not df.loc[
+            # "info", "xlabel"].isnull().values.any():
+        # index_label = df.loc["info", "xlabel"][0]
+    # else:
+        # index_label = "$t$ (s)" if common_index else "index"
+    # # metric_label = df.loc["info", "label"][0]
+    # metric_label = "x"
 
 

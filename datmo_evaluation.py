@@ -63,80 +63,79 @@ table.add_hline()
 table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 table.add_empty_row()
 
-results_x=[]
-results_y=[]
-results_vx=[]
-results_vy=[]
-results_psi=[]
-results_omega=[]
 
 # tracking.screen_states(references, tracks, distance)
-tracking.presentation_states(references, tracks, distance, filename)
+# tracking.presentation_states(references, tracks, distance, filename)
 # tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 
-palette = itertools.cycle(sns.color_palette())
+apes_x=[]
+apes_y=[]
+apes_vx=[]
+apes_vy=[]
+apes_psi=[]
+apes_omega=[]
 
 for ref in references:
 
     for track in tracks:
         segments, traj_reference = \
             tracking.associate_segments_common_frame(ref[1], track[1],distance)
-        color=next(palette)
         # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
         whole =tracking.merge(segments)
 
-        result_x = errors.ape(
+        ape_x = errors.ape(
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.x,
             ref_name=ref[0],
             est_name=track[0]+" "+ref[0])
-        results_x.append(result_x)
-        # print(result_x)
+        apes_x.append(ape_x)
+        # print(ape_x)
 
-        result_y = errors.ape(
+        ape_y = errors.ape(
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.y,
             ref_name=ref[0],
             est_name=track[0]+ref[0])
-        results_y.append(result_y)
+        apes_y.append(ape_y)
         
-        result_vx = errors.ape(
+        ape_vx = errors.ape(
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.vx,
             ref_name=ref[0],
             est_name=track[0]+ref[0])
-        results_vx.append(result_vx)
+        apes_vx.append(ape_vx)
         
-        result_vy = errors.ape(
+        ape_vy = errors.ape(
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.vy,
             ref_name=ref[0],
             est_name=track[0]+ref[0])
-        results_vy.append(result_vy)
+        apes_vy.append(ape_vy)
 
-        result_psi = errors.ape(
+        ape_psi = errors.ape(
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.psi,
             ref_name=ref[0],
             est_name=track[0]+ref[0])
-        results_psi.append(result_psi)
+        apes_psi.append(ape_psi)
     
-        result_omega = errors.ape(
+        ape_omega = errors.ape(
             traj_ref=traj_reference,
             traj_est=whole,
             pose_relation=errors.PoseRelation.omega,
             ref_name=ref[0],
             est_name=track[0]+ref[0])
-        results_omega.append(result_omega)
+        apes_omega.append(ape_omega)
 
-# errors.stats(results_x, results_y, results_vx, results_vy, results_psi,
-        # results_omega, filename)
+errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
+        apes_omega, filename)
+
 print("DONE!!")
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')
