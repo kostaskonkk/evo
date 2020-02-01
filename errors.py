@@ -401,7 +401,7 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
 
     # plot_collection = plot.PlotCollection(first_title)
     # raw value plot
-    fig_raw, ax_raw  = plt.subplots(3,2,figsize=(6.125,7))
+    # fig_raw, ax_raw  = plt.subplots(3,2,figsize=(6.125,7))
     # handle NaNs from concat() above
     # error_df.interpolate(method="index").plot(
         # ax=fig_raw.gca(), colormap=colormap, style=linestyles,
@@ -419,14 +419,12 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     # error_vy.interpolate(method="index").plot(ax=ax_raw[1,1], legend=None, alpha=1)
     # error_psi.interpolate(method="index").plot(ax=ax_raw[2,0], legend=None, alpha=1)
     # error_omega.interpolate(method="index").plot(ax=ax_raw[2,1], legend=None, alpha=1)
-
     # ax_raw[0,0].set_ylabel("Absolute error $x$ (m)")
     # ax_raw[0,1].set_ylabel("Absolute error $y$ (m)")
     # ax_raw[1,0].set_ylabel("Absolute error $v_y$ (m/s)")
     # ax_raw[1,1].set_ylabel("Absolute error $v_x$ (m/s)")
     # ax_raw[2,1].set_ylabel("Absolute error $\dot{\psi}$ (rad/s)")
     # ax_raw[2,0].set_ylabel("Absolute error $\psi$ (rad)")
-
     # handles, labels = ax_raw[0,0].get_legend_handles_labels()
     # lgd = fig_raw.legend(handles, labels, loc='lower center',ncol = len(labels))
     # fig_raw.tight_layout()
@@ -448,7 +446,7 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     print("ape_x",df_x.loc["stats"][include])
     print("ape_y",df_y.loc["stats"][include])
     print("ape_vx",df_vx.loc["stats"][include])
-    print("ape_vx",df_vy.loc["stats"][include])
+    print("ape_vy",df_vy.loc["stats"][include])
     print("ape_psi",df_psi.loc["stats"][include])
     print("ape_omega",df_omega.loc["stats"][include])
 
@@ -468,10 +466,10 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     axarr[0,1].set_xlabel("Absolute error $y$ (m)")
     df_vx.loc["stats"][include].plot(kind="barh", ax =  axarr[1,0],
             legend=None)
-    axarr[1,0].set_xlabel("Absolute error $v_y$ (m/s)")
+    axarr[1,0].set_xlabel("Absolute error $v_x$ (m/s)")
     df_vy.loc["stats"][include].plot(kind="barh", ax =  axarr[1,1],
             legend=None)
-    axarr[1,1].set_xlabel("Absolute error $v_x$ (m/s)")
+    axarr[1,1].set_xlabel("Absolute error $v_y$ (m/s)")
     df_psi.loc["stats"][include].plot(kind="barh", ax = axarr[2,0],
             legend=None)
     axarr[2,0].set_xlabel("Absolute error $\psi$ (rad)")
