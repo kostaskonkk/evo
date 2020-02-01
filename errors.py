@@ -413,26 +413,25 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     # ax_raw[0,0].plot(t,df_x.loc["np_arrays", "error_array"].tolist(), linestyle='-')
     # plt.show()
 
-    error_x.interpolate(method="index").plot(ax=ax_raw[0,0], legend=None, alpha=1)
-    error_y.interpolate(method="index").plot(ax=ax_raw[0,1], legend=None, alpha=1)
-    error_vx.interpolate(method="index").plot(ax=ax_raw[1,0], legend=None, alpha=1)
-    error_vy.interpolate(method="index").plot(ax=ax_raw[1,1], legend=None, alpha=1)
-    error_psi.interpolate(method="index").plot(ax=ax_raw[2,0], legend=None, alpha=1)
-    error_omega.interpolate(method="index").plot(ax=ax_raw[2,1], legend=None, alpha=1)
+    # error_x.interpolate(method="index").plot(ax=ax_raw[0,0], legend=None, alpha=1)
+    # error_y.interpolate(method="index").plot(ax=ax_raw[0,1], legend=None, alpha=1)
+    # error_vx.interpolate(method="index").plot(ax=ax_raw[1,0], legend=None, alpha=1)
+    # error_vy.interpolate(method="index").plot(ax=ax_raw[1,1], legend=None, alpha=1)
+    # error_psi.interpolate(method="index").plot(ax=ax_raw[2,0], legend=None, alpha=1)
+    # error_omega.interpolate(method="index").plot(ax=ax_raw[2,1], legend=None, alpha=1)
 
-    ax_raw[0,0].set_ylabel("Absolute error $x$ (m)")
-    ax_raw[0,1].set_ylabel("Absolute error $y$ (m)")
-    ax_raw[1,0].set_ylabel("Absolute error $v_y$ (m/s)")
-    ax_raw[1,1].set_ylabel("Absolute error $v_x$ (m/s)")
-    ax_raw[2,1].set_ylabel("Absolute error $\dot{\psi}$ (rad/s)")
-    ax_raw[2,0].set_ylabel("Absolute error $\psi$ (rad)")
+    # ax_raw[0,0].set_ylabel("Absolute error $x$ (m)")
+    # ax_raw[0,1].set_ylabel("Absolute error $y$ (m)")
+    # ax_raw[1,0].set_ylabel("Absolute error $v_y$ (m/s)")
+    # ax_raw[1,1].set_ylabel("Absolute error $v_x$ (m/s)")
+    # ax_raw[2,1].set_ylabel("Absolute error $\dot{\psi}$ (rad/s)")
+    # ax_raw[2,0].set_ylabel("Absolute error $\psi$ (rad)")
 
-    handles, labels = ax_raw[0,0].get_legend_handles_labels()
-    lgd = fig_raw.legend(handles, labels, loc='lower center',ncol = len(labels))
-    fig_raw.tight_layout()
-    fig_raw.subplots_adjust(bottom=0.13)
-
-    plt.show()
+    # handles, labels = ax_raw[0,0].get_legend_handles_labels()
+    # lgd = fig_raw.legend(handles, labels, loc='lower center',ncol = len(labels))
+    # fig_raw.tight_layout()
+    # fig_raw.subplots_adjust(bottom=0.13)
+    # plt.show()
 
     # plt.legend(frameon=True)
     # plot_collection.add_figure("raw", fig_raw)
@@ -443,6 +442,15 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
         # "text.usetex": True,
         # "pgf.texsystem": "pdflatex",
     # })
+
+    setting = ["RMSE"]
+    include = df_x.loc["stats"].index.isin(setting)
+    print("ape_x",df_x.loc["stats"][include])
+    print("ape_y",df_y.loc["stats"][include])
+    print("ape_vx",df_vx.loc["stats"][include])
+    print("ape_vx",df_vy.loc["stats"][include])
+    print("ape_psi",df_psi.loc["stats"][include])
+    print("ape_omega",df_omega.loc["stats"][include])
 
     fig_stats, axarr = plt.subplots(3,2,figsize=(6.125,7))
     # print(SETTINGS.plot_statistics)

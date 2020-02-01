@@ -16,8 +16,8 @@ import seaborn as sns
 import itertools
 import os
 
-# path = "/home/kostas/results/experiment/overtakes_new.bag"
-path = "/home/kostas/results/experiment/overtakes.bag"
+path = "/home/kostas/results/experiment/overtakes_new.bag"
+# path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/results/experiment/parallel.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
