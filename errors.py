@@ -49,6 +49,9 @@ class PoseRelation(Enum):
     vy = "vy"
     psi = "psi"
     omega = "omega"
+    length = "length"
+    width = "width"
+
 
 class Unit(Enum):
     none = "unit-less"
@@ -323,15 +326,16 @@ class APE(PE):
             dot_y.append(dot_y[-1])
 
         elif self.pose_relation == PoseRelation.psi:
-
-            epsi2 =[]
+            epsi =[]
             for i in range(0, len(traj_est.get_orientations_euler()[:,2])):
-                epsi2.append(smallestSignedAngleBetween(traj_est.get_orientations_euler()[i,2],
+                epsi.append(smallestSignedAngleBetween(traj_est.get_orientations_euler()[i,2],
                     traj_ref.get_orientations_euler()[i,2]))
 
+            epsi_deg = [i * 180 / math.pi for i in epsi]
             # epsi =  traj_est.get_orientations_euler()[:,2] - traj_ref.get_orientations_euler()[:,2]
             # self.error = [np.linalg.norm(E_i) for E_i in epsi]
-            self.error = [np.linalg.norm(E_i) for E_i in epsi2]
+            self.error = [np.linalg.norm(E_i) for E_i in epsi_deg]
+
         elif self.pose_relation == PoseRelation.omega:
             dot_yaw = [
                 trajectory.calc_angular_velocity(traj_ref.poses_se3[i],
@@ -341,18 +345,35 @@ class APE(PE):
             dot_yaw.append(dot_yaw[-1])
 
             eomega = traj_est.angular_vel[:,2] - dot_yaw
-            self.error = [np.linalg.norm(E_i) for E_i in eomega]
+            eomega_deg = [i * 180 / math.pi for i in eomega]
+            self.error = [np.linalg.norm(E_i) for E_i in eomega_deg]
+
+        elif self.pose_relation == PoseRelation.length:
+            ref_length = [0.4] * len(traj_est.length)
+            elength = traj_est.length - ref_length
+            self.error = [np.linalg.norm(E_i) for E_i in elength]
+
+        elif self.pose_relation == PoseRelation.width:
+            ref_width = [0.4] * len(traj_est.width)
+            ewidth = traj_est.width - ref_width
+            self.error = [np.linalg.norm(E_i) for E_i in ewidth]
         else:
             raise MetricsException("unsupported pose_relation")
 
 def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
-        apes_omega, filename):
+        apes_omega, apes_length, apes_width, filename):
     import pandas as pd
     # from evo.tools import log, user, settings
     # from evo.tools.settings import SETTINGS
     from evo.tools import pandas_bridge, plot
+    import matplotlib as mpl
     import matplotlib.pyplot as plt
+    import seaborn as sns
 
+
+    current_palette = sns.color_palette()
+    sns.set_color_codes("dark")
+    # sns.palplot(current_palette)
 
     df_x = pd.DataFrame()
     df_y = pd.DataFrame()
@@ -360,6 +381,8 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     df_vy =pd.DataFrame()
     df_psi=pd.DataFrame()
     df_omega=pd.DataFrame()
+    df_length=pd.DataFrame()
+    df_width=pd.DataFrame()
 
     for ape in apes_x:
         name = None
@@ -385,6 +408,14 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
         name = None
         df_omega = pd.concat([df_omega, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
+    for ape in apes_length:
+        name = None
+        df_length = pd.concat([df_length, pandas_bridge.result_to_df(ape, name)],
+                       axis="columns")
+    for ape in apes_width:
+        name = None
+        df_width = pd.concat([df_width, pandas_bridge.result_to_df(ape, name)],
+                       axis="columns")
     # print(df_omega)
 
     error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
@@ -393,6 +424,8 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     error_vy = pd.DataFrame(df_vy.loc["np_arrays", "error_array"].tolist()).T
     error_psi = pd.DataFrame(df_psi.loc["np_arrays", "error_array"].tolist()).T
     error_omega = pd.DataFrame(df_omega.loc["np_arrays", "error_array"].tolist()).T
+    error_length = pd.DataFrame(df_length.loc["np_arrays", "error_array"].tolist()).T
+    error_width = pd.DataFrame(df_width.loc["np_arrays", "error_array"].tolist()).T
     # print(error_x)
 
 
@@ -435,11 +468,11 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     # plot_collection.add_figure("raw", fig_raw)
     # statistics plot
 
-    # mpl.use('pgf')
-    # mpl.rcParams.update({
-        # "text.usetex": True,
-        # "pgf.texsystem": "pdflatex",
-    # })
+    mpl.use('pgf')
+    mpl.rcParams.update({
+        "text.usetex": True,
+        "pgf.texsystem": "pdflatex",
+    })
 
     setting = ["RMSE"]
     include = df_x.loc["stats"].index.isin(setting)
@@ -449,8 +482,10 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     print("ape_vy",df_vy.loc["stats"][include])
     print("ape_psi",df_psi.loc["stats"][include])
     print("ape_omega",df_omega.loc["stats"][include])
+    print("ape_length",df_length.loc["stats"][include])
+    print("ape_width",df_width.loc["stats"][include])
 
-    fig_stats, axarr = plt.subplots(3,2,figsize=(6.125,7))
+    fig_stats, axarr = plt.subplots(4,2,figsize=(6.125,8))
     # print(SETTINGS.plot_statistics)
     setting = ["Mean", "STD", "Max","Min","RMSE"]
     include = df_x.loc["stats"].index.isin(setting)
@@ -470,20 +505,27 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     df_vy.loc["stats"][include].plot(kind="barh", ax =  axarr[1,1],
             legend=None)
     axarr[1,1].set_xlabel("Absolute error $v_y$ (m/s)")
-    df_psi.loc["stats"][include].plot(kind="barh", ax = axarr[2,0],
-            legend=None)
-    axarr[2,0].set_xlabel("Absolute error $\psi$ (rad)")
-    df_omega.loc["stats"][include].plot(kind="barh", ax =  axarr[2,1],
-            legend=None)
-    axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (rad/s)")
+    df_psi.loc["stats"][include].plot(kind="barh", width =0.3, ax = axarr[2,0],
+            legend=None, color='orange')
+    axarr[2,0].set_xlabel("Absolute error $\psi$ (degrees)")
+    df_omega.loc["stats"][include].plot(kind="barh", width =0.3, ax =  axarr[2,1],
+            legend=None, color='orange')
+    axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (degrees/s)")
+    df_length.loc["stats"][include].plot(kind="barh", width =0.3, ax =  axarr[3,0],
+            legend=None, color='orange')
+    axarr[3,0].set_xlabel("Absolute error Length (m)")
+
+    df_width.loc["stats"][include].plot(kind="barh", width =0.3, ax =  axarr[3,1],
+            legend=None, color='orange')
+    axarr[3,1].set_xlabel("Absolute error Width (m)")
 
     handles, labels = axarr[0,0].get_legend_handles_labels()
     lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
     fig_stats.tight_layout()
-    fig_stats.subplots_adjust(bottom=0.13)
-    plt.show()
+    fig_stats.subplots_adjust(bottom=0.1)
+    # plt.show()
 
-    # fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
+    fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
     # keys = df.columns.values.tolist()
     # print(keys)
     # duplicates = [x for x in keys if keys.count(x) > 1]

@@ -16,8 +16,7 @@ import seaborn as sns
 import itertools
 import os
 
-path = "/home/kostas/results/experiment/overtakes_new.bag"
-# path = "/home/kostas/results/experiment/overtakes.bag"
+path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/results/experiment/parallel.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
@@ -51,8 +50,8 @@ else:
     references.append(('', file_interface.read_bag_trajectory(bag, '/red_pose')))
     distance = 0.35
 tracks = []
-tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
+tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 bag.close()
 
@@ -64,7 +63,7 @@ table.add_empty_row()
 
 # tracking.screen_states(references, tracks, distance)
 # tracking.presentation_states(references, tracks, distance, filename)
-# tracking.report_states(references, tracks, distance, filename)
+tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 
 apes_x=[]
@@ -73,13 +72,13 @@ apes_vx=[]
 apes_vy=[]
 apes_psi=[]
 apes_omega=[]
+apes_length=[]
+apes_width=[]
 
 for ref in references:
-
     for track in tracks:
         segments, traj_reference = \
             tracking.associate_segments_common_frame(ref[1], track[1],distance)
-        # tracking.stats_to_latex_table(traj_reference, segments, idx, table)
 
         whole =tracking.merge(segments)
 
@@ -90,7 +89,6 @@ for ref in references:
             ref_name=ref[0],
             est_name=track[0]+" "+ref[0])
         apes_x.append(ape_x)
-        # print(ape_x)
 
         ape_y = errors.ape(
             traj_ref=traj_reference,
@@ -115,25 +113,41 @@ for ref in references:
             ref_name=ref[0],
             est_name=track[0]+ref[0])
         apes_vy.append(ape_vy)
+        if track[0]=='KF':
+            ape_psi = errors.ape(
+                traj_ref=traj_reference,
+                traj_est=whole,
+                pose_relation=errors.PoseRelation.psi,
+                ref_name=ref[0],
+                est_name='Shape')
+            apes_psi.append(ape_psi)
+        
+            ape_omega = errors.ape(
+                traj_ref=traj_reference,
+                traj_est=whole,
+                pose_relation=errors.PoseRelation.omega,
+                ref_name=ref[0],
+                est_name='Shape')
+            apes_omega.append(ape_omega)
 
-        ape_psi = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.psi,
-            ref_name=ref[0],
-            est_name=track[0]+ref[0])
-        apes_psi.append(ape_psi)
-    
-        ape_omega = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.omega,
-            ref_name=ref[0],
-            est_name=track[0]+ref[0])
-        apes_omega.append(ape_omega)
+            ape_length = errors.ape(
+                traj_ref=traj_reference,
+                traj_est=whole,
+                pose_relation=errors.PoseRelation.length,
+                ref_name=ref[0],
+                est_name='Shape')
+            apes_length.append(ape_length)
+
+            ape_width = errors.ape(
+                traj_ref=traj_reference,
+                traj_est=whole,
+                pose_relation=errors.PoseRelation.width,
+                ref_name=ref[0],
+                est_name='Shape')
+            apes_width.append(ape_width)
 
 errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
-        apes_omega, filename)
+        apes_omega, apes_length, apes_width, filename)
 
 print("DONE!!")
 # table.generate_tex('/home/kostas/report/figures/tables/eval_table')

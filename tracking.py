@@ -347,17 +347,23 @@ def report_states(references, tracks, distance, filename):
     mpl.rcParams.update({
         "text.usetex": True,
         "pgf.texsystem": "pdflatex",})
-    palette = itertools.cycle(sns.color_palette())
+    current_palette = sns.color_palette()
+    sns.set_color_codes()
+    # palette = itertools.cycle(sns.color_palette())
 
     for ref in references:
+        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,8))
         # fig_rep, axarr = plt.subplots(3,2,figsize=(6.125,7))
-        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,7.7))
         # fig_rep, axarr = plt.subplots(4,2,figsize=(7.14,7.7))
 
         for track in tracks:
+            if(track[0]=='KF'):
+                color = 'g'
+            elif(track[0]=='UKF'):
+                color = 'r'
             segments, traj_ref = \
                 associate_segments_common_frame(ref[1], track[1],distance)
-            color=next(palette)
+            # color=next(palette)
             
             for i, segment in enumerate(segments):
                 if i==0:
@@ -365,21 +371,18 @@ def report_states(references, tracks, distance, filename):
                             ,ref[1].timestamps[0])
                 else:
                     plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,ref[1].timestamps[0])
-                if track[0] != 'KF':
-                    if i==0:
-                        plot.traj_yaw(axarr[2,0],segment, '-', color, None,1 ,ref[1].timestamps[0])
-                    else:
-                        plot.traj_yaw(axarr[2,0],segment, '-', color, None, 1 ,ref[1].timestamps[0], 6.28 )
-                    angular_vel(axarr[2,1], segment, '-', color, track[0], 1,
-                            ref[1].timestamps[0])
-                    plot.dimensions(axarr[3,0:2], segment, '-', color, track[0], 1
-                            ,ref[1].timestamps[0])
+
                 plot.linear_vel(axarr[1,0:2], segment, '-', color, track[0],1
+                        ,ref[1].timestamps[0])
+                plot.traj_yaw(axarr[2,0],segment, '.', 'b', None,1 ,ref[1].timestamps[0])
+                angular_vel(axarr[2,1], segment, '-', 'b', track[0], 1,
+                        ref[1].timestamps[0])
+                plot.dimensions(axarr[3,0:2], segment, '-', 'b', track[0], 1
                         ,ref[1].timestamps[0])
 
         plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'Reference', 1, ref[1].timestamps[0])
         plot.vx_vy(axarr[1,0:2], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
-        plot.traj_yaw(axarr[2,0], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+        plot.traj_yaw(axarr[2,0], traj_ref, '.', 'gray', None, 1, ref[1].timestamps[0])
         plot.angular_vel(axarr[2,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
 
         if filename.split('/')[0] == 'simulation':
