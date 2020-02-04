@@ -337,8 +337,12 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabel = "$\dot{\psi}$ (rad/s)"
-    ax.plot(x, traj.angular_vel[:,2], style, color=color, label=label, alpha=alpha)
+    ylabel = "$\dot{\psi}$ (degrees/s)"
+    angular_vel_degrees = [traj.angular_vel[i,2]* 57.14 
+            for i in range(len(traj.angular_vel))]
+    
+    # ax.plot(x, traj.angular_vel[:,2], style, color=color, label=label, alpha=alpha)
+    ax.plot(x, angular_vel_degrees, style, color=color, label=label, alpha=alpha)
     ax.set_ylabel(ylabel)
     ax.set_xlabel(xlabel)
 

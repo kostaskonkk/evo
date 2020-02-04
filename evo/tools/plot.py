@@ -43,6 +43,7 @@ import seaborn as sns
 from evo import EvoException
 from evo.tools import user
 from evo.core import trajectory
+from evo.core import lie_algebra as lie
 
 # configure matplotlib and seaborn according to package settings
 # TODO: 'color_codes=False' to work around this bug:
@@ -596,23 +597,23 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     :param label: label (for legend)
     :param alpha: alpha value for transparency
     """
-    # dot_yaw = [
-        # trajectory.calc_angular_velocity(traj.positions_xyz[i,1],
-                              # traj.positions_xyz[i + 1,1],
-                              # traj.timestamps[i], traj.timestamps[i + 1])
-        # for i in range(len(traj.positions_xyz) - 1)]
+    wrap = traj.get_orientations_euler()[:,2]
+    yaw_unwrapped = np.unwrap(wrap)
+    yaw_unwrapped = np.rad2deg(yaw_unwrapped)
     dot_yaw = [
-        trajectory.calc_angular_velocity(traj.poses_se3[i],
-                              traj.poses_se3[i + 1],
-                              traj.timestamps[i], traj.timestamps[i + 1])
-        for i in range(len(traj.poses_se3) - 1)]
+        trajectory.calc_angular_velocity_unwrapped(yaw_unwrapped[i],
+                              yaw_unwrapped[i + 1],
+                              traj.timestamps[i], traj.timestamps[i +
+                                  1])
+        for i in range(len(traj.positions_xyz) - 1)]
+
     dot_yaw.append(0)
     x = traj.timestamps - (traj.timestamps[0]
                            if start_timestamp is None else start_timestamp)
 
     ax.plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
     ax.set_xlabel("Time (s)")
-    ax.set_ylabel("$\dot{\psi}$ (rad/s)")
+    ax.set_ylabel("$\dot{\psi}$ (degrees/s)")
 
 def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):

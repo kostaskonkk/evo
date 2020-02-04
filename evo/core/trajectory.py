@@ -376,6 +376,20 @@ def calc_angular_velocity(p_1, p_2, t_1, t_2, degrees=False):
         angle_2 = lie.so3_log(p_2[:3, :3])
     return (angle_2 - angle_1) / (t_2 - t_1)
 
+def calc_angular_velocity_unwrapped(p_1, p_2, t_1, t_2):
+    """
+    :param p_1: pose at timestamp 1
+    :param p_2: pose at timestamp 2
+    :param t_1: timestamp 1
+    :param t_2: timestamp 2
+    :param degrees: set to True to return deg/s
+    :return: speed in rad/s
+    """
+    if (t_2 - t_1) <= 0:
+        raise TrajectoryException("bad timestamps: " + str(t_1) + " & " +
+                                  str(t_2))
+    return (p_2 - p_1) / (t_2 - t_1)
+
 def calc_angular_speed(p_1, p_2, t_1, t_2, degrees=False):
     """
     :param p_1: pose at timestamp 1

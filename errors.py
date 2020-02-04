@@ -337,12 +337,24 @@ class APE(PE):
             self.error = [np.linalg.norm(E_i) for E_i in epsi_deg]
 
         elif self.pose_relation == PoseRelation.omega:
+
+            wrap = traj_ref.get_orientations_euler()[:,2]
+            yaw_unwrapped = np.unwrap(wrap)
             dot_yaw = [
-                trajectory.calc_angular_velocity(traj_ref.poses_se3[i],
-                                      traj_ref.poses_se3[i + 1],
-                                      traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
-                for i in range(len(traj_ref.poses_se3) - 1)]
+                trajectory.calc_angular_velocity_unwrapped(yaw_unwrapped[i],
+                                      yaw_unwrapped[i + 1],
+                                      traj_ref.timestamps[i], traj_ref.timestamps[i +
+                                          1])
+                for i in range(len(traj_ref.positions_xyz) - 1)]
+
             dot_yaw.append(dot_yaw[-1])
+
+            # dot_yaw = [
+                # trajectory.calc_angular_velocity(traj_ref.poses_se3[i],
+                                      # traj_ref.poses_se3[i + 1],
+                                      # traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
+                # for i in range(len(traj_ref.poses_se3) - 1)]
+            # dot_yaw.append(dot_yaw[-1])
 
             eomega = traj_est.angular_vel[:,2] - dot_yaw
             eomega_deg = [i * 180 / math.pi for i in eomega]
@@ -526,84 +538,3 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     # plt.show()
 
     fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
-    # keys = df.columns.values.tolist()
-    # print(keys)
-    # duplicates = [x for x in keys if keys.count(x) > 1]
-    # if duplicates:
-        # print("Values of 'est_name' must be unique - duplicates: {}\n"
-                     # "Try using the --use_filenames option to use filenames "
-                     # "for labeling instead.".format(", ".join(duplicates)))
-        # sys.exit(1)
-
-    # derive a common index type if possible - preferably timestamps
-    # common_index = None
-    # # time_indices = ["timestamps", "seconds_from_start", "sec_from_start"]
-    # time_indices = ["seconds_from_start"]
-    # for idx in time_indices:
-        # if idx not in df.loc["np_arrays"].index:
-            # continue
-        # if df.loc["np_arrays", idx].isnull().values.any():
-            # continue
-        # else:
-            # common_index = idx
-            # break
-
-    # # build error_df (raw values) according to common_index
-    # if common_index is None:
-        # # use a non-timestamp index
-        # # error_df = pd.DataFrame(df.loc["np_arrays", "error_array"].tolist(),
-                                # # index=keys).T
-        # print("it came here")
-    # else:
-
-            # error_df = pd.DataFrame()
-            # for key in keys:
-                # new_error_df = pd.DataFrame({
-                    # key: df.loc["np_arrays", "error_array"][key]
-                # }, index=df.loc["np_arrays", common_index][key])
-                # # duplicates = new_error_df.index.duplicated(keep="first")
-                # # if any(duplicates):
-                    # # print(
-                        # # "duplicate indices in error array of {} - "
-                        # # "keeping only first occurrence of duplicates".format(key))
-                    # # new_error_df = new_error_df[~duplicates]
-                # error_df = pd.concat([error_df, new_error_df], axis=1)
-    # # print(error_df)
-    # # check titles
-    # first_title = df.loc["info", "title"][0]
-    # # first_file = args.result_files[0]
-    # first_file = results[0]
-
-    # checks = df.loc["info", "title"] != first_title
-    # for i, differs in enumerate(checks):
-        # if not differs:
-            # continue
-        # else:
-            # print("problem")
-
-    # # print("Aggregated dataframe:\n{}".format(
-        # # df.to_string(line_width=80)))
-
-    # # show a statistics overview
-    # print("\n" + first_title + "\n\n")
-    # print(df.loc["stats"].T.to_string(line_width=80) + "\n")
-
-
-    # # use default plot settings
-    # figsize = (SETTINGS.plot_figsize[0], SETTINGS.plot_figsize[1])
-    # use_cmap = SETTINGS.plot_multi_cmap.lower() != "none"
-    # colormap = SETTINGS.plot_multi_cmap if use_cmap else None
-    # # linestyles = ["-o" for x in args.result_files
-                  # # ] if args.plot_markers else None
-    # linestyles = ["-o" for x in results]
-
-    # # labels according to first dataset
-    # if "xlabel" in df.loc["info"].index and not df.loc[
-            # "info", "xlabel"].isnull().values.any():
-        # index_label = df.loc["info", "xlabel"][0]
-    # else:
-        # index_label = "$t$ (s)" if common_index else "index"
-    # # metric_label = df.loc["info", "label"][0]
-    # metric_label = "x"
-
-
