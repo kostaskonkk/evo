@@ -150,4 +150,3 @@ errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
         apes_omega, apes_length, apes_width, filename)
 
 print("DONE!!")
-# table.generate_tex('/home/kostas/report/figures/tables/eval_table')

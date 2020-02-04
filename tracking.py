@@ -8,6 +8,7 @@ from evo.tools import file_interface, plot
 import matplotlib as mpl
 import matplotlib.pyplot as plt
 import matplotlib.figure as fg
+import matplotlib.patches as mpatches
 import numpy as np
 import seaborn as sns
 import itertools
@@ -353,18 +354,20 @@ def report_states(references, tracks, distance, filename):
         "pgf.texsystem": "pdflatex",})
     current_palette = sns.color_palette()
     sns.set_color_codes()
+    # https://python-graph-gallery.com/100-calling-a-color-with-seaborn/
     # palette = itertools.cycle(sns.color_palette())
 
     for ref in references:
-        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,8))
+        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,8.6))
         # fig_rep, axarr = plt.subplots(3,2,figsize=(6.125,7))
         # fig_rep, axarr = plt.subplots(4,2,figsize=(7.14,7.7))
 
         for track in tracks:
             if(track[0]=='KF'):
-                color = 'g'
+                color = 'b'
             elif(track[0]=='UKF'):
-                color = 'r'
+                color = 'g'
+            shape_color = 'indianred'
             segments, traj_ref = \
                 associate_segments_common_frame(ref[1], track[1],distance)
             # color=next(palette)
@@ -373,21 +376,24 @@ def report_states(references, tracks, distance, filename):
                 if i==0:
                     plot.traj_xy(axarr[0,0:2], segment, '-', color, track[0],1
                             ,ref[1].timestamps[0])
+                    angular_vel(axarr[2,1], segment, '-', shape_color, 'Shape', 1,
+                            ref[1].timestamps[0])
                 else:
                     plot.traj_xy(axarr[0,0:2], segment, '-', color, None,1 ,ref[1].timestamps[0])
+                    angular_vel(axarr[2,1], segment, '-', shape_color, None, 1,
+                            ref[1].timestamps[0])
 
                 plot.linear_vel(axarr[1,0:2], segment, '-', color, track[0],1
                         ,ref[1].timestamps[0])
-                plot.traj_yaw(axarr[2,0],segment, '.', 'b', None,1 ,ref[1].timestamps[0])
-                angular_vel(axarr[2,1], segment, '-', 'b', track[0], 1,
-                        ref[1].timestamps[0])
-                plot.dimensions(axarr[3,0:2], segment, '-', 'b', track[0], 1
+                plot.traj_yaw(axarr[2,0],segment, '.', shape_color, None,1 ,ref[1].timestamps[0])
+                plot.dimensions(axarr[3,0:2], segment, '-', shape_color, track[0], 1
                         ,ref[1].timestamps[0])
 
-        plot.traj_xy(axarr[0,0:2], traj_ref, '-', 'gray', 'Reference', 1, ref[1].timestamps[0])
-        plot.vx_vy(axarr[1,0:2], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
-        plot.traj_yaw(axarr[2,0], traj_ref, '.', 'gray', None, 1, ref[1].timestamps[0])
-        plot.angular_vel(axarr[2,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+                ref_color = 'gray'
+        plot.traj_xy(axarr[0,0:2], traj_ref, '-', ref_color, 'Reference', 1, ref[1].timestamps[0])
+        plot.vx_vy(axarr[1,0:2], traj_ref, '-', ref_color, 'Reference', 1, ref[1].timestamps[0])
+        plot.traj_yaw(axarr[2,0], traj_ref, '.',ref_color, None, 1, ref[1].timestamps[0])
+        plot.angular_vel(axarr[2,1], traj_ref, '-', ref_color, None, 1, ref[1].timestamps[0])
 
         if filename.split('/')[0] == 'simulation':
             axarr[3,0].axhline(y=3.9, color='gray')
@@ -400,9 +406,13 @@ def report_states(references, tracks, distance, filename):
             for j in range(0,2):
                 axarr[i,j].set_xlim(left=0)
 
-        handles, labels = axarr[0,0].get_legend_handles_labels()
-        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol =
-                len(labels), borderpad=0.7)
+        red = mpatches.Patch(color='indianred', label='Shape KF')
+        gray = mpatches.Patch(color='gray', label='Reference')
+        green = mpatches.Patch(color='b', label='KF')
+        blue = mpatches.Patch(color='g', label='UKF')
+        lgd = fig_rep.legend(handles=[green,blue,red,gray],\
+                loc='lower center',ncol = 4, borderpad=0.7,\
+                bbox_to_anchor=(0.54,0), columnspacing=0.8)
         fig_rep.tight_layout()
         fig_rep.subplots_adjust(bottom=0.11)
         fig_rep.savefig("/home/kostas/report/figures/"+ filename

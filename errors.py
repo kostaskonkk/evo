@@ -29,10 +29,10 @@ class MetricsException(EvoException):
     pass
 
 class StatisticsType(Enum):
-    rmse = "RMSE"
     mean = "Mean"
-    median = "Median"
+    rmse = "RMSE"
     std = "STD"
+    median = "Median"
     min = "Min"
     max = "Max"
     sse = "SSE"
@@ -51,7 +51,6 @@ class PoseRelation(Enum):
     omega = "omega"
     length = "length"
     width = "width"
-
 
 class Unit(Enum):
     none = "unit-less"
@@ -150,24 +149,6 @@ class PE(Metric):
         if hasattr(self, "error"):
             result.add_np_array("error_array", self.error)
             metric_name = self.pose_relation.value
-        # if hasattr(self, "error_x"):
-            # result.add_np_array("error_array_x", self.error_x)
-            # metric_name = "x_error"
-        # if hasattr(self, "error_y"):
-            # result.add_np_array("error_array_y", self.error_y)
-            # metric_name = "y_error"
-        # if hasattr(self, "error_vx"):
-            # result.add_np_array("error_array_vx", self.error_vx)
-            # metric_name = "vx_error"
-        # if hasattr(self, "error_vy"):
-            # result.add_np_array("error_array_vy", self.error_vy)
-            # metric_name = "vy_error"
-        # if hasattr(self, "error_psi"):
-            # result.add_np_array("error_array_psi", self.error_psi)
-            # metric_name = "psi_error"
-        # if hasattr(self, "error_omega"):
-            # result.add_np_array("error_array_omega", self.error_omega)
-            # metric_name = "omega_error"
 
         result.add_info({
             "title": str(self),
@@ -380,6 +361,7 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     from evo.tools import pandas_bridge, plot
     import matplotlib as mpl
     import matplotlib.pyplot as plt
+    import matplotlib.patches as mpatches
     import seaborn as sns
 
 
@@ -395,6 +377,8 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     df_omega=pd.DataFrame()
     df_length=pd.DataFrame()
     df_width=pd.DataFrame()
+
+    # print(list(df_x.columns.values))
 
     for ape in apes_x:
         name = None
@@ -430,15 +414,14 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
                        axis="columns")
     # print(df_omega)
 
-    error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
-    error_y = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
-    error_vx = pd.DataFrame(df_vx.loc["np_arrays", "error_array"].tolist()).T
-    error_vy = pd.DataFrame(df_vy.loc["np_arrays", "error_array"].tolist()).T
-    error_psi = pd.DataFrame(df_psi.loc["np_arrays", "error_array"].tolist()).T
-    error_omega = pd.DataFrame(df_omega.loc["np_arrays", "error_array"].tolist()).T
-    error_length = pd.DataFrame(df_length.loc["np_arrays", "error_array"].tolist()).T
-    error_width = pd.DataFrame(df_width.loc["np_arrays", "error_array"].tolist()).T
-    # print(error_x)
+    # error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
+    # error_y = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
+    # error_vx = pd.DataFrame(df_vx.loc["np_arrays", "error_array"].tolist()).T
+    # error_vy = pd.DataFrame(df_vy.loc["np_arrays", "error_array"].tolist()).T
+    # error_psi = pd.DataFrame(df_psi.loc["np_arrays", "error_array"].tolist()).T
+    # error_omega = pd.DataFrame(df_omega.loc["np_arrays", "error_array"].tolist()).T
+    # error_length = pd.DataFrame(df_length.loc["np_arrays", "error_array"].tolist()).T
+    # error_width = pd.DataFrame(df_width.loc["np_arrays", "error_array"].tolist()).T
 
 
     # print(error_x)
@@ -488,53 +471,100 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
 
     setting = ["RMSE"]
     include = df_x.loc["stats"].index.isin(setting)
-    print("ape_x",df_x.loc["stats"][include])
-    print("ape_y",df_y.loc["stats"][include])
-    print("ape_vx",df_vx.loc["stats"][include])
-    print("ape_vy",df_vy.loc["stats"][include])
-    print("ape_psi",df_psi.loc["stats"][include])
-    print("ape_omega",df_omega.loc["stats"][include])
-    print("ape_length",df_length.loc["stats"][include])
-    print("ape_width",df_width.loc["stats"][include])
+    # print(df_x.loc["stats"])
+    # print(include)
+    # print("ape_x",df_x.loc["stats"][include])
+    # print("ape_y",df_y.loc["stats"][include])
+    # print("ape_vx",df_vx.loc["stats"][include])
+    # print("ape_vy",df_vy.loc["stats"][include])
+    # print("ape_psi",df_psi.loc["stats"][include])
+    # print("ape_omega",df_omega.loc["stats"][include])
+    # print("ape_length",df_length.loc["stats"][include])
+    # print("ape_width",df_width.loc["stats"][include])
 
-    fig_stats, axarr = plt.subplots(4,2,figsize=(6.125,8))
-    # print(SETTINGS.plot_statistics)
+    fig_stats, axarr = plt.subplots(4,2,figsize=(6.125,8.6))
     setting = ["Mean", "STD", "Max","Min","RMSE"]
     include = df_x.loc["stats"].index.isin(setting)
-    # include = df_x.loc["stats"].index.isin(SETTINGS.plot_statistics)
-    # print(include)
-    # if any(include):
+    
+    # df_x.loc["stats"].reorder_levels(['STD','SSE','RMSE','Min','Median','Mean','Max'])
+    # print(df_x.names)
+    # df_x.reindex(['STD','SSE','RMSE','Min','Median','Mean','Max'],
+            # level='stats')
+    # df_x.loc["stats"][['STD','SSE','RMSE','Min','Median','Mean','Max']]
+    # print(df_x.xs('stats'))
 
-    df_x.loc["stats"][include].plot(kind="barh", ax =  axarr[0,0],legend
-    =None)
+    dfx_stats = df_x.xs('stats')
+    x_stats = dfx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    x_stats.drop(index="SSE",inplace=True)
+
+    dfy_stats = df_y.xs('stats')
+    y_stats = dfx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    y_stats.drop(index="SSE",inplace=True)
+
+    dfvx_stats = df_vx.xs('stats')
+    vx_stats = dfvx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    vx_stats.drop(index="SSE",inplace=True)
+
+    dfvy_stats = df_vy.xs('stats')
+    vy_stats = dfvy_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    vy_stats.drop(index="SSE",inplace=True)
+
+    dfpsi_stats = df_psi.xs('stats')
+    psi_stats = dfpsi_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    psi_stats.drop(index="SSE",inplace=True)
+
+    dfomega_stats = df_omega.xs('stats')
+    omega_stats = dfomega_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    omega_stats.drop(index="SSE",inplace=True)
+
+    dflength_stats = df_length.xs('stats')
+    length_stats = dfomega_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    length_stats.drop(index="SSE",inplace=True)
+
+    dfwidth_stats = df_width.xs('stats')
+    width_stats = dfwidth_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    width_stats.drop(index="SSE",inplace=True)
+    # setting = ["Mean", "STD", "Max","Min","RMSE"]
+    # include = df_x.loc["stats"].index.isin(setting)
+    print(x_stats)
+
+
+    x_stats.plot(kind="barh", ax =  axarr[0,0],legend =None)
+    # df_x.loc["stats"][include].plot(kind="barh", ax =  axarr[0,0],legend
+    # =None)
     axarr[0,0].set_xlabel("Absolute error $x$ (m)")
-    df_y.loc["stats"][include].plot(kind="barh", ax =  axarr[0,1],
-            legend=None)
+    y_stats.plot(kind="barh", ax =  axarr[0,1], legend=None)
     axarr[0,1].set_xlabel("Absolute error $y$ (m)")
-    df_vx.loc["stats"][include].plot(kind="barh", ax =  axarr[1,0],
-            legend=None)
+    vx_stats.plot(kind="barh", ax =  axarr[1,0], legend=None)
     axarr[1,0].set_xlabel("Absolute error $v_x$ (m/s)")
-    df_vy.loc["stats"][include].plot(kind="barh", ax =  axarr[1,1],
-            legend=None)
+    vy_stats.plot(kind="barh", ax =  axarr[1,1], legend=None)
     axarr[1,1].set_xlabel("Absolute error $v_y$ (m/s)")
-    df_psi.loc["stats"][include].plot(kind="barh", width =0.3, ax = axarr[2,0],
-            legend=None, color='orange')
+    psi_stats.plot(kind="barh", width =0.3, ax = axarr[2,0],
+            legend=None, color='indianred')
     axarr[2,0].set_xlabel("Absolute error $\psi$ (degrees)")
-    df_omega.loc["stats"][include].plot(kind="barh", width =0.3, ax =  axarr[2,1],
-            legend=None, color='orange')
+    omega_stats.plot(kind="barh", width =0.3, ax =  axarr[2,1],
+            legend=None, color='indianred')
     axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (degrees/s)")
-    df_length.loc["stats"][include].plot(kind="barh", width =0.3, ax =  axarr[3,0],
-            legend=None, color='orange')
+    length_stats.plot(kind="barh", width =0.3, ax =  axarr[3,0],
+            legend=None, color='indianred')
     axarr[3,0].set_xlabel("Absolute error Length (m)")
-
-    df_width.loc["stats"][include].plot(kind="barh", width =0.3, ax =  axarr[3,1],
-            legend=None, color='orange')
+    width_stats.plot(kind="barh", width =0.3, ax =  axarr[3,1],
+            legend=None, color='indianred')
     axarr[3,1].set_xlabel("Absolute error Width (m)")
 
-    handles, labels = axarr[0,0].get_legend_handles_labels()
-    lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
+    # handles, labels = axarr[0,0].get_legend_handles_labels()
+    # lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
+    current_palette = sns.color_palette()
+    sns.set_color_codes()
+    red = mpatches.Patch(color='indianred', label='Shape KF')
+    gray = mpatches.Patch(color='gray', label='Reference')
+    green = mpatches.Patch(color='b', label='KF')
+    blue = mpatches.Patch(color='g', label='UKF')
+    lgd = fig_stats.legend(handles=[green,blue,red,gray],\
+            loc='lower center',ncol = 4, borderpad=0.7,\
+            bbox_to_anchor=(0.54,0), columnspacing=0.8)
     fig_stats.tight_layout()
-    fig_stats.subplots_adjust(bottom=0.1)
+    fig_stats.subplots_adjust(bottom=0.12)
     # plt.show()
 
     fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
