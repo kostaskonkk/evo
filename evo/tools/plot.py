@@ -613,7 +613,7 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
 
     ax.plot(x, dot_yaw, style, color=color, label=label, alpha=alpha)
     ax.set_xlabel("Time (s)")
-    ax.set_ylabel("$\dot{\psi}$ (degrees/s)")
+    ax.set_ylabel("$\omega$ (degrees/s)")
 
 def vx_vy(axarr, traj, style='-', color='black', label="", alpha=1.0,
         start_timestamp=None):

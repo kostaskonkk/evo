@@ -338,7 +338,7 @@ def angular_vel(ax, traj, style='-', color='black', label="", alpha=1.0,
     else:
         x = range(0, len(traj.positions_xyz - 1))
         xlabel = "index"
-    ylabel = "$\dot{\psi}$ (degrees/s)"
+    ylabel = "$\omega$ (degrees/s)"
     angular_vel_degrees = [traj.angular_vel[i,2]* 57.14 
             for i in range(len(traj.angular_vel))]
     
