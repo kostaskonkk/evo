@@ -16,14 +16,13 @@ import seaborn as sns
 import itertools
 import os
 
-# path = "/home/kostas/results/experiment/overtakes.bag"
+path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/results/experiment/parallel.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
 # path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/experiments/datmo.bag"
 
-path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
 scenario = os.path.splitext(os.path.basename(path))[0]
@@ -43,7 +42,7 @@ bag = rosbag.Bag(path)
 references= []
 if type_of_exp=='simulation':
     # references.append(('-slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
-    references.append(('-fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
+    # references.append(('-fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
     distance = 3 
 else:
     references.append(('', file_interface.read_bag_trajectory(bag, '/red_pose')))
