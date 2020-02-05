@@ -24,7 +24,7 @@ path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/experiments/datmo.bag"
 
 # path = "/home/kostas/results/simulation/double_lane_change_new.bag"
-path = "/home/kostas/results/simulation/lane_keeping.bag"
+# path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
 scenario = os.path.splitext(os.path.basename(path))[0]

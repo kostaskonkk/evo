@@ -544,8 +544,6 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     omega_stats.plot(kind="barh", width =0.3, ax =  axarr[2,1],
             legend=None, color='indianred')
     axarr[2,1].set_xlabel("Absolute error $\omega$ (degrees/s)")
-    length_stats.plot(kind="barh", width =0.3, ax =  axarr[3,0],
-    axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (degrees/s)")
     # length_stats.plot(kind="barh", width =0.3, ax =  axarr[3,0],
             # legend=None, color='indianred')
     # axarr[3,0].set_xlabel("Absolute error Length (m)")
