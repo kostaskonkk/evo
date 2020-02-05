@@ -358,9 +358,9 @@ def report_states(references, tracks, distance, filename):
     # palette = itertools.cycle(sns.color_palette())
 
     for ref in references:
-        # fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,8.6))
+        fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,8.6))
         # fig_rep, axarr = plt.subplots(3,2,figsize=(6.125,7))
-        fig_rep, axarr = plt.subplots(4,2,figsize=(7.14,8.8))
+        # fig_rep, axarr = plt.subplots(4,2,figsize=(7.14,8.8))
 
         for track in tracks:
             if(track[0]=='KF'):
@@ -416,7 +416,7 @@ def report_states(references, tracks, distance, filename):
         fig_rep.tight_layout()
         fig_rep.subplots_adjust(bottom=0.11)
         fig_rep.savefig("/home/kostas/report/figures/"+ filename
-                +ref[0]+"_paper.pgf",bbox_inches='tight')
+                +ref[0]+".pgf",bbox_inches='tight')
 
 def presentation_states(references, tracks, distance, filename):
     palette = itertools.cycle(sns.color_palette())
