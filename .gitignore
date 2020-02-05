@@ -1,6 +1,6 @@
 # Additions by Kostas
 *.swp
-*.bag
+#*.bag
 tags
 .evo.vim
 # Byte-compiled / optimized / DLL files
