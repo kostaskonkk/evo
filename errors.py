@@ -347,16 +347,23 @@ class APE(PE):
             ewidth = traj_est.width - ref_width
             self.error = [np.linalg.norm(E_i) for E_i in ewidth]
         elif self.pose_relation == PoseRelation.rx:
-            self.error = [np.linalg.norm(E_i)/0.292 for E_i in self.E[:,0]]
+            # self.error = [np.linalg.norm(E_i)/0.292 for E_i in self.E[:,0]]
+            self.error = [np.linalg.norm(E_i)/2.84 for E_i in self.E[:,0]]
         elif self.pose_relation == PoseRelation.ry:
-            self.error = [np.linalg.norm(E_i)/0.292 for E_i in self.E[:,1]]
+            # self.error = [np.linalg.norm(E_i)/0.292 for E_i in self.E[:,1]]
+            self.error = [np.linalg.norm(E_i)/2.84 for E_i in self.E[:,1]]
         elif self.pose_relation == PoseRelation.rlength:
-            ref_length = [0.385] * len(traj_est.length)
-            relength = (traj_est.length - ref_length)/0.385
+            # ref_length = [0.385] * len(traj_est.length)
+            # relength = (traj_est.length - ref_length)/0.385
+            ref_length = [3.9] * len(traj_est.length)
+            relength = (traj_est.length - ref_length)/3.9
             self.error = [np.linalg.norm(E_i) for E_i in relength]
+
         elif self.pose_relation == PoseRelation.rwidth:
-            ref_width = [0.2] * len(traj_est.width)
-            rewidth = (traj_est.width - ref_width)/0.2
+            # ref_width = [0.2] * len(traj_est.width)
+            # rewidth = (traj_est.width - ref_width)/0.2
+            ref_width = [1.78] * len(traj_est.width)
+            rewidth = (traj_est.width - ref_width)/1.78
             self.error = [np.linalg.norm(E_i) for E_i in rewidth]
         else:
             raise MetricsException("unsupported pose_relation")
@@ -572,7 +579,7 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     fig_stats.subplots_adjust(bottom=0.12)
     # plt.show()
 
-    fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
+    fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats-fast.pgf")
 
     # error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
     # error_y = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T

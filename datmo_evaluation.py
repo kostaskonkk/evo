@@ -16,14 +16,14 @@ import seaborn as sns
 import itertools
 import os
 
-path = "/home/kostas/results/experiment/overtakes.bag"
+# path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/results/experiment/parallel.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
 # path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/experiments/datmo.bag"
 
-# path = "/home/kostas/results/simulation/double_lane_change_new.bag"
+path = "/home/kostas/results/simulation/double_lane_change.bag"
 # path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
@@ -43,7 +43,7 @@ bag = rosbag.Bag(path)
 
 references= []
 if type_of_exp=='simulation':
-    # references.append(('-slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
+    references.append(('-slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
     references.append(('-fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
     distance = 3 
 else:
@@ -51,7 +51,7 @@ else:
     distance = 0.35
 tracks = []
 tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
-# tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 bag.close()
 
@@ -181,8 +181,8 @@ for ref in references:
                 est_name=track[0]+ref[0])
             rpes_width.append(rpe_width)
 
-errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
-        apes_omega, apes_length, apes_width, rpes_x, rpes_y, rpes_length,
-        rpes_width, filename)
+# errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
+        # apes_omega, apes_length, apes_width, rpes_x, rpes_y, rpes_length,
+        # rpes_width, filename)
 
 print("DONE!!")
