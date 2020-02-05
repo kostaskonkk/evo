@@ -399,7 +399,7 @@ def report_states(references, tracks, distance, filename):
             axarr[3,0].axhline(y=3.9, color='gray')
             axarr[3,1].axhline(y=1.78, color='gray')
         else:
-            axarr[3,0].axhline(y=0.4, color='gray')
+            axarr[3,0].axhline(y=0.385, color='gray')
             axarr[3,1].axhline(y=0.2, color='gray')
 
         for i in range(0,4):

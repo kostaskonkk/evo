@@ -23,8 +23,8 @@ path = "/home/kostas/results/experiment/overtakes.bag"
 # path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/experiments/datmo.bag"
 
-# path = "/home/kostas/results/simulation/double_lane_change.bag"
-# path = "/home/kostas/results/simulation/lane_keeping.bag"
+# path = "/home/kostas/results/simulation/double_lane_change_new.bag"
+path = "/home/kostas/results/simulation/lane_keeping.bag"
 
 type_of_exp = os.path.basename(os.path.dirname(path))
 scenario = os.path.splitext(os.path.basename(path))[0]
@@ -43,7 +43,7 @@ bag = rosbag.Bag(path)
 
 references= []
 if type_of_exp=='simulation':
-    references.append(('-slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
+    # references.append(('-slow', file_interface.read_bag_trajectory(bag, '/prius_slow')))
     references.append(('-fast', file_interface.read_bag_trajectory(bag, '/prius_fast')))
     distance = 3 
 else:
@@ -51,7 +51,7 @@ else:
     distance = 0.35
 tracks = []
 tracks.append(('KF' , file_interface.read_TrackArray(bag,'/tracks/box_kf',3)))
-tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
+# tracks.append(('UKF', file_interface.read_TrackArray(bag, '/tracks/box_ukf', 3)))
 
 bag.close()
 
@@ -74,12 +74,15 @@ apes_psi=[]
 apes_omega=[]
 apes_length=[]
 apes_width=[]
+rpes_x=[]
+rpes_y=[]
+rpes_length=[]
+rpes_width=[]
 
 for ref in references:
     for track in tracks:
         segments, traj_reference = \
             tracking.associate_segments_common_frame(ref[1], track[1],distance)
-
         whole =tracking.merge(segments)
 
         ape_x = errors.ape(
@@ -97,6 +100,22 @@ for ref in references:
             ref_name=ref[0],
             est_name=track[0]+ref[0])
         apes_y.append(ape_y)
+
+        rpe_x = errors.ape(
+            traj_ref=traj_reference,
+            traj_est=whole,
+            pose_relation=errors.PoseRelation.rx,
+            ref_name=ref[0],
+            est_name=track[0]+" "+ref[0])
+        rpes_x.append(rpe_x)
+
+        rpe_y = errors.ape(
+            traj_ref=traj_reference,
+            traj_est=whole,
+            pose_relation=errors.PoseRelation.ry,
+            ref_name=ref[0],
+            est_name=track[0]+ref[0])
+        rpes_y.append(rpe_y)
         
         ape_vx = errors.ape(
             traj_ref=traj_reference,
@@ -146,7 +165,24 @@ for ref in references:
                 est_name='Shape')
             apes_width.append(ape_width)
 
+            rpe_length = errors.ape(
+                traj_ref=traj_reference,
+                traj_est=whole,
+                pose_relation=errors.PoseRelation.rlength,
+                ref_name=ref[0],
+                est_name=track[0]+" "+ref[0])
+            rpes_length.append(rpe_length)
+
+            rpe_width = errors.ape(
+                traj_ref=traj_reference,
+                traj_est=whole,
+                pose_relation=errors.PoseRelation.rwidth,
+                ref_name=ref[0],
+                est_name=track[0]+ref[0])
+            rpes_width.append(rpe_width)
+
 errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
-        apes_omega, apes_length, apes_width, filename)
+        apes_omega, apes_length, apes_width, rpes_x, rpes_y, rpes_length,
+        rpes_width, filename)
 
 print("DONE!!")

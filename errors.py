@@ -51,6 +51,10 @@ class PoseRelation(Enum):
     omega = "omega"
     length = "length"
     width = "width"
+    rx = "rx"
+    ry = "ry"
+    rlength = "rlength"
+    rwidth = "rwidth"
 
 class Unit(Enum):
     none = "unit-less"
@@ -277,7 +281,6 @@ class APE(PE):
             self.error = [np.linalg.norm(E_i) for E_i in self.E[:,0]]
         elif self.pose_relation == PoseRelation.y:
             self.error = [np.linalg.norm(E_i) for E_i in self.E[:,1]]
-
         elif self.pose_relation == PoseRelation.vx:
             dot_x = [
                 trajectory.calc_velocity(traj_ref.positions_xyz[i,0],
@@ -287,7 +290,6 @@ class APE(PE):
             dot_x.append(dot_x[-1]) #last two velocities are given the same
             evx = traj_est.linear_vel[:,0] - dot_x
             self.error = [np.linalg.norm(E_i) for E_i in evx]
-
         elif self.pose_relation == PoseRelation.vy:
             dot_y = [
                 trajectory.calc_velocity(traj_ref.positions_xyz[i,1],
@@ -297,7 +299,6 @@ class APE(PE):
             dot_y.append(dot_y[-1])
             evy = traj_est.linear_vel[:,1] - dot_y
             self.error = [np.linalg.norm(E_i) for E_i in evy]
-
         elif self.pose_relation == PoseRelation.vy:
             dot_y = [
                 trajectory.calc_velocity(traj_ref.positions_xyz[i,1],
@@ -305,7 +306,6 @@ class APE(PE):
                                       traj_ref.timestamps[i], traj_ref.timestamps[i + 1])
                 for i in range(len(traj_ref.positions_xyz) - 1)]
             dot_y.append(dot_y[-1])
-
         elif self.pose_relation == PoseRelation.psi:
             epsi =[]
             for i in range(0, len(traj_est.get_orientations_euler()[:,2])):
@@ -316,9 +316,7 @@ class APE(PE):
             # epsi =  traj_est.get_orientations_euler()[:,2] - traj_ref.get_orientations_euler()[:,2]
             # self.error = [np.linalg.norm(E_i) for E_i in epsi]
             self.error = [np.linalg.norm(E_i) for E_i in epsi_deg]
-
         elif self.pose_relation == PoseRelation.omega:
-
             wrap = traj_ref.get_orientations_euler()[:,2]
             yaw_unwrapped = np.unwrap(wrap)
             dot_yaw = [
@@ -340,24 +338,34 @@ class APE(PE):
             eomega = traj_est.angular_vel[:,2] - dot_yaw
             eomega_deg = [i * 180 / math.pi for i in eomega]
             self.error = [np.linalg.norm(E_i) for E_i in eomega_deg]
-
         elif self.pose_relation == PoseRelation.length:
-            ref_length = [0.4] * len(traj_est.length)
+            ref_length = [0.385] * len(traj_est.length)
             elength = traj_est.length - ref_length
             self.error = [np.linalg.norm(E_i) for E_i in elength]
-
         elif self.pose_relation == PoseRelation.width:
-            ref_width = [0.4] * len(traj_est.width)
+            ref_width = [0.2] * len(traj_est.width)
             ewidth = traj_est.width - ref_width
             self.error = [np.linalg.norm(E_i) for E_i in ewidth]
+        elif self.pose_relation == PoseRelation.rx:
+            self.error = [np.linalg.norm(E_i)/0.292 for E_i in self.E[:,0]]
+        elif self.pose_relation == PoseRelation.ry:
+            self.error = [np.linalg.norm(E_i)/0.292 for E_i in self.E[:,1]]
+        elif self.pose_relation == PoseRelation.rlength:
+            ref_length = [0.385] * len(traj_est.length)
+            relength = (traj_est.length - ref_length)/0.385
+            self.error = [np.linalg.norm(E_i) for E_i in relength]
+        elif self.pose_relation == PoseRelation.rwidth:
+            ref_width = [0.2] * len(traj_est.width)
+            rewidth = (traj_est.width - ref_width)/0.2
+            self.error = [np.linalg.norm(E_i) for E_i in rewidth]
         else:
             raise MetricsException("unsupported pose_relation")
 
 def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
-        apes_omega, apes_length, apes_width, filename):
+        apes_omega, apes_length, apes_width, rpes_x, rpes_y, rpes_length,
+        rpes_width, filename):
+
     import pandas as pd
-    # from evo.tools import log, user, settings
-    # from evo.tools.settings import SETTINGS
     from evo.tools import pandas_bridge, plot
     import matplotlib as mpl
     import matplotlib.pyplot as plt
@@ -377,6 +385,10 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     df_omega=pd.DataFrame()
     df_length=pd.DataFrame()
     df_width=pd.DataFrame()
+    df_rx = pd.DataFrame()
+    df_ry = pd.DataFrame()
+    df_rlength=pd.DataFrame()
+    df_rwidth=pd.DataFrame()
 
     # print(list(df_x.columns.values))
 
@@ -412,7 +424,157 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
         name = None
         df_width = pd.concat([df_width, pandas_bridge.result_to_df(ape, name)],
                        axis="columns")
+    for ape in rpes_x:
+        name = None
+        df_rx = pd.concat([df_rx, pandas_bridge.result_to_df(ape, name)],
+                       axis="columns")
+    for ape in rpes_y:
+        name = None
+        df_ry = pd.concat([df_ry, pandas_bridge.result_to_df(ape, name)],
+                       axis="columns")
+    for ape in rpes_width:
+        name = None
+        df_rwidth = pd.concat([df_rwidth, pandas_bridge.result_to_df(ape, name)],
+                       axis="columns")
+    for ape in rpes_length:
+        name = None
+        df_rlength = pd.concat([df_rlength, pandas_bridge.result_to_df(ape, name)],
+                       axis="columns")
     # print(df_omega)
+
+
+    mpl.use('pgf')
+    mpl.rcParams.update({
+        "text.usetex": True,
+        "pgf.texsystem": "pdflatex",
+    })
+
+    setting = ["RMSE"]
+    include = df_x.loc["stats"].index.isin(setting)
+    # print(df_x.loc["stats"])
+    # print(include)
+    print("ape_x",df_x.loc["stats"][include])
+    print("ape_y",df_y.loc["stats"][include])
+    print("ape_vx",df_vx.loc["stats"][include])
+    print("ape_vy",df_vy.loc["stats"][include])
+    print("ape_psi",df_psi.loc["stats"][include])
+    print("ape_omega",df_omega.loc["stats"][include])
+    print("ape_length",df_length.loc["stats"][include])
+    print("ape_width",df_width.loc["stats"][include])
+
+    fig_stats, axarr = plt.subplots(4,2,figsize=(6.125,8.6))
+    setting = ["Mean", "STD", "Max","Min","RMSE"]
+    include = df_x.loc["stats"].index.isin(setting)
+    
+    # df_x.loc["stats"].reorder_levels(['STD','SSE','RMSE','Min','Median','Mean','Max'])
+    # print(df_x.names)
+    # df_x.reindex(['STD','SSE','RMSE','Min','Median','Mean','Max'],
+            # level='stats')
+    # df_x.loc["stats"][['STD','SSE','RMSE','Min','Median','Mean','Max']]
+    # print(df_x.xs('stats'))
+
+    dfx_stats = df_x.xs('stats')
+    x_stats = dfx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    x_stats.drop(index="SSE",inplace=True)
+
+    dfy_stats = df_y.xs('stats')
+    y_stats = dfx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    y_stats.drop(index="SSE",inplace=True)
+
+    dfvx_stats = df_vx.xs('stats')
+    vx_stats = dfvx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    vx_stats.drop(index="SSE",inplace=True)
+
+    dfvy_stats = df_vy.xs('stats')
+    vy_stats = dfvy_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    vy_stats.drop(index="SSE",inplace=True)
+
+    dfpsi_stats = df_psi.xs('stats')
+    psi_stats = dfpsi_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    psi_stats.drop(index="SSE",inplace=True)
+
+    dfomega_stats = df_omega.xs('stats')
+    omega_stats = dfomega_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    omega_stats.drop(index="SSE",inplace=True)
+
+    dflength_stats = df_length.xs('stats')
+    length_stats = dflength_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    length_stats.drop(index="SSE",inplace=True)
+
+    dfwidth_stats = df_width.xs('stats')
+    width_stats = dfwidth_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    width_stats.drop(index="SSE",inplace=True)
+
+    dfrx_stats = df_rx.xs('stats')
+    rx_stats = dfrx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    rx_stats.drop(index="SSE",inplace=True)
+
+    dfry_stats = df_ry.xs('stats')
+    ry_stats = dfy_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    ry_stats.drop(index="SSE",inplace=True)
+
+    dfrlength_stats = df_rlength.xs('stats')
+    rlength_stats = dfrlength_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    rlength_stats.drop(index="SSE",inplace=True)
+
+    dfrwidth_stats = df_rwidth.xs('stats')
+    rwidth_stats = dfrwidth_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
+    rwidth_stats.drop(index="SSE",inplace=True)
+
+    # setting = ["Mean", "STD", "Max","Min","RMSE"]
+    # include = df_x.loc["stats"].index.isin(setting)
+    # print(x_stats)
+
+
+    # x_stats.plot(kind="barh", ax =  axarr[0,0],legend =None)
+    # axarr[0,0].set_xlabel("Absolute error $x$ (m)")
+    # y_stats.plot(kind="barh", ax =  axarr[0,1], legend=None)
+    # axarr[0,1].set_xlabel("Absolute error $y$ (m)")
+    rx_stats.plot(kind="barh", ax =  axarr[0,0],legend =None)
+    axarr[0,0].set_xlabel("Relative error $x$")
+    ry_stats.plot(kind="barh", ax =  axarr[0,1], legend=None)
+    axarr[0,1].set_xlabel("Relative error $y$")
+    vx_stats.plot(kind="barh", ax =  axarr[1,0], legend=None)
+    axarr[1,0].set_xlabel("Absolute error $v_x$ (m/s)")
+    vy_stats.plot(kind="barh", ax =  axarr[1,1], legend=None)
+    axarr[1,1].set_xlabel("Absolute error $v_y$ (m/s)")
+    psi_stats.plot(kind="barh", width =0.3, ax = axarr[2,0],
+            legend=None, color='indianred')
+    axarr[2,0].set_xlabel("Absolute error $\psi$ (degrees)")
+    omega_stats.plot(kind="barh", width =0.3, ax =  axarr[2,1],
+            legend=None, color='indianred')
+    axarr[2,1].set_xlabel("Absolute error $\omega$ (degrees/s)")
+    length_stats.plot(kind="barh", width =0.3, ax =  axarr[3,0],
+    axarr[2,1].set_xlabel("Absolute error $\dot{\psi}$ (degrees/s)")
+    # length_stats.plot(kind="barh", width =0.3, ax =  axarr[3,0],
+            # legend=None, color='indianred')
+    # axarr[3,0].set_xlabel("Absolute error Length (m)")
+    # width_stats.plot(kind="barh", width =0.3, ax =  axarr[3,1],
+            # legend=None, color='indianred')
+    # axarr[3,1].set_xlabel("Absolute error Width (m)")
+    rlength_stats.plot(kind="barh", width =0.3, ax =  axarr[3,0],
+            legend=None, color='indianred')
+    axarr[3,0].set_xlabel("Relative error Length")
+    rwidth_stats.plot(kind="barh", width =0.3, ax =  axarr[3,1],
+            legend=None, color='indianred')
+    axarr[3,1].set_xlabel("Relative error Width")
+
+    # handles, labels = axarr[0,0].get_legend_handles_labels()
+    # lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
+    current_palette = sns.color_palette()
+    sns.set_color_codes()
+    red = mpatches.Patch(color='indianred', label='Shape KF')
+    gray = mpatches.Patch(color='gray', label='Reference')
+    green = mpatches.Patch(color='b', label='KF')
+    blue = mpatches.Patch(color='g', label='UKF')
+    lgd = fig_stats.legend(handles=[green,blue,red,gray],\
+            loc='lower center',ncol = 4, borderpad=0.7,\
+            bbox_to_anchor=(0.54,0), columnspacing=0.8)
+    fig_stats.tight_layout()
+    fig_stats.subplots_adjust(bottom=0.12)
+    # plt.show()
+
+    fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
 
     # error_x = pd.DataFrame(df_x.loc["np_arrays", "error_array"].tolist()).T
     # error_y = pd.DataFrame(df_y.loc["np_arrays", "error_array"].tolist()).T
@@ -462,109 +624,3 @@ def stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
     # plt.legend(frameon=True)
     # plot_collection.add_figure("raw", fig_raw)
     # statistics plot
-
-    mpl.use('pgf')
-    mpl.rcParams.update({
-        "text.usetex": True,
-        "pgf.texsystem": "pdflatex",
-    })
-
-    setting = ["RMSE"]
-    include = df_x.loc["stats"].index.isin(setting)
-    # print(df_x.loc["stats"])
-    # print(include)
-    # print("ape_x",df_x.loc["stats"][include])
-    # print("ape_y",df_y.loc["stats"][include])
-    # print("ape_vx",df_vx.loc["stats"][include])
-    # print("ape_vy",df_vy.loc["stats"][include])
-    # print("ape_psi",df_psi.loc["stats"][include])
-    # print("ape_omega",df_omega.loc["stats"][include])
-    # print("ape_length",df_length.loc["stats"][include])
-    # print("ape_width",df_width.loc["stats"][include])
-
-    fig_stats, axarr = plt.subplots(4,2,figsize=(6.125,8.6))
-    setting = ["Mean", "STD", "Max","Min","RMSE"]
-    include = df_x.loc["stats"].index.isin(setting)
-    
-    # df_x.loc["stats"].reorder_levels(['STD','SSE','RMSE','Min','Median','Mean','Max'])
-    # print(df_x.names)
-    # df_x.reindex(['STD','SSE','RMSE','Min','Median','Mean','Max'],
-            # level='stats')
-    # df_x.loc["stats"][['STD','SSE','RMSE','Min','Median','Mean','Max']]
-    # print(df_x.xs('stats'))
-
-    dfx_stats = df_x.xs('stats')
-    x_stats = dfx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    x_stats.drop(index="SSE",inplace=True)
-
-    dfy_stats = df_y.xs('stats')
-    y_stats = dfx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    y_stats.drop(index="SSE",inplace=True)
-
-    dfvx_stats = df_vx.xs('stats')
-    vx_stats = dfvx_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    vx_stats.drop(index="SSE",inplace=True)
-
-    dfvy_stats = df_vy.xs('stats')
-    vy_stats = dfvy_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    vy_stats.drop(index="SSE",inplace=True)
-
-    dfpsi_stats = df_psi.xs('stats')
-    psi_stats = dfpsi_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    psi_stats.drop(index="SSE",inplace=True)
-
-    dfomega_stats = df_omega.xs('stats')
-    omega_stats = dfomega_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    omega_stats.drop(index="SSE",inplace=True)
-
-    dflength_stats = df_length.xs('stats')
-    length_stats = dfomega_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    length_stats.drop(index="SSE",inplace=True)
-
-    dfwidth_stats = df_width.xs('stats')
-    width_stats = dfwidth_stats.reindex(["Max","Min","STD","RMSE","SSE","Median","Mean"])
-    width_stats.drop(index="SSE",inplace=True)
-    # setting = ["Mean", "STD", "Max","Min","RMSE"]
-    # include = df_x.loc["stats"].index.isin(setting)
-    print(x_stats)
-
-
-    x_stats.plot(kind="barh", ax =  axarr[0,0],legend =None)
-    # df_x.loc["stats"][include].plot(kind="barh", ax =  axarr[0,0],legend
-    # =None)
-    axarr[0,0].set_xlabel("Absolute error $x$ (m)")
-    y_stats.plot(kind="barh", ax =  axarr[0,1], legend=None)
-    axarr[0,1].set_xlabel("Absolute error $y$ (m)")
-    vx_stats.plot(kind="barh", ax =  axarr[1,0], legend=None)
-    axarr[1,0].set_xlabel("Absolute error $v_x$ (m/s)")
-    vy_stats.plot(kind="barh", ax =  axarr[1,1], legend=None)
-    axarr[1,1].set_xlabel("Absolute error $v_y$ (m/s)")
-    psi_stats.plot(kind="barh", width =0.3, ax = axarr[2,0],
-            legend=None, color='indianred')
-    axarr[2,0].set_xlabel("Absolute error $\psi$ (degrees)")
-    omega_stats.plot(kind="barh", width =0.3, ax =  axarr[2,1],
-            legend=None, color='indianred')
-    axarr[2,1].set_xlabel("Absolute error $\omega$ (degrees/s)")
-    length_stats.plot(kind="barh", width =0.3, ax =  axarr[3,0],
-            legend=None, color='indianred')
-    axarr[3,0].set_xlabel("Absolute error Length (m)")
-    width_stats.plot(kind="barh", width =0.3, ax =  axarr[3,1],
-            legend=None, color='indianred')
-    axarr[3,1].set_xlabel("Absolute error Width (m)")
-
-    # handles, labels = axarr[0,0].get_legend_handles_labels()
-    # lgd = fig_stats.legend(handles, labels, loc='lower center',ncol = len(labels))
-    current_palette = sns.color_palette()
-    sns.set_color_codes()
-    red = mpatches.Patch(color='indianred', label='Shape KF')
-    gray = mpatches.Patch(color='gray', label='Reference')
-    green = mpatches.Patch(color='b', label='KF')
-    blue = mpatches.Patch(color='g', label='UKF')
-    lgd = fig_stats.legend(handles=[green,blue,red,gray],\
-            loc='lower center',ncol = 4, borderpad=0.7,\
-            bbox_to_anchor=(0.54,0), columnspacing=0.8)
-    fig_stats.tight_layout()
-    fig_stats.subplots_adjust(bottom=0.12)
-    # plt.show()
-
-    fig_stats.savefig("/home/kostas/report/figures/"+filename+"_stats.pgf")
