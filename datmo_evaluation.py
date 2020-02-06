@@ -16,11 +16,11 @@ import seaborn as sns
 import itertools
 import os
 
-path = "/home/kostas/results/experiment/overtakes.bag"
-# path = "/home/kostas/results/experiment/parallel.bag"
+# path = "/home/kostas/results/experiment/overtakes.bag"
+path = "/home/kostas/results/experiment/parallel.bag"
+# path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
-# path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/experiments/datmo.bag"
 
 
@@ -61,7 +61,7 @@ table.add_empty_row()
 
 # tracking.screen_states(references, tracks, distance)
 # tracking.presentation_states(references, tracks, distance, filename)
-# tracking.report_states(references, tracks, distance, filename)
+tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 
 apes_x=[]
