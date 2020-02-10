@@ -16,8 +16,8 @@ import seaborn as sns
 import itertools
 import os
 
-# path = "/home/kostas/results/experiment/overtakes.bag"
-path = "/home/kostas/results/experiment/parallel.bag"
+path = "/home/kostas/results/experiment/overtakes.bag"
+# path = "/home/kostas/results/experiment/parallel.bag"
 # path = "/home/kostas/results/experiment/intersection.bag"
 # path = "/home/kostas/results/experiment/overtake_ego.bag"
 # path = "/home/kostas/results/experiment/overtake_red.bag"
@@ -58,129 +58,128 @@ table.add_hline()
 table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 table.add_empty_row()
 
-
 # tracking.screen_states(references, tracks, distance)
-# tracking.presentation_states(references, tracks, distance, filename)
-tracking.report_states(references, tracks, distance, filename)
+tracking.presentation_states(references, tracks, distance, filename)
+# tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 
-apes_x=[]
-apes_y=[]
-apes_vx=[]
-apes_vy=[]
-apes_psi=[]
-apes_omega=[]
-apes_length=[]
-apes_width=[]
-rpes_x=[]
-rpes_y=[]
-rpes_length=[]
-rpes_width=[]
+# apes_x=[]
+# apes_y=[]
+# apes_vx=[]
+# apes_vy=[]
+# apes_psi=[]
+# apes_omega=[]
+# apes_length=[]
+# apes_width=[]
+# rpes_x=[]
+# rpes_y=[]
+# rpes_length=[]
+# rpes_width=[]
 
-for ref in references:
-    for track in tracks:
-        segments, traj_reference = \
-            tracking.associate_segments_common_frame(ref[1], track[1],distance)
-        whole =tracking.merge(segments)
+# for ref in references:
+    # for track in tracks:
+        # segments, traj_reference = \
+            # tracking.associate_segments_common_frame(ref[1], track[1],distance)
+        # whole =tracking.merge(segments)
 
-        ape_x = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.x,
-            ref_name=ref[0],
-            est_name=track[0]+" "+ref[0])
-        apes_x.append(ape_x)
+        # ape_x = errors.ape(
+            # traj_ref=traj_reference,
+            # traj_est=whole,
+            # pose_relation=errors.PoseRelation.x,
+            # ref_name=ref[0],
+            # est_name=track[0]+" "+ref[0])
+        # apes_x.append(ape_x)
 
-        ape_y = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.y,
-            ref_name=ref[0],
-            est_name=track[0]+ref[0])
-        apes_y.append(ape_y)
+        # ape_y = errors.ape(
+            # traj_ref=traj_reference,
+            # traj_est=whole,
+            # pose_relation=errors.PoseRelation.y,
+            # ref_name=ref[0],
+            # est_name=track[0]+ref[0])
+        # apes_y.append(ape_y)
 
-        rpe_x = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.rx,
-            ref_name=ref[0],
-            est_name=track[0]+" "+ref[0])
-        rpes_x.append(rpe_x)
+        # rpe_x = errors.ape(
+            # traj_ref=traj_reference,
+            # traj_est=whole,
+            # pose_relation=errors.PoseRelation.rx,
+            # ref_name=ref[0],
+            # est_name=track[0]+" "+ref[0])
+        # rpes_x.append(rpe_x)
 
-        rpe_y = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.ry,
-            ref_name=ref[0],
-            est_name=track[0]+ref[0])
-        rpes_y.append(rpe_y)
+        # rpe_y = errors.ape(
+            # traj_ref=traj_reference,
+            # traj_est=whole,
+            # pose_relation=errors.PoseRelation.ry,
+            # ref_name=ref[0],
+            # est_name=track[0]+ref[0])
+        # rpes_y.append(rpe_y)
         
-        ape_vx = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.vx,
-            ref_name=ref[0],
-            est_name=track[0]+ref[0])
-        apes_vx.append(ape_vx)
+        # ape_vx = errors.ape(
+            # traj_ref=traj_reference,
+            # traj_est=whole,
+            # pose_relation=errors.PoseRelation.vx,
+            # ref_name=ref[0],
+            # est_name=track[0]+ref[0])
+        # apes_vx.append(ape_vx)
         
-        ape_vy = errors.ape(
-            traj_ref=traj_reference,
-            traj_est=whole,
-            pose_relation=errors.PoseRelation.vy,
-            ref_name=ref[0],
-            est_name=track[0]+ref[0])
-        apes_vy.append(ape_vy)
-        if track[0]=='KF':
-            ape_psi = errors.ape(
-                traj_ref=traj_reference,
-                traj_est=whole,
-                pose_relation=errors.PoseRelation.psi,
-                ref_name=ref[0],
-                est_name='Shape')
-            apes_psi.append(ape_psi)
+        # ape_vy = errors.ape(
+            # traj_ref=traj_reference,
+            # traj_est=whole,
+            # pose_relation=errors.PoseRelation.vy,
+            # ref_name=ref[0],
+            # est_name=track[0]+ref[0])
+        # apes_vy.append(ape_vy)
+        # if track[0]=='KF':
+            # ape_psi = errors.ape(
+                # traj_ref=traj_reference,
+                # traj_est=whole,
+                # pose_relation=errors.PoseRelation.psi,
+                # ref_name=ref[0],
+                # est_name='Shape')
+            # apes_psi.append(ape_psi)
         
-            ape_omega = errors.ape(
-                traj_ref=traj_reference,
-                traj_est=whole,
-                pose_relation=errors.PoseRelation.omega,
-                ref_name=ref[0],
-                est_name='Shape')
-            apes_omega.append(ape_omega)
+            # ape_omega = errors.ape(
+                # traj_ref=traj_reference,
+                # traj_est=whole,
+                # pose_relation=errors.PoseRelation.omega,
+                # ref_name=ref[0],
+                # est_name='Shape')
+            # apes_omega.append(ape_omega)
 
-            ape_length = errors.ape(
-                traj_ref=traj_reference,
-                traj_est=whole,
-                pose_relation=errors.PoseRelation.length,
-                ref_name=ref[0],
-                est_name='Shape')
-            apes_length.append(ape_length)
+            # ape_length = errors.ape(
+                # traj_ref=traj_reference,
+                # traj_est=whole,
+                # pose_relation=errors.PoseRelation.length,
+                # ref_name=ref[0],
+                # est_name='Shape')
+            # apes_length.append(ape_length)
 
-            ape_width = errors.ape(
-                traj_ref=traj_reference,
-                traj_est=whole,
-                pose_relation=errors.PoseRelation.width,
-                ref_name=ref[0],
-                est_name='Shape')
-            apes_width.append(ape_width)
+            # ape_width = errors.ape(
+                # traj_ref=traj_reference,
+                # traj_est=whole,
+                # pose_relation=errors.PoseRelation.width,
+                # ref_name=ref[0],
+                # est_name='Shape')
+            # apes_width.append(ape_width)
 
-            rpe_length = errors.ape(
-                traj_ref=traj_reference,
-                traj_est=whole,
-                pose_relation=errors.PoseRelation.rlength,
-                ref_name=ref[0],
-                est_name=track[0]+" "+ref[0])
-            rpes_length.append(rpe_length)
+            # rpe_length = errors.ape(
+                # traj_ref=traj_reference,
+                # traj_est=whole,
+                # pose_relation=errors.PoseRelation.rlength,
+                # ref_name=ref[0],
+                # est_name=track[0]+" "+ref[0])
+            # rpes_length.append(rpe_length)
 
-            rpe_width = errors.ape(
-                traj_ref=traj_reference,
-                traj_est=whole,
-                pose_relation=errors.PoseRelation.rwidth,
-                ref_name=ref[0],
-                est_name=track[0]+ref[0])
-            rpes_width.append(rpe_width)
+            # rpe_width = errors.ape(
+                # traj_ref=traj_reference,
+                # traj_est=whole,
+                # pose_relation=errors.PoseRelation.rwidth,
+                # ref_name=ref[0],
+                # est_name=track[0]+ref[0])
+            # rpes_width.append(rpe_width)
 
-errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
-        apes_omega, apes_length, apes_width, rpes_x, rpes_y, rpes_length,
-        rpes_width, filename)
+# errors.stats(apes_x, apes_y, apes_vx, apes_vy, apes_psi,
+        # apes_omega, apes_length, apes_width, rpes_x, rpes_y, rpes_length,
+        # rpes_width, filename)
 
 print("DONE!!")

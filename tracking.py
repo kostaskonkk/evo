@@ -419,34 +419,40 @@ def report_states(references, tracks, distance, filename):
                 +ref[0]+".pgf",bbox_inches='tight')
 
 def presentation_states(references, tracks, distance, filename):
-    palette = itertools.cycle(sns.color_palette())
+    current_palette = sns.color_palette()
+    sns.set_color_codes()
 
     for ref in references:
-        # fig_rep, axarr = plt.subplots(4,2,figsize=(6.125,7.7))
         fig_rep, axarr = plt.subplots(2,4,figsize=(19.2,10.8))
 
         for track in tracks:
+            if(track[0]=='KF'):
+                color = 'b'
+            elif(track[0]=='UKF'):
+                color = 'g'
+            shape_color = 'indianred'
             segments, traj_ref = \
                 associate_segments_common_frame(ref[1], track[1],distance)
-            color=next(palette)
             
             for i, segment in enumerate(segments):
                 if i==0:
                     plot.traj_xy(axarr[0:2,0], segment, '-', color, track[0],1
                             ,ref[1].timestamps[0])
+                    angular_vel(axarr[1,2], segment, '-', shape_color, 'Shape', 1,
+                            ref[1].timestamps[0])
                 else:
                     plot.traj_xy(axarr[0:2,0], segment, '-', color, None,1 ,ref[1].timestamps[0])
-                plot.traj_yaw(axarr[0,2],segment, '-', color, None,1 ,ref[1].timestamps[0])
-                angular_vel(axarr[1,2], segment, '-', color, track[0], 1,
-                        ref[1].timestamps[0])
-                plot.dimensions(axarr[0:2,3], segment, '-', color, track[0], 1
-                        ,ref[1].timestamps[0])
+                    angular_vel(axarr[1,2], segment, '-', shape_color, None, 1,
+                            ref[1].timestamps[0])
                 plot.linear_vel(axarr[0:2,1], segment, '-', color, track[0],1
+                        ,ref[1].timestamps[0])
+                plot.traj_yaw(axarr[0,2],segment, '.', shape_color, None,1 ,ref[1].timestamps[0])
+                plot.dimensions(axarr[0:2,3], segment, '-', shape_color, track[0], 1
                         ,ref[1].timestamps[0])
 
         plot.traj_xy(axarr[0:2,0], traj_ref, '-', 'gray', 'Reference', 1, ref[1].timestamps[0])
         plot.vx_vy(axarr[0:2,1], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
-        plot.traj_yaw(axarr[0,2], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+        plot.traj_yaw(axarr[0,2], traj_ref, '.', 'gray', None, 1, ref[1].timestamps[0])
         plot.angular_vel(axarr[1,2], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
 
         if filename.split('/')[0] == 'simulation':
@@ -460,16 +466,21 @@ def presentation_states(references, tracks, distance, filename):
             for j in range(0,2):
                 axarr[j,i].set_xlim(left=0)
 
-        handles, labels = axarr[0,0].get_legend_handles_labels()
-        lgd = fig_rep.legend(handles, labels, loc='lower center',ncol =
-                len(labels), borderpad=0.7)
-        # fig_rep.subplots_adjust(bottom=0.11)
+        red = mpatches.Patch(color='indianred', label='Shape KF')
+        gray = mpatches.Patch(color='gray', label='Reference')
+        green = mpatches.Patch(color='b', label='KF')
+        blue = mpatches.Patch(color='g', label='UKF')
+        lgd = fig_rep.legend(handles=[green,blue,red,gray],\
+                loc='lower center',ncol = 4, borderpad=0.7,\
+                bbox_to_anchor=(0.54,0), columnspacing=0.8)
+
+        # handles, labels = axarr[0,0].get_legend_handles_labels()
+        # lgd = fig_rep.legend(handles, labels, loc='lower center',ncol =
+                # len(labels), borderpad=0.7)
+        fig_rep.subplots_adjust(bottom=0.11)
         fig_rep.tight_layout()
-        plt.show()
-        # fig_rep.savefig("/home/kostas/presentation/figures/"+ filename
-                # +ref[0]+".pgf",bbox_inches='tight')
-        # fig_rep.savefig("/home/kostas/Dropbox/presentation/final/figures/"+ filename
-                # +ref[0]+".png",bbox_inches='tight',transparent=True)
+        # plt.show()
+        fig_rep.savefig("/home/kostas/Dropbox/presentation_final/figures/eight_plots.png",bbox_inches='tight',transparent=False)
 
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())
