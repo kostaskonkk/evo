@@ -59,7 +59,8 @@ table.add_row(('id', 'rmse', 'mean', 'median', 'std', 'min', 'max', 'sse'))
 table.add_empty_row()
 
 # tracking.screen_states(references, tracks, distance)
-tracking.presentation_states(references, tracks, distance, filename)
+# tracking.presentation_states(references, tracks, distance, filename)
+tracking.presentation_four_states(references, tracks, distance, filename)
 # tracking.report_states(references, tracks, distance, filename)
 # exec_time.whole(type_of_exp) # Make execution time plots
 

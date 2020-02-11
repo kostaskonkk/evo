@@ -482,6 +482,78 @@ def presentation_states(references, tracks, distance, filename):
         # plt.show()
         fig_rep.savefig("/home/kostas/Dropbox/presentation_final/figures/eight_plots.png",bbox_inches='tight',transparent=False)
 
+def presentation_four_states(references, tracks, distance, filename):
+    current_palette = sns.color_palette()
+    sns.set_color_codes()
+
+    fig_dynamic, ax_dyn = plt.subplots(2,2,figsize=(9.6,6.5))
+    fig_shape,   ax_shape = plt.subplots(2,2,figsize=(9.6,6.5))
+    for ref in references:
+
+        for track in tracks:
+            if(track[0]=='KF'):
+                color = 'b'
+            elif(track[0]=='UKF'):
+                color = 'g'
+            shape_color = 'indianred'
+            segments, traj_ref = \
+                associate_segments_common_frame(ref[1], track[1],distance)
+            
+            for i, segment in enumerate(segments):
+                if i==0:
+                    plot.traj_xy(ax_dyn[0,0:2], segment, '-', color, track[0],1
+                            ,ref[1].timestamps[0])
+                    angular_vel(ax_shape[0,1], segment, '-', shape_color, 'Shape', 1,
+                            ref[1].timestamps[0])
+                else:
+                    plot.traj_xy(ax_dyn[0,0:2], segment, '-', color, None,1 ,ref[1].timestamps[0])
+                    angular_vel(ax_shape[0,1], segment, '-', shape_color, None, 1,
+                            ref[1].timestamps[0])
+                plot.linear_vel(ax_dyn[1,0:2], segment, '-', color, track[0],1
+                    ,ref[1].timestamps[0])
+                plot.traj_yaw(ax_shape[0,0],segment, '-', shape_color, None,1 ,ref[1].timestamps[0])
+                plot.dimensions(ax_shape[1,0:2], segment, '-', shape_color, track[0], 1
+                        ,ref[1].timestamps[0])
+
+                plot.traj_xy(ax_dyn[0,0:2], traj_ref, '-', 'gray', 'Reference', 1, ref[1].timestamps[0])
+        plot.vx_vy(ax_dyn[1,0:2], traj_ref, '-', 'gray', 'reference', 1, ref[1].timestamps[0])
+        plot.traj_yaw(ax_shape[0,0], traj_ref, '.', 'gray', None, 1, ref[1].timestamps[0])
+        plot.angular_vel(ax_shape[0,1], traj_ref, '-', 'gray', None, 1, ref[1].timestamps[0])
+
+        # if filename.split('/')[0] == 'simulation':
+            # axarr[0,3].axhline(y=3.9, color='gray')
+            # axarr[1,3].axhline(y=1.78, color='gray')
+        # else:
+        ax_shape[1,0].axhline(y=0.4, color='gray')
+        ax_shape[1,1].axhline(y=0.2, color='gray')
+
+        for i in range(0,2):
+            for j in range(0,2):
+                ax_dyn[j,i].set_xlim(left=0)
+                ax_shape[j,i].set_xlim(left=0)
+
+        red = mpatches.Patch(color='indianred', label='Shape Kalman Filter')
+        gray = mpatches.Patch(color='gray', label='Reference')
+        green = mpatches.Patch(color='b', label='Kalman Filter')
+        blue = mpatches.Patch(color='g', label='Unscented Kalman Filter')
+        # lgd = fig_dynamic.legend(handles=[green,blue,gray],\
+                # loc='lower center',ncol = 3, borderpad=0.7,\
+                # bbox_to_anchor=(0.54,-0.03), columnspacing=0.8)
+        lgd = fig_dynamic.legend(handles=[green,blue,gray],\
+                loc='lower center',ncol = 3, borderpad=0.7,\
+                 columnspacing=0.8)
+        lgd = fig_shape.legend(handles=[red,gray],\
+                loc='lower center',ncol = 2, borderpad=0.7,\
+                bbox_to_anchor=(0.54,-0.03), columnspacing=0.8)
+
+        # fig_dynamic.subplots_adjust(bottom=0.11)
+        # fig_shape.subplots_adjust(bottom=0.11)
+        fig_dynamic.tight_layout()
+        fig_shape.tight_layout()
+        plt.show()
+        # fig_dynamic.savefig("/home/kostas/Dropbox/final_presentation/figures/dynamic_plots.png",bbox_inches='tight',transparent=False)
+        # fig_shape.savefig("/home/kostas/Dropbox/final_presentation/figures/shape_plots.png",bbox_inches='tight',transparent=False)
+
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())
     for ref in references:
