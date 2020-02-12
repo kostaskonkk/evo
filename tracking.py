@@ -486,8 +486,8 @@ def presentation_four_states(references, tracks, distance, filename):
     current_palette = sns.color_palette()
     sns.set_color_codes()
 
-    fig_dynamic, ax_dyn = plt.subplots(2,2,figsize=(9.6,6.5))
-    fig_shape,   ax_shape = plt.subplots(2,2,figsize=(9.6,6.5))
+    fig_dynamic, ax_dyn = plt.subplots(2,2,figsize=(9.87,5.3))
+    fig_shape,   ax_shape = plt.subplots(2,2,figsize=(9.87,5.3))
     for ref in references:
 
         for track in tracks:
