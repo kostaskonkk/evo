@@ -536,23 +536,24 @@ def presentation_four_states(references, tracks, distance, filename):
         gray = mpatches.Patch(color='gray', label='Reference')
         green = mpatches.Patch(color='b', label='Kalman Filter')
         blue = mpatches.Patch(color='g', label='Unscented Kalman Filter')
-        # lgd = fig_dynamic.legend(handles=[green,blue,gray],\
-                # loc='lower center',ncol = 3, borderpad=0.7,\
-                # bbox_to_anchor=(0.54,-0.03), columnspacing=0.8)
         lgd = fig_dynamic.legend(handles=[green,blue,gray],\
                 loc='lower center',ncol = 3, borderpad=0.7,\
-                 columnspacing=0.8)
+                bbox_to_anchor=(0.42,-0.009), columnspacing=0.8)
+        # lgd = fig_dynamic.legend(handles=[green,blue,gray],\
+                # loc='lower center',ncol = 3, borderpad=0.7,\
+                 # columnspacing=0.8)
         lgd = fig_shape.legend(handles=[red,gray],\
                 loc='lower center',ncol = 2, borderpad=0.7,\
-                bbox_to_anchor=(0.54,-0.03), columnspacing=0.8)
+                bbox_to_anchor=(0.42,-0.009), columnspacing=0.8)
 
         # fig_dynamic.subplots_adjust(bottom=0.11)
         # fig_shape.subplots_adjust(bottom=0.11)
-        fig_dynamic.tight_layout()
-        fig_shape.tight_layout()
-        plt.show()
-        # fig_dynamic.savefig("/home/kostas/Dropbox/final_presentation/figures/dynamic_plots.png",bbox_inches='tight',transparent=False)
-        # fig_shape.savefig("/home/kostas/Dropbox/final_presentation/figures/shape_plots.png",bbox_inches='tight',transparent=False)
+        # fig_dynamic.tight_layout()
+        # fig_shape.tight_layout()
+        # plt.show()
+        fig_dynamic.savefig("/home/kostas/Dropbox/final_presentation/figures/dynamic_plots.png",
+                bbox_extra_artists=[lgd],bbox_inches='tight',transparent=False)
+        fig_shape.savefig("/home/kostas/Dropbox/final_presentation/figures/shape_plots.png",bbox_extra_artists=[lgd], bbox_inches='tight',transparent=False)
 
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())

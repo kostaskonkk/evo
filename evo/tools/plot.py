@@ -740,16 +740,12 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
         x = range(0, len(traj.orientations_euler))
         xlabel = "index"
     ylabel = "$\psi$ (degrees)"
-    # z = traj.orientations_quat_wxyz
-    # yaw = z[:,3]
-    # print(z)
 
     # wrapped = np.rad2deg(traj.get_orientations_euler()[:,2])
     # wrapped = np.wrap(traj.get_orientations_euler()[:,2])
     yaw = np.rad2deg(traj.get_orientations_euler()[:,2])
     yaw_nan = []
     x_nan = []
-    print(yaw.size,x.size)
     for i, y in enumerate(yaw):
         if(abs(yaw[i] - yaw[i-1])<100):
             yaw_nan.append(yaw[i])
@@ -759,11 +755,7 @@ def traj_yaw(ax, traj, style='-', color='black', label="", alpha=1.0,
             yaw_nan.append(yaw[i])
             x_nan.append(x[i])
             x_nan.append(x[i])
-            # yaw_nans = np.insert(yaw, i,np.nan)
-            # x_nans   = np.insert(x, i,np.nan)
-            print(yaw[i],yaw[i-1])
             # print("Problem")
-    # print(yaw_nans.size,x_nans.size)
     # yaw = traj.get_orientations_euler()[:,2]
     # unwrapped = np.unwrap(yaw)
     # ax.plot(x, yaw, style, markersize =1,
