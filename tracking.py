@@ -524,7 +524,7 @@ def presentation_four_states(references, tracks, distance, filename):
             # axarr[0,3].axhline(y=3.9, color='gray')
             # axarr[1,3].axhline(y=1.78, color='gray')
         # else:
-        ax_shape[1,0].axhline(y=0.4, color='gray')
+        ax_shape[1,0].axhline(y=0.385, color='gray')
         ax_shape[1,1].axhline(y=0.2, color='gray')
 
         for i in range(0,2):
@@ -550,10 +550,10 @@ def presentation_four_states(references, tracks, distance, filename):
         # fig_shape.subplots_adjust(bottom=0.11)
         # fig_dynamic.tight_layout()
         # fig_shape.tight_layout()
-        # plt.show()
-        fig_dynamic.savefig("/home/kostas/Dropbox/final_presentation/figures/dynamic_plots.png",
-                bbox_extra_artists=[lgd],bbox_inches='tight',transparent=False)
-        fig_shape.savefig("/home/kostas/Dropbox/final_presentation/figures/shape_plots.png",bbox_extra_artists=[lgd], bbox_inches='tight',transparent=False)
+        plt.show()
+        # fig_dynamic.savefig("/home/kostas/Dropbox/final_presentation/figures/dynamic_plots.png",
+                # bbox_extra_artists=[lgd],bbox_inches='tight',transparent=False)
+        # fig_shape.savefig("/home/kostas/Dropbox/final_presentation/figures/shape_plots.png",bbox_extra_artists=[lgd], bbox_inches='tight',transparent=False)
 
 def screen_states(references, tracks, distance):
     palette = itertools.cycle(sns.color_palette())
