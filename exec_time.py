@@ -8,15 +8,17 @@ def speed(type_of_exp):
     import csv
     from math import sqrt
     import pandas as pd 
+    from matplotlib.animation import FuncAnimation
 
     df = pd.read_csv("/home/kostas/results/exec_time/presentation.csv")
     exec_time = df['milli'].tolist()
     time = np.arange(len(df))*0.08
+    
     plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
-    fig = plt.figure(figsize=(9.87,5.3))
-    plt.plot(time, exec_time,marker = '.',c='k',lw=1)
-    plt.plot(time, exec_time,marker = '.', linestyle = '',c='r',ms =8)
+    # fig = plt.figure(figsize=(9.87,5.3))
+    # plt.plot(time, exec_time,marker = '.',c='k',lw=1)
+    # plt.plot(time, exec_time,marker = '.', linestyle = '',c='r',ms =8)
     # df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
     # ax = df_whole['milli'].plot(marker = '.',c='k',ms =8, ax=fig_stats.gca(), colormap=colormap, stacked=False)
     # df_whole['Time'] = np.arange(len(df_whole))
@@ -24,11 +26,11 @@ def speed(type_of_exp):
     # ax1 = df_whole.plot(x='Time',y='milli', lw=0.4, c= 'k')
     # ax1 = df_whole.plot(x='Time',y='milli', marker = '.', linestyle = '',
             # c='r',ms =3, label=None)
-    plt.ylabel('Execution Time (ms)')
-    plt.xlabel('Time (s)')
+    # plt.ylabel('Execution Time (ms)')
+    # plt.xlabel('Time (s)')
         # ax_shape[1,0].axhline(y=0.385, color='gray')
-    plt.xlim(left=0)
-    plt.show()
+    # plt.xlim(left=0)
+    # plt.show()
     # ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
     # ax2 = df_whole['objects'].plot(lw=0.2, c= 'k')
     # ax2.set_ylabel('Tracked Objects')
@@ -36,8 +38,67 @@ def speed(type_of_exp):
     # ax.set_title('Execution time of DATMO program')
     # plt.savefig("/home/kostas/report/figures/exec_time/whole.png", dpi = 300, format='png', bbox_inches='tight')
     # fig_stats.tight_layout()
-    plt.savefig("/home/kostas/Dropbox/final_presentation/figures/execution_time.png",
-            dpi=300)
+    # plt.savefig("/home/kostas/Dropbox/final_presentation/figures/execution_time.png",
+            # dpi=300)
+
+    # import numpy as np
+    # import matplotlib.pyplot as plt
+
+    # fig, ax = plt.subplots()
+    # xdata, ydata = [], []
+    # xdata = list(time)
+    # ydata = exec_time
+    # ln, = plt.plot([], [], 'ro')
+
+    # def init():
+        # ax1.set_xlim(0, 2*np.pi)
+        # ax1.set_ylim(-1, 1)
+        # return ln,
+
+    # def update(frame):
+        # xdata.append(frame)
+        # ydata.append(np.sin(frame))
+        # ln.set_data(xdata, ydata)
+        # return ln,
+
+    # ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128),
+                        # init_func=init, blit=True)
+
+
+    fig, ax = plt.subplots()
+    line, = ax.plot(time, exec_time)
+    xdata, ydata = [], []
+    ln, = plt.plot([], [], 'ro')
+
+    def init():
+        ax.set_xlim(0, 25)
+        ax.set_ylim(0, 40)
+        # line.set_ydata([np.nan]*len(time))
+        return ln,
+     
+    def update(i):
+        xdata.append(time[i])
+        ydata.append(exec_time[i])
+        ln.set_data(xdata, ydata)
+        return ln,
+
+    ani = FuncAnimation(fig, update, frames=range(1, len(time)),
+                        init_func=init, blit=True)
+
+    # def animate(i):
+
+        # ax1.clear()
+        # ax1.set_xlim(0, 25)
+        # ax1.set_ylim(0, 80)
+        # ax1.plot(time[i], exec_time[i])
+        # line.set_ydata(exec_time[i])
+        # return line,
+
+    # ani = FuncAnimation(fig, animate2, frames=range(1, len(time)),
+            # interval=10, repeat=False)
+    # ani = FuncAnimation(
+        # fig, animate, init_func=init, interval=200, blit=True, save_count=50)
+    plt.show()
 
 def whole(type_of_exp):
 
