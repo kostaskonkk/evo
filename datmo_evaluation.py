@@ -62,7 +62,7 @@ table.add_empty_row()
 # tracking.presentation_states(references, tracks, distance, filename)
 # tracking.presentation_four_states(references, tracks, distance, filename)
 # tracking.report_states(references, tracks, distance, filename)
-exec_time.whole(type_of_exp) # Make execution time plots
+exec_time.speed(type_of_exp) # Make execution time plots
 
 # apes_x=[]
 # apes_y=[]

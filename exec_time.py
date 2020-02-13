@@ -1,17 +1,52 @@
-import pandas as pd 
-from pylatex import Tabular 
+# from pylatex import Tabular 
 import matplotlib as mpl
 import numpy as np
 import matplotlib.pyplot as plt
 
+def speed(type_of_exp):
+
+    import csv
+    from math import sqrt
+    import pandas as pd 
+
+    df = pd.read_csv("/home/kostas/results/exec_time/presentation.csv")
+    exec_time = df['milli'].tolist()
+    time = np.arange(len(df))*0.08
+    plt.style.use(['seaborn-whitegrid', 'stylerc'])
+
+    fig = plt.figure(figsize=(9.87,5.3))
+    plt.plot(time, exec_time,marker = '.',c='k',lw=1)
+    plt.plot(time, exec_time,marker = '.', linestyle = '',c='r',ms =8)
+    # df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
+    # ax = df_whole['milli'].plot(marker = '.',c='k',ms =8, ax=fig_stats.gca(), colormap=colormap, stacked=False)
+    # df_whole['Time'] = np.arange(len(df_whole))
+    # df_whole['Time'] *= 0.08
+    # ax1 = df_whole.plot(x='Time',y='milli', lw=0.4, c= 'k')
+    # ax1 = df_whole.plot(x='Time',y='milli', marker = '.', linestyle = '',
+            # c='r',ms =3, label=None)
+    plt.ylabel('Execution Time (ms)')
+    plt.xlabel('Time (s)')
+        # ax_shape[1,0].axhline(y=0.385, color='gray')
+    plt.xlim(left=0)
+    plt.show()
+    # ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+    # ax2 = df_whole['objects'].plot(lw=0.2, c= 'k')
+    # ax2.set_ylabel('Tracked Objects')
+    # ax2.grid(False)
+    # ax.set_title('Execution time of DATMO program')
+    # plt.savefig("/home/kostas/report/figures/exec_time/whole.png", dpi = 300, format='png', bbox_inches='tight')
+    # fig_stats.tight_layout()
+    plt.savefig("/home/kostas/Dropbox/final_presentation/figures/execution_time.png",
+            dpi=300)
 
 def whole(type_of_exp):
 
+    import pandas as pd 
     from math import sqrt
     df_whole = pd.read_csv("/home/kostas/results/exec_time/presentation.csv")
     plt.style.use(['seaborn-whitegrid', 'stylerc'])
-    mpl.use('pgf')
-    mpl.rcParams.update({"text.usetex": True})
+    # mpl.use('pgf')
+    # mpl.rcParams.update({"text.usetex": True})
 
     fig_stats = plt.figure(figsize=(6.125,3.785))
     # df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
