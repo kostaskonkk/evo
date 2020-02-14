@@ -16,7 +16,7 @@ def speed(type_of_exp):
     
     plt.style.use(['seaborn-whitegrid', 'stylerc'])
 
-    # fig = plt.figure(figsize=(9.87,5.3))
+    fig = plt.figure(figsize=(9.87,5.3))
     # plt.plot(time, exec_time,marker = '.',c='k',lw=1)
     # plt.plot(time, exec_time,marker = '.', linestyle = '',c='r',ms =8)
     # df_whole.plot(kind="barh", ax=fig_stats.gca(), colormap=colormap, stacked=False)
@@ -40,30 +40,6 @@ def speed(type_of_exp):
     # fig_stats.tight_layout()
     # plt.savefig("/home/kostas/Dropbox/final_presentation/figures/execution_time.png",
             # dpi=300)
-
-    # import numpy as np
-    # import matplotlib.pyplot as plt
-
-    # fig, ax = plt.subplots()
-    # xdata, ydata = [], []
-    # xdata = list(time)
-    # ydata = exec_time
-    # ln, = plt.plot([], [], 'ro')
-
-    # def init():
-        # ax1.set_xlim(0, 2*np.pi)
-        # ax1.set_ylim(-1, 1)
-        # return ln,
-
-    # def update(frame):
-        # xdata.append(frame)
-        # ydata.append(np.sin(frame))
-        # ln.set_data(xdata, ydata)
-        # return ln,
-
-    # ani = FuncAnimation(fig, update, frames=np.linspace(0, 2*np.pi, 128),
-                        # init_func=init, blit=True)
-
 
     fig, ax = plt.subplots()
     line, = ax.plot(time, exec_time)
@@ -99,6 +75,67 @@ def speed(type_of_exp):
     # ani = FuncAnimation(
         # fig, animate, init_func=init, interval=200, blit=True, save_count=50)
     plt.show()
+
+def speed_animation(type_of_exp):
+
+    import csv
+    from math import sqrt
+    import pandas as pd 
+    import matplotlib.animation as animation
+
+    # Set up formatting for the movie files
+    Writer = animation.writers['ffmpeg']
+    # writer = Writer(fps = 30,metadata=dict(artist='Kostas'), bitrate=1800)
+    writer = Writer(fps = 30,metadata=dict(artist='Kostas'), bitrate=-1)
+           
+
+    df = pd.read_csv("/home/kostas/results/exec_time/presentation.csv")
+    exec_time = df['milli'].tolist()
+    time = np.arange(len(df))*0.08
+    
+    plt.style.use(['seaborn-whitegrid', 'stylerc'])
+    # font = {'family' : 'normal',
+            # 'weight' : 'bold',
+            # 'size'   : 22}
+    # mpl.rc('font', **font)
+    plt.rc('axes',  titlesize=20)
+    plt.rc('xtick', labelsize=15)
+    plt.rc('ytick', labelsize=15)
+    plt.rc('axes', labelsize=20)
+
+
+    fig, ax = plt.subplots(figsize=(9.87, 5.3))
+    # line, = ax.plot(time, exec_time)
+    xdata, ydata = [], []
+    ln, = plt.plot([], [], '-')
+    o, = plt.plot([], [], 'or', ms=1)
+
+    def init():
+        ax.set_xlim(0, time[-1])
+        ax.set_ylim(0, 85)
+        ax.set_xlabel('Time (s)')
+        ax.set_ylabel('Execution Time (ms)')
+        ax.axhline(y=80, color='red',linewidth=2)
+        return ln, o
+     
+    def update(i):
+        if(i==-1):
+            ln.set_data(xdata, ydata)
+            o.set_data(xdata, ydata)
+        else:
+            xdata.append(time[i])
+            ydata.append(exec_time[i])
+            ln.set_data(xdata, ydata)
+            o.set_data(xdata, ydata)
+        return ln, o
+
+    ani = animation.FuncAnimation(fig, update, frames=range(-1, len(time)),
+                        init_func=init, interval=2, blit=True)
+    # fig.tight_layout()
+
+    # plt.show()
+    ani.save('/home/kostas/Dropbox/final_presentation/figures/speed.mp4',
+            writer=writer, dpi=300)
 
 def whole(type_of_exp):
 
